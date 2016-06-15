@@ -8,8 +8,8 @@ test:
 	ginkgo tests
 
 test_coverage:
-	go get github.com/modocache/gover
-	go get github.com/mattn/goveralls
-	ginkgo -cover -coverpkg=./... tests
-	gover
-	goveralls -service drone.io -coverprofile=gover.coverprofile -repotoken $(COVERALLS_TOKEN)
+	@go get github.com/modocache/gover
+	@go get github.com/mattn/goveralls
+	@ginkgo -cover -coverpkg=./... tests
+	@gover
+	@goveralls -service drone.io -coverprofile=gover.coverprofile -repotoken $(COVERALLS_TOKEN)
