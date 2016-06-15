@@ -15,7 +15,7 @@ func NewDatabase() (*Database, error) {
 }
 
 //CreatePreset stores preset information
-func (r *Database) CreatePreset(preset db.Preset) map[string]db.Preset {
+func (r *Database) StorePreset(preset db.Preset) map[string]db.Preset {
 	r.Presets[preset.Name] = preset
 	return r.Presets
 }

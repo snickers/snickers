@@ -18,7 +18,7 @@ var _ = Describe("Database", func() {
 			dbInstance, _ = memory.NewDatabase()
 		})
 
-		It("should be able to create a preset", func() {
+		It("should be able to store a preset", func() {
 			examplePreset := db.Preset{
 				Name:         "examplePreset",
 				Description:  "This is an example of preset",
@@ -41,7 +41,7 @@ var _ = Describe("Database", func() {
 				},
 			}
 			expected := map[string]db.Preset{"examplePreset": examplePreset}
-			Expect(dbInstance.CreatePreset(examplePreset)).To(Equal(expected))
+			Expect(dbInstance.StorePreset(examplePreset)).To(Equal(expected))
 		})
 
 		It("should be able to retrieve a preset by its name", func() {
@@ -55,8 +55,8 @@ var _ = Describe("Database", func() {
 				Description: "This is preset two",
 			}
 
-			dbInstance.CreatePreset(preset1)
-			dbInstance.CreatePreset(preset2)
+			dbInstance.StorePreset(preset1)
+			dbInstance.StorePreset(preset2)
 
 			Expect(dbInstance.RetrievePreset("presetOne")).To(Equal(preset1))
 		})
