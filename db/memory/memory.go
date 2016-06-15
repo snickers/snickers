@@ -8,6 +8,7 @@ func NewDatabase() (*Database, error) {
 	return &Database{}, nil
 }
 
+//CreatePreset stores preset information in memory
 func (r *Database) CreatePreset() int {
 	return 0
 }
