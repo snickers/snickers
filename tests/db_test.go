@@ -40,8 +40,25 @@ var _ = Describe("Database", func() {
 					Bitrate: "64000",
 				},
 			}
-			expected := []db.Preset{examplePreset}
+			expected := map[string]db.Preset{"examplePreset": examplePreset}
 			Expect(dbInstance.CreatePreset(examplePreset)).To(Equal(expected))
+		})
+
+		It("should be able to retrieve a preset by its name", func() {
+			preset1 := db.Preset{
+				Name:        "presetOne",
+				Description: "This is preset one",
+			}
+
+			preset2 := db.Preset{
+				Name:        "presetTwo",
+				Description: "This is preset two",
+			}
+
+			dbInstance.CreatePreset(preset1)
+			dbInstance.CreatePreset(preset2)
+
+			Expect(dbInstance.RetrievePreset("presetOne")).To(Equal(preset1))
 		})
 	})
 
