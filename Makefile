@@ -1,4 +1,4 @@
-.PHONY: all test build coverage
+.PHONY: all test build test_coverage
 
 build:
 	go get github.com/onsi/ginkgo/ginkgo
