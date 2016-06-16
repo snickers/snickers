@@ -1,6 +1,7 @@
 .PHONY: all test build test_coverage
 
 build:
+	go get
 	go get github.com/onsi/ginkgo/ginkgo
 	go get github.com/onsi/gomega
 
