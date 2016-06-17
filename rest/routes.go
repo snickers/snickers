@@ -7,7 +7,6 @@ import (
 )
 
 type Route struct {
-	Name        string
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
@@ -21,7 +20,6 @@ func NewRouter() *mux.Router {
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
-			Name(route.Name).
 			Handler(route.HandlerFunc)
 	}
 
@@ -29,5 +27,16 @@ func NewRouter() *mux.Router {
 }
 
 var routes = Routes{
-	Route{"Index", "GET", "/", Index},
+	Route{"GET", "/", Index},
+
+	// Preset routes
+	Route{"POST", "/presets", CreatePreset},
+	Route{"PUT", "/presets", UpdatePreset},
+	Route{"GET", "/presets", ListPresets},
+	Route{"GET", "/presets/{presetName}", GetPresetDetails},
+
+	// Job routes
+	Route{"POST", "/jobs", CreateJob},
+	Route{"GET", "/jobs", ListJobs},
+	Route{"GET", "/jobs/{jobId}", GetJobDetails},
 }
