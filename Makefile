@@ -8,6 +8,9 @@ build:
 test:
 	ginkgo tests
 
+run:
+	go run main.go
+
 test_coverage:
 	@go get github.com/modocache/gover
 	@go get github.com/mattn/goveralls
