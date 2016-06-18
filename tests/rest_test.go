@@ -28,6 +28,12 @@ var _ = Describe("Rest API", func() {
 
 		})
 
+		It("GET should return application/json on its content type", func() {
+			request, _ := http.NewRequest("GET", "/presets", nil)
+			server.ServeHTTP(response, request)
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
 		It("GET should return stored presets", func() {
 			examplePreset := db.Preset{
 				Name: "examplePreset",

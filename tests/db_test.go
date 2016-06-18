@@ -74,12 +74,13 @@ var _ = Describe("Database", func() {
 				Description: "This is preset two",
 			}
 
+			Expect(len(dbInstance.GetPresets())).To(Equal(0))
+
 			dbInstance.StorePreset(preset1)
 			Expect(len(dbInstance.GetPresets())).To(Equal(1))
 
 			dbInstance.StorePreset(preset2)
 			Expect(len(dbInstance.GetPresets())).To(Equal(2))
-
 		})
 	})
 })

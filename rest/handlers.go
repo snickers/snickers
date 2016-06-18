@@ -28,16 +28,12 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var result []string
-	presets := dbInstance.GetPresets()
-
-	for _, preset := range presets {
-		presetJson, err := json.Marshal(preset)
-		if err != nil {
-			fmt.Fprint(w, "error while marshaling preset")
-		}
+	for _, preset := range dbInstance.GetPresets() {
+		presetJson, _ := json.Marshal(preset)
 		result = append(result, string(presetJson))
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	fmt.Fprintf(w, "%s", result)
 }
 
