@@ -1,6 +1,7 @@
 package snickers_test
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 
@@ -45,6 +46,16 @@ var _ = Describe("Rest API", func() {
 
 			Expect(response.Code).To(Equal(200))
 			Expect(string(response.Body.String())).To(Equal(expected))
+		})
+
+		It("POST should save a new preset", func() {
+			preset := []byte(`{"name: "storedPreset", "video": {},"audio": {}}`)
+			request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
+			server.ServeHTTP(response, request)
+
+			Expect(response.Code).To(Equal(200))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+			Expect(len(dbInstance.GetPresets())).To(Equal(1))
 		})
 	})
 })

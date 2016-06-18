@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/db/memory"
 )
 
@@ -14,7 +15,15 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "create preset")
+	var preset db.Preset
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&preset)
+
+	dbInstance, _ := memory.GetDatabase()
+	dbInstance.StorePreset(preset)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func UpdatePreset(w http.ResponseWriter, r *http.Request) {
