@@ -44,18 +44,27 @@ var _ = Describe("Rest API", func() {
 			request, _ := http.NewRequest("GET", "/presets", nil)
 			server.ServeHTTP(response, request)
 
-			Expect(response.Code).To(Equal(200))
+			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(string(response.Body.String())).To(Equal(expected))
 		})
 
 		It("POST should save a new preset", func() {
-			preset := []byte(`{"name: "storedPreset", "video": {},"audio": {}}`)
+			preset := []byte(`{"name": "storedPreset", "video": {},"audio": {}}`)
 			request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
 			server.ServeHTTP(response, request)
 
-			Expect(response.Code).To(Equal(200))
+			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			Expect(len(dbInstance.GetPresets())).To(Equal(1))
+		})
+
+		It("POST with malformed preset should return bad request", func() {
+			preset := []byte(`{"neime: "badPreset}}`)
+			request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
+			server.ServeHTTP(response, request)
+
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
 	})
 })

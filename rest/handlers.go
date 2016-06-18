@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/flavioribeiro/snickers/db"
@@ -15,18 +16,21 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	dbInstance, err := memory.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating preset")
 	}
 
 	var preset db.Preset
-	decoder := json.NewDecoder(r.Body)
-	decoder.Decode(&preset)
-
+	respData, err := ioutil.ReadAll(r.Body)
+	err = json.Unmarshal(respData, &preset)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	dbInstance.StorePreset(preset)
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -35,6 +39,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListPresets(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	dbInstance, err := memory.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating database")
@@ -46,7 +51,6 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 		result = append(result, string(presetJson))
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	fmt.Fprintf(w, "%s", result)
 }
 
