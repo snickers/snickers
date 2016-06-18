@@ -1,11 +1,15 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/flavioribeiro/snickers/db/memory"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
+	// TODO a great page for API root location
 	fmt.Fprint(w, "Snickers")
 }
 
@@ -18,7 +22,23 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListPresets(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "list presets")
+	dbInstance, err := memory.GetDatabase()
+	if err != nil {
+		fmt.Fprint(w, "error while creating database")
+	}
+
+	var result []string
+	presets := dbInstance.GetPresets()
+
+	for _, preset := range presets {
+		presetJson, err := json.Marshal(preset)
+		if err != nil {
+			fmt.Fprint(w, "error while marshaling preset")
+		}
+		result = append(result, string(presetJson))
+	}
+
+	fmt.Fprintf(w, "%s", result)
 }
 
 func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
