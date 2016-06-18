@@ -14,9 +14,13 @@ func GetDatabase() (*Database, error) {
 	if instance != nil {
 		return instance, nil
 	}
-	instance := &Database{}
+	instance = &Database{}
 	instance.Presets = map[string]db.Preset{}
 	return instance, nil
+}
+
+func ClearDatabase() {
+	instance.Presets = map[string]db.Preset{}
 }
 
 //StorePreset stores preset information
