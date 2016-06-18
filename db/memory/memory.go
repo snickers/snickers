@@ -29,3 +29,12 @@ func (r *Database) StorePreset(preset db.Preset) map[string]db.Preset {
 func (r *Database) RetrievePreset(presetName string) db.Preset {
 	return r.Presets[presetName]
 }
+
+//GetPresets retrieves all presets of the database
+func (r *Database) GetPresets() []db.Preset {
+	res := make([]db.Preset, 0, len(r.Presets))
+	for _, value := range r.Presets {
+		res = append(res, value)
+	}
+	return res
+}
