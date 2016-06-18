@@ -15,7 +15,7 @@ var _ = Describe("Database", func() {
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = memory.NewDatabase()
+			dbInstance, _ = memory.GetDatabase()
 		})
 
 		It("should be able to store a preset", func() {

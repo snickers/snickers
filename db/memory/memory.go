@@ -7,11 +7,16 @@ type Database struct {
 	Presets map[string]db.Preset
 }
 
-// NewDatabase creates a new database
-func NewDatabase() (*Database, error) {
-	d := &Database{}
-	d.Presets = map[string]db.Preset{}
-	return d, nil
+var instance *Database
+
+// GetDatabase returns database singleton
+func GetDatabase() (*Database, error) {
+	if instance != nil {
+		return instance, nil
+	}
+	instance := &Database{}
+	instance.Presets = map[string]db.Preset{}
+	return instance, nil
 }
 
 //StorePreset stores preset information
