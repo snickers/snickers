@@ -1,0 +1,9 @@
+language: go
+go:
+
+  - 1.3
+  - tip
+
+install: make build
+
+script: make test_coverage
