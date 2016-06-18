@@ -24,8 +24,7 @@ var _ = Describe("Rest API", func() {
 			response = httptest.NewRecorder()
 			server = rest.NewRouter()
 			dbInstance, _ = memory.GetDatabase()
-			memory.ClearDatabase()
-
+			dbInstance.ClearDatabase()
 		})
 
 		It("GET should return application/json on its content type", func() {

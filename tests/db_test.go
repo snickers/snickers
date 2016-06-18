@@ -17,7 +17,7 @@ var _ = Describe("Database", func() {
 		BeforeEach(func() {
 			// TODO solve this by transforming database in interface/object (#6)
 			dbInstance, _ = memory.GetDatabase()
-			memory.ClearDatabase()
+			dbInstance.ClearDatabase()
 		})
 
 		It("should be able to store a preset", func() {

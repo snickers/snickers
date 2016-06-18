@@ -19,7 +19,8 @@ func GetDatabase() (*Database, error) {
 	return instance, nil
 }
 
-func ClearDatabase() {
+//ClearDatabase clears the database
+func (r *Database) ClearDatabase() {
 	instance.Presets = map[string]db.Preset{}
 }
 
