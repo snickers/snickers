@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/flavioribeiro/snickers/db/memory"
+	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/rest"
 	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
@@ -18,13 +18,13 @@ var _ = Describe("Rest API", func() {
 		var (
 			response   *httptest.ResponseRecorder
 			server     *mux.Router
-			dbInstance *memory.Database
+			dbInstance db.DatabaseInterface
 		)
 
 		BeforeEach(func() {
 			response = httptest.NewRecorder()
 			server = rest.NewRouter()
-			dbInstance, _ = memory.GetDatabase()
+			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
 		})
 

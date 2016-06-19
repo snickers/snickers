@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/flavioribeiro/snickers/db/memory"
+	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
 )
 
@@ -17,7 +17,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	dbInstance, err := memory.GetDatabase()
+	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating preset")
 	}
@@ -40,7 +40,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 
 func ListPresets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	dbInstance, err := memory.GetDatabase()
+	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating database")
 	}
