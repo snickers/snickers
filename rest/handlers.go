@@ -44,7 +44,6 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(respData, &preset)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println("ERROR", err)
 		return
 	}
 
