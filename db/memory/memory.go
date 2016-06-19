@@ -1,10 +1,10 @@
 package memory
 
-import "github.com/flavioribeiro/snickers/db"
+import "github.com/flavioribeiro/snickers/types"
 
 // Database struct that persists configurations
 type Database struct {
-	Presets map[string]db.Preset
+	Presets map[string]types.Preset
 }
 
 var instance *Database
@@ -15,29 +15,29 @@ func GetDatabase() (*Database, error) {
 		return instance, nil
 	}
 	instance = &Database{}
-	instance.Presets = map[string]db.Preset{}
+	instance.Presets = map[string]types.Preset{}
 	return instance, nil
 }
 
 //ClearDatabase clears the database
 func (r *Database) ClearDatabase() {
-	instance.Presets = map[string]db.Preset{}
+	instance.Presets = map[string]types.Preset{}
 }
 
 //StorePreset stores preset information
-func (r *Database) StorePreset(preset db.Preset) map[string]db.Preset {
+func (r *Database) StorePreset(preset types.Preset) map[string]types.Preset {
 	r.Presets[preset.Name] = preset
 	return r.Presets
 }
 
 //RetrievePreset retrieves one preset from the database
-func (r *Database) RetrievePreset(presetName string) db.Preset {
+func (r *Database) RetrievePreset(presetName string) types.Preset {
 	return r.Presets[presetName]
 }
 
 //GetPresets retrieves all presets of the database
-func (r *Database) GetPresets() []db.Preset {
-	res := make([]db.Preset, 0, len(r.Presets))
+func (r *Database) GetPresets() []types.Preset {
+	res := make([]types.Preset, 0, len(r.Presets))
 	for _, value := range r.Presets {
 		res = append(res, value)
 	}

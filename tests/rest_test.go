@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/db/memory"
 	"github.com/flavioribeiro/snickers/rest"
+	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,7 +35,7 @@ var _ = Describe("Rest API", func() {
 		})
 
 		It("GET should return stored presets", func() {
-			examplePreset := db.Preset{
+			examplePreset := types.Preset{
 				Name: "examplePreset",
 			}
 			dbInstance.StorePreset(examplePreset)

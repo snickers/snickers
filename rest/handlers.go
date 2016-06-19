@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/db/memory"
+	"github.com/flavioribeiro/snickers/types"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "error while creating preset")
 	}
 
-	var preset db.Preset
+	var preset types.Preset
 	respData, err := ioutil.ReadAll(r.Body)
 	err = json.Unmarshal(respData, &preset)
 	if err != nil {

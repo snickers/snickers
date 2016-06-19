@@ -1,8 +1,8 @@
 package snickers_test
 
 import (
-	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/db/memory"
+	"github.com/flavioribeiro/snickers/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,14 +21,14 @@ var _ = Describe("Database", func() {
 		})
 
 		It("should be able to store a preset", func() {
-			examplePreset := db.Preset{
+			examplePreset := types.Preset{
 				Name:         "examplePreset",
 				Description:  "This is an example of preset",
 				Container:    "mp4",
 				Profile:      "high",
 				ProfileLevel: "3.1",
 				RateControl:  "VBR",
-				Video: db.VideoPreset{
+				Video: types.VideoPreset{
 					Width:         "720",
 					Height:        "1080",
 					Codec:         "h264",
@@ -37,22 +37,22 @@ var _ = Describe("Database", func() {
 					GopMode:       "fixed",
 					InterlaceMode: "progressive",
 				},
-				Audio: db.AudioPreset{
+				Audio: types.AudioPreset{
 					Codec:   "aac",
 					Bitrate: "64000",
 				},
 			}
-			expected := map[string]db.Preset{"examplePreset": examplePreset}
+			expected := map[string]types.Preset{"examplePreset": examplePreset}
 			Expect(dbInstance.StorePreset(examplePreset)).To(Equal(expected))
 		})
 
 		It("should be able to retrieve a preset by its name", func() {
-			preset1 := db.Preset{
+			preset1 := types.Preset{
 				Name:        "presetOne",
 				Description: "This is preset one",
 			}
 
-			preset2 := db.Preset{
+			preset2 := types.Preset{
 				Name:        "presetTwo",
 				Description: "This is preset two",
 			}
@@ -64,12 +64,12 @@ var _ = Describe("Database", func() {
 		})
 
 		It("should be able to list presets", func() {
-			preset1 := db.Preset{
+			preset1 := types.Preset{
 				Name:        "presetOne",
 				Description: "This is preset one",
 			}
 
-			preset2 := db.Preset{
+			preset2 := types.Preset{
 				Name:        "presetTwo",
 				Description: "This is preset two",
 			}
