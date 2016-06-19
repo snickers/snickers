@@ -2,6 +2,7 @@ package snickers_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 
@@ -40,13 +41,14 @@ var _ = Describe("Rest API", func() {
 			dbInstance.StorePreset(examplePreset1)
 			dbInstance.StorePreset(examplePreset2)
 
-			expected := `[{"name":"examplePreset","video":{},"audio":{}},{"name":"examplePreset2","video":{},"audio":{}}]`
+			expected, _ := json.Marshal(`[{"name":"examplePreset","video":{},"audio":{}},{"name":"examplePreset2","video":{},"audio":{}}]`)
 
 			request, _ := http.NewRequest("GET", "/presets", nil)
 			server.ServeHTTP(response, request)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
 
 			Expect(response.Code).To(Equal(http.StatusOK))
-			Expect(string(response.Body.String())).To(Equal(expected))
+			Expect(responseBody).To(Equal(expected))
 		})
 
 		It("POST should save a new preset", func() {
