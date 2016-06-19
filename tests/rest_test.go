@@ -82,5 +82,49 @@ var _ = Describe("Rest API", func() {
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			Expect(newPreset.Description).To(Equal("new description"))
 		})
+
+		It("PUT with malformed preset should return bad request", func() {
+			dbInstance.StorePreset(types.Preset{Name: "examplePreset"})
+			preset := []byte(`{"name":"examplePreset","Description: "new description","video": {},"audio": {}}`)
+
+			request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
+			server.ServeHTTP(response, request)
+
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
+		It("GET for a given preset should return preset details", func() {
+			examplePreset := types.Preset{
+				Name:         "examplePreset",
+				Description:  "This is an example of preset",
+				Container:    "mp4",
+				Profile:      "high",
+				ProfileLevel: "3.1",
+				RateControl:  "VBR",
+				Video: types.VideoPreset{
+					Width:         "720",
+					Height:        "1080",
+					Codec:         "h264",
+					Bitrate:       "10000",
+					GopSize:       "90",
+					GopMode:       "fixed",
+					InterlaceMode: "progressive",
+				},
+				Audio: types.AudioPreset{
+					Codec:   "aac",
+					Bitrate: "64000",
+				},
+			}
+			dbInstance.StorePreset(examplePreset)
+			expected, _ := json.Marshal(examplePreset)
+
+			request, _ := http.NewRequest("GET", "/presets/examplePreset", nil)
+			server.ServeHTTP(response, request)
+
+			Expect(response.Code).To(Equal(http.StatusOK))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+			Expect(response.Body.String()).To(Equal(string(expected)))
+		})
 	})
 })

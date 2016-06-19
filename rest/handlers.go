@@ -8,6 +8,7 @@ import (
 
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
+	"github.com/gorilla/mux"
 )
 
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +71,20 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "get preset details")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		fmt.Fprint(w, "error while creating database")
+		return
+	}
+
+	vars := mux.Vars(r)
+	presetName := vars["presetName"]
+	preset := dbInstance.RetrievePreset(presetName)
+
+	result, err := json.Marshal(preset)
+	fmt.Fprintf(w, "%s", result)
 }
 
 func CreateJob(w http.ResponseWriter, r *http.Request) {
