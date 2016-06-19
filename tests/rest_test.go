@@ -35,11 +35,12 @@ var _ = Describe("Rest API", func() {
 		})
 
 		It("GET should return stored presets", func() {
-			examplePreset := types.Preset{
-				Name: "examplePreset",
-			}
-			dbInstance.StorePreset(examplePreset)
-			expected := `[{"name":"examplePreset","video":{},"audio":{}}]`
+			examplePreset1 := types.Preset{Name: "examplePreset"}
+			examplePreset2 := types.Preset{Name: "examplePreset2"}
+			dbInstance.StorePreset(examplePreset1)
+			dbInstance.StorePreset(examplePreset2)
+
+			expected := `[{"name":"examplePreset","video":{},"audio":{}},{"name":"examplePreset2","video":{},"audio":{}}]`
 
 			request, _ := http.NewRequest("GET", "/presets", nil)
 			server.ServeHTTP(response, request)

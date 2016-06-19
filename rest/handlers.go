@@ -12,6 +12,7 @@ import (
 
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating preset")
@@ -24,8 +25,8 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	dbInstance.StorePreset(preset)
 
+	dbInstance.StorePreset(preset)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -35,18 +36,20 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 
 func ListPresets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		fmt.Fprint(w, "error while creating database")
+		return
 	}
 
-	var result []string
-	for _, preset := range dbInstance.GetPresets() {
-		presetJson, _ := json.Marshal(preset)
-		result = append(result, string(presetJson))
+	result, err := json.Marshal(dbInstance.GetPresets())
+	if err != nil {
+		fmt.Fprint(w, "error getting presets")
+		return
 	}
 
-	fmt.Fprintf(w, "%s", result)
+	fmt.Fprintf(w, string(result))
 }
 
 func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
