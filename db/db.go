@@ -7,6 +7,7 @@ import "github.com/flavioribeiro/snickers/db/memory"
 type DatabaseInterface interface {
 	StorePreset(types.Preset) map[string]types.Preset
 	RetrievePreset(string) types.Preset
+	UpdatePreset(string, types.Preset) types.Preset
 	GetPresets() []types.Preset
 	ClearDatabase()
 }

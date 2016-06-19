@@ -69,5 +69,18 @@ var _ = Describe("Rest API", func() {
 			Expect(response.Code).To(Equal(http.StatusBadRequest))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
+
+		It("PUT with a new preset should update the preset", func() {
+			dbInstance.StorePreset(types.Preset{Name: "examplePreset"})
+			preset := []byte(`{"name":"examplePreset","Description": "new description","video": {},"audio": {}}`)
+
+			request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
+			server.ServeHTTP(response, request)
+
+			newPreset := dbInstance.GetPresets()[0]
+			Expect(response.Code).To(Equal(http.StatusOK))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+			Expect(newPreset.Description).To(Equal("new description"))
+		})
 	})
 })
