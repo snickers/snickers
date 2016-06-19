@@ -24,8 +24,6 @@ func NewRouter() *mux.Router {
 }
 
 var routes = Routes{
-	Route{"GET", "/", Index},
-
 	// Preset routes
 	Route{"POST", "/presets", CreatePreset},
 	Route{"PUT", "/presets", UpdatePreset},

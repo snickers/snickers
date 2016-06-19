@@ -10,11 +10,6 @@ import (
 	"github.com/flavioribeiro/snickers/types"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	// TODO a great page for API root location
-	fmt.Fprint(w, "Snickers")
-}
-
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	dbInstance, err := db.GetDatabase()
