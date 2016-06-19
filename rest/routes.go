@@ -32,6 +32,7 @@ var routes = Routes{
 
 	// Job routes
 	Route{"POST", "/jobs", CreateJob},
+	Route{"POST", "/jobs/{jobId}/start", StartJob},
 	Route{"GET", "/jobs", ListJobs},
 	Route{"GET", "/jobs/{jobId}", GetJobDetails},
 }
