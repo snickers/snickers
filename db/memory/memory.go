@@ -35,6 +35,12 @@ func (r *Database) RetrievePreset(presetName string) types.Preset {
 	return r.Presets[presetName]
 }
 
+//UpdatPreset updates a preset
+func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) types.Preset {
+	r.Presets[presetName] = newPreset
+	return newPreset
+}
+
 //GetPresets retrieves all presets of the database
 func (r *Database) GetPresets() []types.Preset {
 	res := make([]types.Preset, 0, len(r.Presets))
