@@ -16,20 +16,21 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		fmt.Fprint(w, "error while creating preset")
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
 	}
 
 	var preset types.Preset
 	respData, err := ioutil.ReadAll(r.Body)
 	err = json.Unmarshal(respData, &preset)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return
 	}
 
 	_, err = dbInstance.StorePreset(preset)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "storing preset", err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -40,7 +41,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		fmt.Fprint(w, "error while creating database")
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
 		return
 	}
 
@@ -48,13 +49,13 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	respData, err := ioutil.ReadAll(r.Body)
 	err = json.Unmarshal(respData, &preset)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return
 	}
 
 	_, err = dbInstance.UpdatePreset(preset.Name, preset)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "updating preset", err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -65,14 +66,14 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		fmt.Fprint(w, "error while creating database")
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
 		return
 	}
 
 	presets, _ := dbInstance.GetPresets()
 	result, err := json.Marshal(presets)
 	if err != nil {
-		fmt.Fprint(w, "error getting presets")
+		HTTPError(w, http.StatusBadRequest, "getting presets", err)
 		return
 	}
 
@@ -84,7 +85,7 @@ func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		fmt.Fprint(w, "error while creating database")
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
 		return
 	}
 
@@ -92,13 +93,13 @@ func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 	presetName := vars["presetName"]
 	preset, err := dbInstance.RetrievePreset(presetName)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "retrieving preset", err)
 		return
 	}
 
 	result, err := json.Marshal(preset)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		HTTPError(w, http.StatusBadRequest, "packing preset data", err)
 		return
 	}
 	fmt.Fprintf(w, "%s", result)

@@ -3,6 +3,7 @@ package snickers_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 
@@ -15,6 +16,16 @@ import (
 )
 
 var _ = Describe("Rest API", func() {
+	Context("helper functions", func() {
+		It("should write the error as json", func() {
+			w := httptest.NewRecorder()
+			rest.HTTPError(w, http.StatusOK, "error here", errors.New("database broken"))
+
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(w.Body.String()).To(Equal(`{"error": "error here: database broken"}`))
+		})
+	})
+
 	Context("/presets location", func() {
 		var (
 			response   *httptest.ResponseRecorder
