@@ -20,32 +20,33 @@ func GetDatabase() (*Database, error) {
 }
 
 //ClearDatabase clears the database
-func (r *Database) ClearDatabase() {
+func (r *Database) ClearDatabase() error {
 	instance.Presets = map[string]types.Preset{}
+	return nil
 }
 
 //StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) map[string]types.Preset {
+func (r *Database) StorePreset(preset types.Preset) (map[string]types.Preset, error) {
 	r.Presets[preset.Name] = preset
-	return r.Presets
+	return r.Presets, nil
 }
 
 //RetrievePreset retrieves one preset from the database
-func (r *Database) RetrievePreset(presetName string) types.Preset {
-	return r.Presets[presetName]
+func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
+	return r.Presets[presetName], nil
 }
 
 //UpdatPreset updates a preset
-func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) types.Preset {
+func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
 	r.Presets[presetName] = newPreset
-	return newPreset
+	return newPreset, nil
 }
 
 //GetPresets retrieves all presets of the database
-func (r *Database) GetPresets() []types.Preset {
+func (r *Database) GetPresets() ([]types.Preset, error) {
 	res := make([]types.Preset, 0, len(r.Presets))
 	for _, value := range r.Presets {
 		res = append(res, value)
 	}
-	return res
+	return res, nil
 }

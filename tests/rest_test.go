@@ -56,9 +56,10 @@ var _ = Describe("Rest API", func() {
 			request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
 			server.ServeHTTP(response, request)
 
+			presets, _ := dbInstance.GetPresets()
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
-			Expect(len(dbInstance.GetPresets())).To(Equal(1))
+			Expect(len(presets)).To(Equal(1))
 		})
 
 		It("POST with malformed preset should return bad request", func() {
@@ -77,7 +78,8 @@ var _ = Describe("Rest API", func() {
 			request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
 			server.ServeHTTP(response, request)
 
-			newPreset := dbInstance.GetPresets()[0]
+			presets, _ := dbInstance.GetPresets()
+			newPreset := presets[0]
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			Expect(newPreset.Description).To(Equal("new description"))

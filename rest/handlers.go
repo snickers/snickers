@@ -27,7 +27,11 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbInstance.StorePreset(preset)
+	_, err = dbInstance.StorePreset(preset)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -48,7 +52,11 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbInstance.UpdatePreset(preset.Name, preset)
+	_, err = dbInstance.UpdatePreset(preset.Name, preset)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -61,7 +69,8 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := json.Marshal(dbInstance.GetPresets())
+	presets, _ := dbInstance.GetPresets()
+	result, err := json.Marshal(presets)
 	if err != nil {
 		fmt.Fprint(w, "error getting presets")
 		return
@@ -81,9 +90,17 @@ func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	presetName := vars["presetName"]
-	preset := dbInstance.RetrievePreset(presetName)
+	preset, err := dbInstance.RetrievePreset(presetName)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	result, err := json.Marshal(preset)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	fmt.Fprintf(w, "%s", result)
 }
 

@@ -15,7 +15,6 @@ var _ = Describe("Database", func() {
 		)
 
 		BeforeEach(func() {
-			// TODO solve this by transforming database in interface/object (#6)
 			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 		})
@@ -43,7 +42,8 @@ var _ = Describe("Database", func() {
 				},
 			}
 			expected := map[string]types.Preset{"examplePreset": examplePreset}
-			Expect(dbInstance.StorePreset(examplePreset)).To(Equal(expected))
+			res, _ := dbInstance.StorePreset(examplePreset)
+			Expect(res).To(Equal(expected))
 		})
 
 		It("should be able to retrieve a preset by its name", func() {
@@ -60,7 +60,8 @@ var _ = Describe("Database", func() {
 			dbInstance.StorePreset(preset1)
 			dbInstance.StorePreset(preset2)
 
-			Expect(dbInstance.RetrievePreset("presetOne")).To(Equal(preset1))
+			res, _ := dbInstance.RetrievePreset("presetOne")
+			Expect(res).To(Equal(preset1))
 		})
 
 		It("should be able to list presets", func() {
@@ -74,13 +75,16 @@ var _ = Describe("Database", func() {
 				Description: "This is preset two",
 			}
 
-			Expect(len(dbInstance.GetPresets())).To(Equal(0))
+			presets, _ := dbInstance.GetPresets()
+			Expect(len(presets)).To(Equal(0))
 
 			dbInstance.StorePreset(preset1)
-			Expect(len(dbInstance.GetPresets())).To(Equal(1))
+			presets, _ = dbInstance.GetPresets()
+			Expect(len(presets)).To(Equal(1))
 
 			dbInstance.StorePreset(preset2)
-			Expect(len(dbInstance.GetPresets())).To(Equal(2))
+			presets, _ = dbInstance.GetPresets()
+			Expect(len(presets)).To(Equal(2))
 		})
 
 		It("should be able to update preset", func() {
@@ -93,9 +97,9 @@ var _ = Describe("Database", func() {
 			expectedDescription := "New description for this preset"
 			preset.Description = expectedDescription
 			dbInstance.UpdatePreset("presetOne", preset)
-			res := dbInstance.GetPresets()[0]
+			res, _ := dbInstance.GetPresets()
 
-			Expect(res.Description).To(Equal(expectedDescription))
+			Expect(res[0].Description).To(Equal(expectedDescription))
 		})
 	})
 })

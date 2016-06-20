@@ -5,11 +5,11 @@ import "github.com/flavioribeiro/snickers/db/memory"
 
 // DatabaseInterface defines functions for accessing data
 type DatabaseInterface interface {
-	StorePreset(types.Preset) map[string]types.Preset
-	RetrievePreset(string) types.Preset
-	UpdatePreset(string, types.Preset) types.Preset
-	GetPresets() []types.Preset
-	ClearDatabase()
+	StorePreset(types.Preset) (map[string]types.Preset, error)
+	RetrievePreset(string) (types.Preset, error)
+	UpdatePreset(string, types.Preset) (types.Preset, error)
+	GetPresets() ([]types.Preset, error)
+	ClearDatabase() error
 }
 
 // GetDatabase returns a handler for the database
