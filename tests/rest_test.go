@@ -140,4 +140,25 @@ var _ = Describe("Rest API", func() {
 			Expect(response.Body.String()).To(Equal(string(expected)))
 		})
 	})
+
+	Context("/jobs location", func() {
+		var (
+			response   *httptest.ResponseRecorder
+			server     *mux.Router
+			dbInstance db.DatabaseInterface
+		)
+
+		BeforeEach(func() {
+			response = httptest.NewRecorder()
+			server = rest.NewRouter()
+			dbInstance, _ = db.GetDatabase()
+			dbInstance.ClearDatabase()
+		})
+
+		It("GET should return application/json on its content type", func() {
+			request, _ := http.NewRequest("GET", "/jobs", nil)
+			server.ServeHTTP(response, request)
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+	})
 })
