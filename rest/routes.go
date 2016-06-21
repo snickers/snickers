@@ -6,14 +6,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Route maps methods to endpoints
 type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
 
+// Routes stores all routes
 type Routes []Route
 
+// NewRouter creates a new router for HTTP requests
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {

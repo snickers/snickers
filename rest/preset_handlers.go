@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// CreatePreset creates a preset
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -36,6 +37,7 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// UpdatePreset updates a preset
 func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -61,6 +63,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// ListPresets list all presets available
 func ListPresets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -80,6 +83,7 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(result))
 }
 
+// GetPresetDetails returns the details of a given preset
 func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
