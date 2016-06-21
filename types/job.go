@@ -6,5 +6,6 @@ type Job struct {
 	Source      string `json:"source"`
 	Destination string `json:"destination"`
 	Preset      Preset `json:"preset"`
-	Status      string
+	Status      string `json:"status"`
+	Progress    string `json:"progress"`
 }
