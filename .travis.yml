@@ -4,7 +4,4 @@ install:
 script:
   - make test_coverage
 go:
-  - 1.5.4
   - 1.6.2
-  - 1.7beta2
-  - tip
