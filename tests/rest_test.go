@@ -160,5 +160,22 @@ var _ = Describe("Rest API", func() {
 			server.ServeHTTP(response, request)
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
+
+		It("GET should return stored jobs", func() {
+			exampleJob1 := types.Job{ID: "123"}
+			exampleJob2 := types.Job{ID: "321"}
+			dbInstance.StoreJob(exampleJob1)
+			dbInstance.StoreJob(exampleJob2)
+
+			expected, _ := json.Marshal(`[{"id":"123","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""},{"id":"321","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""}]`)
+
+			request, _ := http.NewRequest("GET", "/jobs", nil)
+			server.ServeHTTP(response, request)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
+
+			Expect(response.Code).To(Equal(http.StatusOK))
+			Expect(responseBody).To(Equal(expected))
+		})
+
 	})
 })

@@ -1,8 +1,11 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/flavioribeiro/snickers/db"
 )
 
 // CreateJob creates a job
@@ -18,7 +21,21 @@ func StartJob(w http.ResponseWriter, r *http.Request) {
 // ListJobs lists all jobs
 func ListJobs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Fprint(w, "list jobs")
+
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
+	}
+
+	jobs, _ := dbInstance.GetJobs()
+	result, err := json.Marshal(jobs)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting presets", err)
+		return
+	}
+
+	fmt.Fprintf(w, string(result))
 }
 
 // GetJobDetails returns the details of a given job
