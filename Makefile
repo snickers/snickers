@@ -16,4 +16,5 @@ test_coverage:
 	@go get github.com/mattn/goveralls
 	@ginkgo -cover -coverpkg=./... tests
 	@gover
+	@cp gover.coverprofile profile.txt
 	@goveralls -service travis-ci -coverprofile=gover.coverprofile -repotoken $(COVERALLS_TOKEN)
