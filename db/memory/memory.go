@@ -1,6 +1,9 @@
 package memory
 
-import "github.com/flavioribeiro/snickers/types"
+import (
+	"errors"
+	"github.com/flavioribeiro/snickers/types"
+)
 
 // Database struct that persists configurations
 type Database struct {
@@ -35,7 +38,10 @@ func (r *Database) StorePreset(preset types.Preset) (map[string]types.Preset, er
 
 // RetrievePreset retrieves one preset from the database
 func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
-	return r.presets[presetName], nil
+	if val, ok := r.presets[presetName]; ok {
+		return val, nil
+	}
+	return types.Preset{}, errors.New("preset not found")
 }
 
 // UpdatePreset updates a preset

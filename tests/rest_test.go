@@ -195,5 +195,17 @@ var _ = Describe("Rest API", func() {
 			Expect(job.Destination).To(Equal("s3://l@p:google.com"))
 			Expect(job.Preset.Name).To(Equal("presetName"))
 		})
+
+		It("POST should return BadRequest if preset is not set when creating a new job", func() {
+			jobJSON := []byte(`{"source": "http://flv.io/src.mp4", "destination": "s3://l@p:google.com", "preset": "presetName"}`)
+			request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
+			server.ServeHTTP(response, request)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
+
+			expected, _ := json.Marshal(`{"error": "retrieving preset: preset not found"}`)
+			Expect(responseBody).To(Equal(expected))
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
 	})
 })

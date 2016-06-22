@@ -28,12 +28,15 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("->> %+v\n", jobInput)
+	preset, err := dbInstance.RetrievePreset(jobInput.PresetName)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "retrieving preset", err)
+		return
+	}
 
 	var job types.Job
 	job.Source = jobInput.Source
 	job.Destination = jobInput.Destination
-	var preset, _ = dbInstance.RetrievePreset(jobInput.PresetName)
 	job.Preset = preset
 	_, err = dbInstance.StoreJob(job)
 	if err != nil {
