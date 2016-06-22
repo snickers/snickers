@@ -16,4 +16,4 @@ test_coverage:
 	@go get github.com/mattn/goveralls
 	@ginkgo -cover -coverpkg=./... tests
 	@gover
-	@goveralls -service drone.io -coverprofile=gover.coverprofile -repotoken $(COVERALLS_TOKEN)
+	@goveralls -service travis-ci -coverprofile=gover.coverprofile -repotoken $(COVERALLS_TOKEN)
