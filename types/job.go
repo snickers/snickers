@@ -9,3 +9,11 @@ type Job struct {
 	Status      string `json:"status"`
 	Progress    string `json:"progress"`
 }
+
+// JobInput stores the information passed from the
+// user when creating a job.
+type JobInput struct {
+	Source      string `json:"source"`
+	Destination string `json:"destination"`
+	PresetName  string `json:"preset"`
+}

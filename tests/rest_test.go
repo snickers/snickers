@@ -180,5 +180,20 @@ var _ = Describe("Rest API", func() {
 			Expect(responseBody).To(Equal(expected))
 		})
 
+		It("POST should create a new job", func() {
+			dbInstance.StorePreset(types.Preset{Name: "presetName"})
+			jobJSON := []byte(`{"source": "http://flv.io/src.mp4", "destination": "s3://l@p:google.com", "preset": "presetName"}`)
+			request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
+			server.ServeHTTP(response, request)
+
+			jobs, _ := dbInstance.GetJobs()
+			Expect(response.Code).To(Equal(http.StatusOK))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+			Expect(len(jobs)).To(Equal(1))
+			job := jobs[0]
+			Expect(job.Source).To(Equal("http://flv.io/src.mp4"))
+			Expect(job.Destination).To(Equal("s3://l@p:google.com"))
+			Expect(job.Preset.Name).To(Equal("presetName"))
+		})
 	})
 })
