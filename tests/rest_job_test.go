@@ -110,5 +110,16 @@ var _ = Describe("Rest API", func() {
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
+
+		It("GET to /jobs/jobID should return BadRequest if the job doesn't exists", func() {
+			request, _ := http.NewRequest("GET", "/jobs/123-456-9292", nil)
+			server.ServeHTTP(response, request)
+			expected, _ := json.Marshal(`{"error": "retrieving job: job not found"}`)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
+			Expect(responseBody).To(Equal(expected))
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
 	})
 })

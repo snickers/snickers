@@ -61,7 +61,7 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 	jobs, _ := dbInstance.GetJobs()
 	result, err := json.Marshal(jobs)
 	if err != nil {
-		HTTPError(w, http.StatusBadRequest, "getting presets", err)
+		HTTPError(w, http.StatusBadRequest, "getting jobs", err)
 		return
 	}
 

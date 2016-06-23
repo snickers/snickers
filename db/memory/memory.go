@@ -67,7 +67,10 @@ func (r *Database) StoreJob(job types.Job) (map[string]types.Job, error) {
 
 // RetrieveJob retrieves one job from the database
 func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
-	return r.jobs[jobID], nil
+	if val, ok := r.jobs[jobID]; ok {
+		return val, nil
+	}
+	return types.Job{}, errors.New("job not found")
 }
 
 // UpdateJob updates a job
