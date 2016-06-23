@@ -86,7 +86,7 @@ var _ = Describe("Rest API", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://ae@ae.com",
 				Preset:      types.Preset{},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 			dbInstance.StoreJob(job)

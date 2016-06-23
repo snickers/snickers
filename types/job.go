@@ -1,5 +1,14 @@
 package types
 
+// These constants are used on the status field of Job type
+const (
+	JobCreated     = "created"
+	JobDownloading = "downloading"
+	JobEncoding    = "encoding"
+	JobUploading   = "uploading"
+	JobFinished    = "finished"
+)
+
 // Job is the set of parameters of a given job
 type Job struct {
 	ID          string `json:"id"`

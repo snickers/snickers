@@ -108,7 +108,7 @@ var _ = Describe("Database", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 			expected := map[string]types.Job{"123": exampleJob}
@@ -122,7 +122,7 @@ var _ = Describe("Database", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 
@@ -131,7 +131,7 @@ var _ = Describe("Database", func() {
 				Source:      "http://source2.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination2.mp4",
 				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 
@@ -148,7 +148,7 @@ var _ = Describe("Database", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 
@@ -157,7 +157,7 @@ var _ = Describe("Database", func() {
 				Source:      "http://source2.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination2.mp4",
 				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 
@@ -179,13 +179,13 @@ var _ = Describe("Database", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
-				Status:      "created",
+				Status:      types.JobCreated,
 				Progress:    "0%",
 			}
 
 			dbInstance.StoreJob(job1)
 
-			expectedStatus := "downloading"
+			expectedStatus := types.JobDownloading
 			job1.Status = expectedStatus
 			dbInstance.UpdateJob("123", job1)
 			res, _ := dbInstance.GetJobs()
