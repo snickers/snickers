@@ -1,0 +1,5 @@
+{
+  "source": "http://flv.io/example.mp4",
+  "destination": "ftp://login:pass@flv.io/output/",
+  "preset": "hls"
+}

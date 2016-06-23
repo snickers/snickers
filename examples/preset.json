@@ -1,0 +1,21 @@
+{
+  "name": "hls",
+  "description": "HLS 1080 for tests",
+  "container": "m3u8",
+  "profile": "Main",
+  "profileLevel": "3.1",
+  "rateControl": "VBR",
+  "video": {
+      "height": "720",
+      "width": "1080",
+      "codec": "h264",
+      "bitrate": "1000000",
+      "gopSize": "90",
+      "gopMode": "fixed",
+      "interlaceMode": "progressive"
+  },
+  "audio": {
+      "codec": "aac",
+      "bitrate": "64000"
+  }
+}
