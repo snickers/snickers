@@ -8,6 +8,7 @@ import (
 
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
+	"github.com/gorilla/mux"
 )
 
 // CreateJob creates a job
@@ -44,12 +45,8 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		HTTPError(w, http.StatusBadRequest, "storing job", err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-}
 
-// StartJob triggers an encoding process
-func StartJob(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "start job")
+	w.WriteHeader(http.StatusOK)
 }
 
 // ListJobs lists all jobs
@@ -74,5 +71,31 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 
 // GetJobDetails returns the details of a given job
 func GetJobDetails(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "get job details")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jobID := vars["jobID"]
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "retrieving job", err)
+		return
+	}
+
+	result, err := json.Marshal(job)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "packing job data", err)
+		return
+	}
+	fmt.Fprintf(w, "%s", result)
+}
+
+// StartJob triggers an encoding process
+func StartJob(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "start job")
 }
