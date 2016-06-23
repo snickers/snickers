@@ -20,6 +20,7 @@ func GetDatabase() (*Database, error) {
 	}
 	instance = &Database{}
 	instance.presets = map[string]types.Preset{}
+	instance.jobs = map[string]types.Job{}
 	return instance, nil
 }
 
