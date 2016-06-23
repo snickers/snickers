@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/dchest/uniuri"
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
@@ -36,6 +37,7 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var job types.Job
+	job.ID = uniuri.New()
 	job.Source = jobInput.Source
 	job.Destination = jobInput.Destination
 	job.Preset = preset
