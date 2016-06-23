@@ -80,6 +80,18 @@ var _ = Describe("Rest API", func() {
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
 
+		It("POST should return BadRequest if preset is malformed", func() {
+			jobJSON := []byte(`{"source: "http://flv.io/src.mp4", "destinat}`)
+			request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
+			server.ServeHTTP(response, request)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
+
+			expected, _ := json.Marshal(`{"error": "unpacking job: invalid character 'h' after object key"}`)
+			Expect(responseBody).To(Equal(expected))
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
 		It("GET to /jobs/jobID should return the job with details", func() {
 			job := types.Job{
 				ID:          "123-123-123",
