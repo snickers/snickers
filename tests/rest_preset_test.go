@@ -36,20 +36,20 @@ var _ = Describe("Rest API", func() {
 		})
 
 		It("GET should return stored presets", func() {
-			Skip("we should sort the arrays before compare")
 			examplePreset1 := types.Preset{Name: "a"}
 			examplePreset2 := types.Preset{Name: "b"}
 			dbInstance.StorePreset(examplePreset1)
 			dbInstance.StorePreset(examplePreset2)
 
-			expected, _ := json.Marshal(`[{"name":"a","video":{},"audio":{}},{"name":"b","video":{},"audio":{}}]`)
+			expected1, _ := json.Marshal(`[{"name":"a","video":{},"audio":{}},{"name":"b","video":{},"audio":{}}]`)
+			expected2, _ := json.Marshal(`[{"name":"b","video":{},"audio":{}},{"name":"a","video":{},"audio":{}}]`)
 
 			request, _ := http.NewRequest("GET", "/presets", nil)
 			server.ServeHTTP(response, request)
 			responseBody, _ := json.Marshal(response.Body.String())
 
 			Expect(response.Code).To(Equal(http.StatusOK))
-			Expect(responseBody).To(Equal(expected))
+			Expect(responseBody).To(SatisfyAny(Equal(expected1), Equal(expected2)))
 		})
 
 		It("POST should save a new preset", func() {

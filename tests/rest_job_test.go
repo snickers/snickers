@@ -36,21 +36,20 @@ var _ = Describe("Rest API", func() {
 		})
 
 		It("GET should return stored jobs", func() {
-			Skip("we should sort the arrays before compare")
-
 			exampleJob1 := types.Job{ID: "123"}
 			exampleJob2 := types.Job{ID: "321"}
 			dbInstance.StoreJob(exampleJob1)
 			dbInstance.StoreJob(exampleJob2)
 
-			expected, _ := json.Marshal(`[{"id":"123","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""},{"id":"321","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""}]`)
+			expected1, _ := json.Marshal(`[{"id":"123","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""},{"id":"321","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""}]`)
+			expected2, _ := json.Marshal(`[{"id":"321","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""},{"id":"123","source":"","destination":"","preset":{"video":{},"audio":{}},"status":"","progress":""}]`)
 
 			request, _ := http.NewRequest("GET", "/jobs", nil)
 			server.ServeHTTP(response, request)
 			responseBody, _ := json.Marshal(string(response.Body.String()))
 
 			Expect(response.Code).To(Equal(http.StatusOK))
-			Expect(responseBody).To(Equal(expected))
+			Expect(responseBody).To(SatisfyAny(Equal(expected1), Equal(expected2)))
 		})
 
 		It("POST should create a new job", func() {
