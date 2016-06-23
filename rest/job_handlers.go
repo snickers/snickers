@@ -41,7 +41,6 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 	job.Preset = preset
 	_, err = dbInstance.StoreJob(job)
 	if err != nil {
-		fmt.Println("-> ", err)
 		HTTPError(w, http.StatusBadRequest, "storing job", err)
 		return
 	}
