@@ -16,7 +16,7 @@ func (d *Downloader) Start() {
 	out, err := os.Create(d.tempPath + "output.mp4")
 	defer out.Close()
 
-	resp, err := http.Get(job.Source)
+	resp, err := http.Get(d.job.Source)
 	defer resp.Body.Close()
 
 	n, err := io.Copy(out, resp.Body)
