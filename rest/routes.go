@@ -5,7 +5,6 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"os"
 )
 
 // Route maps methods to endpoints
@@ -20,9 +19,10 @@ type Routes []Route
 
 // NewRouter creates a new router for HTTP requests
 func NewRouter() *mux.Router {
+	logOutput := GetLogOutput()
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		handler := handlers.LoggingHandler(os.Stdout, route.HandlerFunc)
+		handler := handlers.LoggingHandler(logOutput, route.HandlerFunc)
 		router.Methods(route.Method).Path(route.Pattern).Handler(handler)
 	}
 
