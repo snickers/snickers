@@ -3,7 +3,9 @@ package rest
 import (
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"os"
 )
 
 // Route maps methods to endpoints
@@ -20,7 +22,8 @@ type Routes []Route
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		router.Methods(route.Method).Path(route.Pattern).Handler(route.HandlerFunc)
+		handler := handlers.LoggingHandler(os.Stdout, route.HandlerFunc)
+		router.Methods(route.Method).Path(route.Pattern).Handler(handler)
 	}
 
 	return router
