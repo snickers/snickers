@@ -8,39 +8,42 @@ import (
 	"github.com/flavioribeiro/snickers/types"
 )
 
+type nextStep func(types.Job)
+
 // StartJob starts the job
 func StartJob(job types.Job) {
-	download(job.ID)
+	Download(job.ID, encode)
 }
 
 // TODO we should have different "download"
 // drivers for different protocols (s3,ftp,http)
-func download(jobID string) {
-	dbInstance, err := db.GetDatabase()
-	job, err := dbInstance.RetrieveJob(jobID)
+func Download(jobID string, next nextStep) {
+	dbInstance, _ := db.GetDatabase()
+	job, _ := dbInstance.RetrieveJob(jobID)
 
-	changeJobStatus(job.ID, types.JobDownloading)
+	ChangeJobStatus(job.ID, types.JobDownloading)
 
-	respch, err := grab.GetAsync(".", job.Source)
-	if err != nil {
-		changeJobStatus(job.ID, types.JobError)
-		changeJobDetails(job.ID, err.Error())
-		return
-	}
+	respch, _ := grab.GetAsync(".", job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {
 		job, _ = dbInstance.RetrieveJob(jobID)
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
 		if job.Details != percentage {
-			changeJobDetails(job.ID, percentage)
+			ChangeJobDetails(job.ID, percentage)
 		}
 	}
 
-	encode(job)
+	if resp.Error != nil {
+		ChangeJobStatus(job.ID, types.JobError)
+		ChangeJobDetails(job.ID, string(resp.Error.Error()))
+		return
+	}
+
+	next(job)
 }
 
 func encode(job types.Job) {
-	changeJobStatus(job.ID, types.JobEncoding)
-	changeJobDetails(job.ID, "0%")
+	ChangeJobStatus(job.ID, types.JobEncoding)
+	ChangeJobDetails(job.ID, "0%")
 }
