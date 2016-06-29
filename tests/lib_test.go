@@ -81,7 +81,7 @@ var _ = Describe("Library", func() {
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Status).To(Equal(types.JobError))
-			Expect(changedJob.Details).To(Equal("Head http://source.here.mp4: dial tcp: lookup source.here.mp4: no such host"))
+			Expect(changedJob.Details).To(ContainSubstring("no such host"))
 		})
 	})
 })
