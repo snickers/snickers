@@ -100,6 +100,22 @@ func GetJobDetails(w http.ResponseWriter, r *http.Request) {
 
 // StartJob triggers an encoding process
 func StartJob(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
+	}
+
 	vars := mux.Vars(r)
-	lib.StartJob(vars["jobID"])
+	jobID := vars["jobID"]
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "retrieving job", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	lib.StartJob(job)
 }

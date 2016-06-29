@@ -9,8 +9,8 @@ import (
 )
 
 // StartJob starts the job
-func StartJob(jobID string) {
-	download(jobID)
+func StartJob(job types.Job) {
+	download(job.ID)
 }
 
 func download(jobID string) {
