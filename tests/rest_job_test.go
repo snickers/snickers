@@ -99,7 +99,7 @@ var _ = Describe("Rest API", func() {
 				Destination: "s3://ae@ae.com",
 				Preset:      types.Preset{},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 			dbInstance.StoreJob(job)
 			expected, _ := json.Marshal(&job)

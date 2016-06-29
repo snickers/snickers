@@ -109,7 +109,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 			expected := map[string]types.Job{"123": exampleJob}
 			res, _ := dbInstance.StoreJob(exampleJob)
@@ -123,7 +123,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 
 			job2 := types.Job{
@@ -132,7 +132,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination2.mp4",
 				Preset:      types.Preset{Name: "presetHere2"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 
 			dbInstance.StoreJob(job1)
@@ -149,7 +149,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 
 			job2 := types.Job{
@@ -158,7 +158,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination2.mp4",
 				Preset:      types.Preset{Name: "presetHere2"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 
 			jobs, _ := dbInstance.GetJobs()
@@ -180,7 +180,7 @@ var _ = Describe("Database", func() {
 				Destination: "s3://user@pass:/bucket/destination.mp4",
 				Preset:      types.Preset{Name: "presetHere"},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 
 			dbInstance.StoreJob(job1)

@@ -34,7 +34,7 @@ func download(job types.Job) {
 	fmt.Printf("Initializing download...\n")
 	resp := <-respch
 	for !resp.IsComplete() {
-		changeJobProgress(job.ID, strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10))
+		changeJobDetails(job.ID, strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10))
 	}
 	encode(job)
 }
@@ -55,14 +55,14 @@ func changeJobStatus(jobID string, newStatus string) {
 	dbInstance.UpdateJob(job.ID, job)
 }
 
-func changeJobProgress(jobID string, newProgress string) {
-	fmt.Println("Updating Job Progress", jobID, newProgress)
+func changeJobDetails(jobID string, newDetails string) {
+	fmt.Println("Updating Job Details", jobID, newDetails)
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		// we should update the status
 		// of the job saying it failed here
 	}
 	job, err := dbInstance.RetrieveJob(jobID)
-	job.Progress = newProgress
+	job.Details = newDetails
 	dbInstance.UpdateJob(job.ID, job)
 }
