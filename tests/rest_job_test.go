@@ -99,7 +99,7 @@ var _ = Describe("Rest API", func() {
 				Destination: "s3://ae@ae.com",
 				Preset:      types.Preset{},
 				Status:      types.JobCreated,
-				Progress:    "0%",
+				Details:     "0%",
 			}
 			dbInstance.StoreJob(job)
 			expected, _ := json.Marshal(&job)
@@ -118,6 +118,33 @@ var _ = Describe("Rest API", func() {
 			responseBody, _ := json.Marshal(string(response.Body.String()))
 			Expect(responseBody).To(Equal(expected))
 			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
+		It("POST to /jobs/jobID/start should return BadRequest if the job doesn't exist", func() {
+			request, _ := http.NewRequest("POST", "/jobs/123-456-9292/start", nil)
+			server.ServeHTTP(response, request)
+			expected, _ := json.Marshal(`{"error": "retrieving job: job not found"}`)
+			responseBody, _ := json.Marshal(string(response.Body.String()))
+			Expect(responseBody).To(Equal(expected))
+			Expect(response.Code).To(Equal(http.StatusBadRequest))
+			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+		})
+
+		It("POST to /jobs/jobID/start should return status OK if job exists", func() {
+			job := types.Job{
+				ID:          "123-123-123",
+				Source:      "http://source.here.mp4",
+				Destination: "s3://ae@ae.com",
+				Preset:      types.Preset{},
+				Status:      types.JobCreated,
+				Details:     "0%",
+			}
+			dbInstance.StoreJob(job)
+
+			request, _ := http.NewRequest("POST", "/jobs/123-123-123/start", nil)
+			server.ServeHTTP(response, request)
+			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
 	})

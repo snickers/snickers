@@ -8,6 +8,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/flavioribeiro/snickers/db"
+	"github.com/flavioribeiro/snickers/lib"
 	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
 )
@@ -36,6 +37,7 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//TODO should we move this to lib?
 	var job types.Job
 	job.ID = uniuri.New()
 	job.Source = jobInput.Source
@@ -98,5 +100,22 @@ func GetJobDetails(w http.ResponseWriter, r *http.Request) {
 
 // StartJob triggers an encoding process
 func StartJob(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "start job")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jobID := vars["jobID"]
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "retrieving job", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	lib.StartJob(job)
 }

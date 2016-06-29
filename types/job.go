@@ -7,6 +7,7 @@ const (
 	JobEncoding    = "encoding"
 	JobUploading   = "uploading"
 	JobFinished    = "finished"
+	JobError       = "error"
 )
 
 // Job is the set of parameters of a given job
@@ -16,7 +17,7 @@ type Job struct {
 	Destination string `json:"destination"`
 	Preset      Preset `json:"preset"`
 	Status      string `json:"status"`
-	Progress    string `json:"progress"`
+	Details     string `json:"progress"`
 }
 
 // JobInput stores the information passed from the
