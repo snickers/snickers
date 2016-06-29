@@ -11,44 +11,50 @@ import (
 
 // StartJob starts the job
 func StartJob(jobID string) {
-	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		// we should update the status
-		// of the job saying it failed here
-	}
-	job, err := dbInstance.RetrieveJob(jobID)
-	if err != nil {
-		// we should update the status
-		// of the job saying it failed here
-	}
-	download(job)
+	download(jobID)
 }
 
-func download(job types.Job) {
+func download(jobID string) {
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		panic(err)
+	}
+
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		panic(err)
+	}
+
 	changeJobStatus(job.ID, types.JobDownloading)
 	respch, err := grab.GetAsync(".", job.Source)
 	if err != nil {
-		// we should update the status
-		// of the job saying it failed here
+		changeJobStatus(job.ID, types.JobError)
+		changeJobDetails(job.ID, err.Error())
+		return
 	}
-	fmt.Printf("Initializing download...\n")
+
 	resp := <-respch
 	for !resp.IsComplete() {
-		changeJobDetails(job.ID, strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10))
+		job, _ = dbInstance.RetrieveJob(jobID)
+		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
+		if job.Details != percentage {
+			changeJobDetails(job.ID, percentage)
+		}
 	}
+
 	encode(job)
 }
 
 func encode(job types.Job) {
 	changeJobStatus(job.ID, types.JobEncoding)
+	changeJobDetails(job.ID, "0%")
 }
 
 func changeJobStatus(jobID string, newStatus string) {
 	fmt.Println("Updating Job Status", jobID, newStatus)
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		// we should update the status
-		// of the job saying it failed here
+		panic(err)
 	}
 	job, err := dbInstance.RetrieveJob(jobID)
 	job.Status = newStatus
@@ -59,8 +65,7 @@ func changeJobDetails(jobID string, newDetails string) {
 	fmt.Println("Updating Job Details", jobID, newDetails)
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		// we should update the status
-		// of the job saying it failed here
+		panic(err)
 	}
 	job, err := dbInstance.RetrieveJob(jobID)
 	job.Details = newDetails
