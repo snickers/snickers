@@ -13,18 +13,14 @@ func StartJob(job types.Job) {
 	download(job.ID)
 }
 
+// TODO we should have different "download"
+// drivers for different protocols (s3,ftp,http)
 func download(jobID string) {
 	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		panic(err)
-	}
-
 	job, err := dbInstance.RetrieveJob(jobID)
-	if err != nil {
-		panic(err)
-	}
 
 	changeJobStatus(job.ID, types.JobDownloading)
+
 	respch, err := grab.GetAsync(".", job.Source)
 	if err != nil {
 		changeJobStatus(job.ID, types.JobError)
