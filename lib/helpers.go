@@ -6,22 +6,22 @@ import (
 	"github.com/flavioribeiro/snickers/db"
 )
 
-func changeJobStatus(jobID string, newStatus string) {
-	fmt.Println("Updating Job Status", jobID, newStatus)
+func ChangeJobStatus(jobID string, newStatus string) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		panic(err)
+		fmt.Println("ERROR", err.Error())
+		//		panic(err)
 	}
 	job, err := dbInstance.RetrieveJob(jobID)
 	job.Status = newStatus
 	dbInstance.UpdateJob(job.ID, job)
 }
 
-func changeJobDetails(jobID string, newDetails string) {
-	fmt.Println("Updating Job Details", jobID, newDetails)
+func ChangeJobDetails(jobID string, newDetails string) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
-		panic(err)
+		fmt.Println("ERROR", err.Error())
+		//panic(err)
 	}
 	job, err := dbInstance.RetrieveJob(jobID)
 	job.Details = newDetails
