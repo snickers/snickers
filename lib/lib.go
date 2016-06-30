@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"os"
 	"strconv"
 
 	"github.com/cavaliercoder/grab"
@@ -23,7 +24,7 @@ func Download(jobID string, next nextStep) {
 
 	ChangeJobStatus(job.ID, types.JobDownloading)
 
-	respch, _ := grab.GetAsync(".", job.Source)
+	respch, _ := grab.GetAsync(os.Getenv("SNICKERS_SWAPDIR"), job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {
