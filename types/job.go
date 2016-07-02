@@ -2,22 +2,25 @@ package types
 
 // These constants are used on the status field of Job type
 const (
-	JobCreated     = "created"
-	JobDownloading = "downloading"
-	JobEncoding    = "encoding"
-	JobUploading   = "uploading"
-	JobFinished    = "finished"
-	JobError       = "error"
+	JobCreated     = JobStatus("created")
+	JobDownloading = JobStatus("downloading")
+	JobEncoding    = JobStatus("encoding")
+	JobUploading   = JobStatus("uploading")
+	JobFinished    = JobStatus("finished")
+	JobError       = JobStatus("error")
 )
+
+// JobStatus represents the status of a job
+type JobStatus string
 
 // Job is the set of parameters of a given job
 type Job struct {
-	ID          string `json:"id"`
-	Source      string `json:"source"`
-	Destination string `json:"destination"`
-	Preset      Preset `json:"preset"`
-	Status      string `json:"status"`
-	Details     string `json:"progress"`
+	ID          string    `json:"id"`
+	Source      string    `json:"source"`
+	Destination string    `json:"destination"`
+	Preset      Preset    `json:"preset"`
+	Status      JobStatus `json:"status"`
+	Details     string    `json:"progress"`
 }
 
 // JobInput stores the information passed from the
