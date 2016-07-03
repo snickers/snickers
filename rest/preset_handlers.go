@@ -3,7 +3,6 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/flavioribeiro/snickers/db"
@@ -22,9 +21,7 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var preset types.Preset
-	respData, err := ioutil.ReadAll(r.Body)
-	err = json.Unmarshal(respData, &preset)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return
 	}
@@ -48,9 +45,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var preset types.Preset
-	respData, err := ioutil.ReadAll(r.Body)
-	err = json.Unmarshal(respData, &preset)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return
 	}
