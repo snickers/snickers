@@ -3,7 +3,6 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/dchest/uniuri"
@@ -24,9 +23,7 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var jobInput types.JobInput
-	respData, err := ioutil.ReadAll(r.Body)
-	err = json.Unmarshal(respData, &jobInput)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&jobInput); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking job", err)
 		return
 	}

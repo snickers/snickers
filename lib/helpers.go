@@ -2,9 +2,10 @@ package lib
 
 import (
 	"github.com/flavioribeiro/snickers/db"
+	"github.com/flavioribeiro/snickers/types"
 )
 
-func ChangeJobStatus(jobID string, newStatus string) {
+func ChangeJobStatus(jobID string, newStatus types.JobStatus) {
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 	job.Status = newStatus
