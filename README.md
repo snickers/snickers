@@ -5,5 +5,5 @@
 
 ![snickers logo](https://cloud.githubusercontent.com/assets/244265/16285772/292ffa0e-38a6-11e6-922e-a96f98699c63.png)
 
-######it's my favorite chocolate. it's also a http-based media encoding platform.
+######it's my favorite chocolate. it will be also a http-based media encoding platform.
 
