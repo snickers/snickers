@@ -14,7 +14,7 @@ func HTTPError(w http.ResponseWriter, httpErr int, msg string, err error) {
 	fmt.Fprintf(w, `{"error": "%s: %s"}`, msg, err.Error())
 }
 
-// This function returns the output we want to use
+// GetLogOutput returns the output we want to use
 // for http requests log
 func GetLogOutput() io.Writer {
 	var logOutput io.Writer

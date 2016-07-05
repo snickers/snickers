@@ -16,6 +16,9 @@ func StartJob(job types.Job) {
 	Download(job.ID, encode)
 }
 
+// Download function downloads sources using
+// http protocol.
+//
 // TODO we should have different "download"
 // drivers for different protocols (s3,ftp,http)
 func Download(jobID string, next nextStep) {
