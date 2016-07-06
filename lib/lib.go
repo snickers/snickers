@@ -28,7 +28,11 @@ func Download(jobID string, next nextStep) {
 	job, _ := dbInstance.RetrieveJob(jobID)
 
 	job.LocalSource = swapDir + path.Base(job.Source)
-	job.LocalDestination = swapDir + "dest/" + string(job.ID) + "/" + path.Base(job.Source)
+
+	outputDir := swapDir + "dest/" + string(job.ID)
+	os.MkdirAll(outputDir, 0777)
+	job.LocalDestination = outputDir + "/" + path.Base(job.Source)
+
 	job.Status = types.JobDownloading
 	dbInstance.UpdateJob(job.ID, job)
 
@@ -55,4 +59,6 @@ func Download(jobID string, next nextStep) {
 }
 
 func encode(job types.Job) {
+	dbInstance, _ := db.GetDatabase()
+	Encode(job.LocalSource, job.LocalDestination)
 }
