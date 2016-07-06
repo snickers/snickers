@@ -11,51 +11,6 @@ import (
 func NextStep(job types.Job) {}
 
 var _ = Describe("Library", func() {
-	Context("Helpers", func() {
-		var (
-			dbInstance db.DatabaseInterface
-		)
-
-		BeforeEach(func() {
-			dbInstance, _ = db.GetDatabase()
-			dbInstance.ClearDatabase()
-		})
-
-		It("ChangeJobStatus should change job status", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "",
-			}
-			dbInstance.StoreJob(exampleJob)
-
-			lib.ChangeJobStatus(exampleJob.ID, types.JobEncoding)
-			changedJob, _ := dbInstance.RetrieveJob(exampleJob.ID)
-
-			Expect(changedJob.Status).To(Equal(types.JobEncoding))
-		})
-
-		It("ChangeJobDetails should change job details", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-			dbInstance.StoreJob(exampleJob)
-
-			lib.ChangeJobDetails(exampleJob.ID, "100%")
-			changedJob, _ := dbInstance.RetrieveJob(exampleJob.ID)
-
-			Expect(changedJob.Details).To(Equal("100%"))
-		})
-	})
-
 	Context("Download", func() {
 		var (
 			dbInstance db.DatabaseInterface
@@ -81,7 +36,7 @@ var _ = Describe("Library", func() {
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Status).To(Equal(types.JobError))
-			Expect(changedJob.Details).To(ContainSubstring("no such host"))
+			Expect(changedJob.Details).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 	})
 })

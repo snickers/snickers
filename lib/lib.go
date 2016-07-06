@@ -25,7 +25,8 @@ func Download(jobID string, next nextStep) {
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 
-	ChangeJobStatus(job.ID, types.JobDownloading)
+	job.Status = types.JobDownloading
+	dbInstance.UpdateJob(job.ID, job)
 
 	respch, _ := grab.GetAsync(os.Getenv("SNICKERS_SWAPDIR"), job.Source)
 
@@ -34,13 +35,15 @@ func Download(jobID string, next nextStep) {
 		job, _ = dbInstance.RetrieveJob(jobID)
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
 		if job.Details != percentage {
-			ChangeJobDetails(job.ID, percentage)
+			job.Details = percentage
+			dbInstance.UpdateJob(job.ID, job)
 		}
 	}
 
 	if resp.Error != nil {
-		ChangeJobStatus(job.ID, types.JobError)
-		ChangeJobDetails(job.ID, string(resp.Error.Error()))
+		job.Status = types.JobError
+		job.Details = string(resp.Error.Error())
+		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
@@ -48,6 +51,4 @@ func Download(jobID string, next nextStep) {
 }
 
 func encode(job types.Job) {
-	ChangeJobStatus(job.ID, types.JobEncoding)
-	ChangeJobDetails(job.ID, "0%")
 }
