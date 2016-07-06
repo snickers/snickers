@@ -114,5 +114,5 @@ func StartJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	lib.StartJob(job)
+	go lib.StartJob(job)
 }
