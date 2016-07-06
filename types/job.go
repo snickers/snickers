@@ -15,12 +15,14 @@ type JobStatus string
 
 // Job is the set of parameters of a given job
 type Job struct {
-	ID          string    `json:"id"`
-	Source      string    `json:"source"`
-	Destination string    `json:"destination"`
-	Preset      Preset    `json:"preset"`
-	Status      JobStatus `json:"status"`
-	Details     string    `json:"progress"`
+	ID               string    `json:"id"`
+	Source           string    `json:"source"`
+	Destination      string    `json:"destination"`
+	Preset           Preset    `json:"preset"`
+	Status           JobStatus `json:"status"`
+	Details          string    `json:"progress"`
+	LocalSource      string    `json:"-"`
+	LocalDestination string    `json:"-"`
 }
 
 // JobInput stores the information passed from the

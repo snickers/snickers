@@ -2,6 +2,7 @@ package lib
 
 import (
 	"os"
+	"path"
 	"strconv"
 
 	"github.com/cavaliercoder/grab"
@@ -19,16 +20,19 @@ func StartJob(job types.Job) {
 // Download function downloads sources using
 // http protocol.
 //
-// TODO we should have different "download"
+// TODO we should have different download
 // drivers for different protocols (s3,ftp,http)
 func Download(jobID string, next nextStep) {
+	swapDir := os.Getenv("SNICKERS_SWAPDIR")
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 
+	job.LocalSource = swapDir + path.Base(job.Source)
+	job.LocalDestination = swapDir + "dest/" + string(job.ID) + "/" + path.Base(job.Source)
 	job.Status = types.JobDownloading
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(os.Getenv("SNICKERS_SWAPDIR"), job.Source)
+	respch, _ := grab.GetAsync(swapDir, job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {
