@@ -5,15 +5,19 @@ import (
 	"fmt"
 
 	. "github.com/3d0c/gmf"
+	"github.com/flavioribeiro/snickers/db"
+	"github.com/flavioribeiro/snickers/types"
 )
 
-func fatal(err error) {
-	fmt.Println(err.Error())
+func FFMPEGEncode(jobID string) error {
+	dbInstance, _ := db.GetDatabase()
+	job, _ := dbInstance.RetrieveJob(jobID)
+	return encode(job)
 }
 
 func assert(i interface{}, err error) interface{} {
 	if err != nil {
-		fatal(err)
+		return err
 	}
 
 	return i
@@ -25,15 +29,15 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int) {
 
 	codec := assert(FindEncoder(codecName)).(*Codec)
 
-	// Create Video stream in output context
 	if ost = oc.NewStream(codec); ost == nil {
-		fatal(errors.New("unable to create stream in output context"))
+		fmt.Println("unable to create stream in output context")
 	}
 	defer Release(ost)
 
 	if cc = NewCodecCtx(codec); cc == nil {
-		fatal(errors.New("unable to create codec context"))
+		fmt.Println("unable to create codec context")
 	}
+
 	defer Release(cc)
 
 	if oc.IsGlobalHeader() {
@@ -61,7 +65,7 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int) {
 	}
 
 	if err := cc.Open(nil); err != nil {
-		fatal(err)
+		fmt.Println(err.Error())
 	}
 
 	ost.SetCodecCtx(cc)
@@ -70,9 +74,9 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int) {
 }
 
 // Encode function is responsible for encoding the file
-func Encode(srcFileName string, dstFileName string) {
-	fmt.Println("Encoding ", srcFileName, dstFileName)
-
+func encode(job types.Job) error {
+	srcFileName := job.LocalSource
+	dstFileName := job.LocalDestination
 	stMap := make(map[int]int, 0)
 	var lastDelta int64
 
@@ -84,22 +88,22 @@ func Encode(srcFileName string, dstFileName string) {
 
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
 	if err != nil {
-		fmt.Println("No video stream found in", srcFileName)
-	} else {
-		i, o := addStream("mpeg4", outputCtx, srcVideoStream)
-		stMap[i] = o
+		return errors.New("No video stream found in " + srcFileName)
 	}
+
+	i, o := addStream("mpeg4", outputCtx, srcVideoStream)
+	stMap[i] = o
 
 	srcAudioStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_AUDIO)
 	if err != nil {
-		fmt.Println("No audio stream found in", srcFileName)
-	} else {
-		i, o := addStream("aac", outputCtx, srcAudioStream)
-		stMap[i] = o
+		return errors.New("No audio stream found in " + srcFileName)
 	}
 
+	i, o = addStream("aac", outputCtx, srcAudioStream)
+	stMap[i] = o
+
 	if err := outputCtx.WriteHeader(); err != nil {
-		fatal(err)
+		return err
 	}
 
 	for packet := range inputCtx.GetNewPackets() {
@@ -136,7 +140,7 @@ func Encode(srcFileName string, dstFileName string) {
 				p.SetStreamIndex(ost.Index())
 
 				if err := outputCtx.WritePacket(p); err != nil {
-					fatal(err)
+					return err
 				}
 				Release(p)
 			}
@@ -167,7 +171,7 @@ func Encode(srcFileName string, dstFileName string) {
 				p.SetStreamIndex(ost.Index())
 
 				if err := outputCtx.WritePacket(p); err != nil {
-					fatal(err)
+					return err
 				}
 				Release(p)
 			} else {
@@ -180,4 +184,6 @@ func Encode(srcFileName string, dstFileName string) {
 
 		Release(frame)
 	}
+
+	return nil
 }

@@ -10,8 +10,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func NextStep(job types.Job) {}
-
 var _ = Describe("Library", func() {
 	Context("Download", func() {
 		var (
@@ -34,7 +32,7 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			lib.Download(exampleJob.ID, NextStep)
+			lib.HTTPDownload(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Status).To(Equal(types.JobError))
@@ -52,7 +50,7 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			lib.Download(exampleJob.ID, NextStep)
+			lib.HTTPDownload(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			sourceExpected := os.Getenv("SNICKERS_SWAPDIR") + "source_here.mp4"
