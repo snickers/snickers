@@ -59,6 +59,6 @@ func Download(jobID string, next nextStep) {
 }
 
 func encode(job types.Job) {
-	dbInstance, _ := db.GetDatabase()
-	Encode(job.LocalSource, job.LocalDestination)
+	//	dbInstance, _ := db.GetDatabase()
+	//	Encode(job.LocalSource, job.LocalDestination)
 }
