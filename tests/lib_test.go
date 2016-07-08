@@ -100,7 +100,7 @@ var _ = Describe("Library", func() {
 				Preset:           types.Preset{Name: "presetHere"},
 				Status:           types.JobCreated,
 				Details:          "",
-				LocalSource:      projectPath + "/../examples/comingsoon.mov",
+				LocalSource:      projectPath + "/videos/comingsoon.mov",
 				LocalDestination: "/nowhere",
 			}
 
