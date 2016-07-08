@@ -87,6 +87,9 @@ func encode(job types.Job) error {
 
 	outputCtx, err := NewOutputCtx(dstFileName)
 	if err != nil {
+		job.Status = types.JobError
+		job.Details = err.Error()
+		dbInstance.UpdateJob(job.ID, job)
 		return err
 	}
 	defer outputCtx.CloseOutputAndRelease()
