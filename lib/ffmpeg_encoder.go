@@ -15,19 +15,14 @@ func FFMPEGEncode(jobID string) error {
 	return encode(job)
 }
 
-func assert(i interface{}, err error) interface{} {
-	if err != nil {
-		return err
-	}
-
-	return i
-}
-
-func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int) {
+func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 	var cc *CodecCtx
 	var ost *Stream
 
-	codec := assert(FindEncoder(codecName)).(*Codec)
+	codec, err := FindEncoder(codecName)
+	if err != nil {
+		return 0, 0, err
+	}
 
 	if ost = oc.NewStream(codec); ost == nil {
 		fmt.Println("unable to create stream in output context")
@@ -70,20 +65,30 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int) {
 
 	ost.SetCodecCtx(cc)
 
-	return ist.Index(), ost.Index()
+	return ist.Index(), ost.Index(), nil
 }
 
 // Encode function is responsible for encoding the file
 func encode(job types.Job) error {
+	dbInstance, _ := db.GetDatabase()
 	srcFileName := job.LocalSource
 	dstFileName := job.LocalDestination
 	stMap := make(map[int]int, 0)
 	var lastDelta int64
 
-	inputCtx := assert(NewInputCtx(srcFileName)).(*FmtCtx)
+	inputCtx, err := NewInputCtx(srcFileName)
+	if err != nil {
+		job.Status = types.JobError
+		job.Details = err.Error()
+		dbInstance.UpdateJob(job.ID, job)
+		return err
+	}
 	defer inputCtx.CloseInputAndRelease()
 
-	outputCtx := assert(NewOutputCtx(dstFileName)).(*FmtCtx)
+	outputCtx, err := NewOutputCtx(dstFileName)
+	if err != nil {
+		return err
+	}
 	defer outputCtx.CloseOutputAndRelease()
 
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
@@ -91,7 +96,7 @@ func encode(job types.Job) error {
 		return errors.New("No video stream found in " + srcFileName)
 	}
 
-	i, o := addStream("mpeg4", outputCtx, srcVideoStream)
+	i, o, _ := addStream("mpeg4", outputCtx, srcVideoStream)
 	stMap[i] = o
 
 	srcAudioStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_AUDIO)
@@ -99,7 +104,7 @@ func encode(job types.Job) error {
 		return errors.New("No audio stream found in " + srcFileName)
 	}
 
-	i, o = addStream("aac", outputCtx, srcAudioStream)
+	i, o, _ = addStream("aac", outputCtx, srcAudioStream)
 	stMap[i] = o
 
 	if err := outputCtx.WriteHeader(); err != nil {
@@ -107,8 +112,14 @@ func encode(job types.Job) error {
 	}
 
 	for packet := range inputCtx.GetNewPackets() {
-		ist := assert(inputCtx.GetStream(packet.StreamIndex())).(*Stream)
-		ost := assert(outputCtx.GetStream(stMap[ist.Index()])).(*Stream)
+		ist, err := inputCtx.GetStream(packet.StreamIndex())
+		if err != nil {
+			return err
+		}
+		ost, err := outputCtx.GetStream(stMap[ist.Index()])
+		if err != nil {
+			return err
+		}
 
 		for frame := range packet.Frames(ist.CodecCtx()) {
 			if ost.IsAudio() {
@@ -153,8 +164,14 @@ func encode(job types.Job) error {
 	// Flush encoders
 	// @todo refactor it (should be a better way)
 	for i := 0; i < outputCtx.StreamsCnt(); i++ {
-		ist := assert(inputCtx.GetStream(0)).(*Stream)
-		ost := assert(outputCtx.GetStream(stMap[ist.Index()])).(*Stream)
+		ist, err := inputCtx.GetStream(0)
+		if err != nil {
+			return err
+		}
+		ost, err := outputCtx.GetStream(stMap[ist.Index()])
+		if err != nil {
+			return err
+		}
 
 		frame := NewFrame()
 
