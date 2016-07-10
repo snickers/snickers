@@ -14,8 +14,6 @@ import (
 
 // CreateJob creates a job
 func CreateJob(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -51,8 +49,6 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 
 // ListJobs lists all jobs
 func ListJobs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -71,8 +67,6 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 
 // GetJobDetails returns the details of a given job
 func GetJobDetails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -97,8 +91,6 @@ func GetJobDetails(w http.ResponseWriter, r *http.Request) {
 
 // StartJob triggers an encoding process
 func StartJob(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)

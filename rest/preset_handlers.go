@@ -12,8 +12,6 @@ import (
 
 // CreatePreset creates a preset
 func CreatePreset(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -36,8 +34,6 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePreset updates a preset
 func UpdatePreset(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -60,8 +56,6 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 
 // ListPresets list all presets available
 func ListPresets(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -80,8 +74,6 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 
 // GetPresetDetails returns the details of a given preset
 func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)

@@ -14,6 +14,14 @@ func HTTPError(w http.ResponseWriter, httpErr int, msg string, err error) {
 	fmt.Fprintf(w, `{"error": "%s: %s"}`, msg, err.Error())
 }
 
+// JSONHandler adds json headers
+func JSONHandler(actual http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		actual.ServeHTTP(w, r)
+	})
+}
+
 // GetLogOutput returns the output we want to use
 // for http requests log
 func GetLogOutput() io.Writer {
