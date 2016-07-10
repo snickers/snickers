@@ -122,7 +122,7 @@ var _ = Describe("Library", func() {
 				Preset:           types.Preset{Name: "presetHere"},
 				Status:           types.JobCreated,
 				Details:          "",
-				LocalSource:      projectPath + "/videos/27740_1_profile-geoffrey-marcy_wg_360p.mp4",
+				LocalSource:      projectPath + "/videos/nyt.mp4",
 				LocalDestination: os.Getenv("SNICKERS_SWAPDIR") + "/output.mp4",
 			}
 
