@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"errors"
 	"fmt"
 
 	. "github.com/3d0c/gmf"
@@ -94,19 +93,15 @@ func encode(job types.Job) error {
 	}
 	defer outputCtx.CloseOutputAndRelease()
 
-	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
-	if err != nil {
-		return errors.New("No video stream found in " + srcFileName)
-	}
+	job.Status = types.JobEncoding
+	job.Details = "0%"
+	dbInstance.UpdateJob(job.ID, job)
 
+	srcVideoStream, _ := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
 	i, o, _ := addStream("mpeg4", outputCtx, srcVideoStream)
 	stMap[i] = o
 
-	srcAudioStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_AUDIO)
-	if err != nil {
-		return errors.New("No audio stream found in " + srcFileName)
-	}
-
+	srcAudioStream, _ := inputCtx.GetBestStream(AVMEDIA_TYPE_AUDIO)
 	i, o, _ = addStream("aac", outputCtx, srcAudioStream)
 	stMap[i] = o
 

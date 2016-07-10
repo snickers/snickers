@@ -112,5 +112,28 @@ var _ = Describe("Library", func() {
 			Expect(changedJob.Status).To(Equal(types.JobError))
 			Expect(changedJob.Details).To(Equal("output format is not initialized. Unable to allocate context"))
 		})
+
+		It("Should change job status and details when encoding", func() {
+			projectPath, _ := os.Getwd()
+			exampleJob := types.Job{
+				ID:               "123",
+				Source:           "http://source.here.mp4",
+				Destination:      "s3://user@pass:/bucket/destination.mp4",
+				Preset:           types.Preset{Name: "presetHere"},
+				Status:           types.JobCreated,
+				Details:          "",
+				LocalSource:      projectPath + "/videos/27740_1_profile-geoffrey-marcy_wg_360p.mp4",
+				LocalDestination: os.Getenv("SNICKERS_SWAPDIR") + "/output.mp4",
+			}
+
+			dbInstance.StoreJob(exampleJob)
+
+			lib.FFMPEGEncode(exampleJob.ID)
+			changedJob, _ := dbInstance.RetrieveJob("123")
+
+			Expect(changedJob.Details).To(Equal("0%"))
+			Expect(changedJob.Status).To(Equal(types.JobEncoding))
+		})
+
 	})
 })
