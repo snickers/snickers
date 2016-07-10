@@ -92,7 +92,7 @@ var _ = Describe("Rest API", func() {
 				request, _ := http.NewRequest("GET", "/presets/yoyoyo", nil)
 				server.ServeHTTP(response, request)
 				expected, _ := json.Marshal(`{"error": "retrieving preset: preset not found"}`)
-				responseBody, _ := json.Marshal(string(response.Body.String()))
+				responseBody, _ := json.Marshal(response.Body.String())
 				Expect(responseBody).To(Equal(expected))
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))

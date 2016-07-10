@@ -46,7 +46,7 @@ var _ = Describe("Rest API", func() {
 
 			request, _ := http.NewRequest("GET", "/jobs", nil)
 			server.ServeHTTP(response, request)
-			responseBody, _ := json.Marshal(string(response.Body.String()))
+			responseBody, _ := json.Marshal(response.Body.String())
 
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(responseBody).To(SatisfyAny(Equal(expected1), Equal(expected2)))
@@ -75,7 +75,7 @@ var _ = Describe("Rest API", func() {
 				jobJSON := []byte(`{"source": "http://flv.io/src.mp4", "destination": "s3://l@p:google.com", "preset": "presetName"}`)
 				request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
 				server.ServeHTTP(response, request)
-				responseBody, _ := json.Marshal(string(response.Body.String()))
+				responseBody, _ := json.Marshal(response.Body.String())
 
 				expected, _ := json.Marshal(`{"error": "retrieving preset: preset not found"}`)
 				Expect(responseBody).To(Equal(expected))
@@ -87,7 +87,7 @@ var _ = Describe("Rest API", func() {
 				jobJSON := []byte(`{"source: "http://flv.io/src.mp4", "destinat}`)
 				request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
 				server.ServeHTTP(response, request)
-				responseBody, _ := json.Marshal(string(response.Body.String()))
+				responseBody, _ := json.Marshal(response.Body.String())
 
 				expected, _ := json.Marshal(`{"error": "unpacking job: invalid character 'h' after object key"}`)
 				Expect(responseBody).To(Equal(expected))
@@ -122,7 +122,7 @@ var _ = Describe("Rest API", func() {
 				request, _ := http.NewRequest("GET", "/jobs/123-456-9292", nil)
 				server.ServeHTTP(response, request)
 				expected, _ := json.Marshal(`{"error": "retrieving job: job not found"}`)
-				responseBody, _ := json.Marshal(string(response.Body.String()))
+				responseBody, _ := json.Marshal(response.Body.String())
 				Expect(responseBody).To(Equal(expected))
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
@@ -153,7 +153,7 @@ var _ = Describe("Rest API", func() {
 				request, _ := http.NewRequest("POST", "/jobs/123-456-9292/start", nil)
 				server.ServeHTTP(response, request)
 				expected, _ := json.Marshal(`{"error": "retrieving job: job not found"}`)
-				responseBody, _ := json.Marshal(string(response.Body.String()))
+				responseBody, _ := json.Marshal(response.Body.String())
 				Expect(responseBody).To(Equal(expected))
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
