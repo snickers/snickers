@@ -63,6 +63,7 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 
 // FFMPEGEncode function is responsible for encoding the file
 func FFMPEGEncode(jobID string) error {
+	LogSetLevel(AV_LOG_FATAL)
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 	srcFileName := job.LocalSource
