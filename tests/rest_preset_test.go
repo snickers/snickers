@@ -150,6 +150,19 @@ var _ = Describe("Rest API", func() {
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			})
+
+			It("should return BadRequest if preset don't exists", func() {
+				preset := []byte(`{"name":"dont-exists","Description": "new description","video": {},"audio": {}}`)
+
+				request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
+				server.ServeHTTP(response, request)
+
+				Expect(response.Code).To(Equal(http.StatusBadRequest))
+				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+				expected, _ := json.Marshal(`{"error": "updating preset: preset not found"}`)
+				responseBody, _ := json.Marshal(response.Body.String())
+				Expect(responseBody).To(Equal(expected))
+			})
 		})
 	})
 })

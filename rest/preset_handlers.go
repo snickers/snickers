@@ -46,6 +46,12 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = dbInstance.RetrievePreset(preset.Name)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "updating preset", err)
+		return
+	}
+
 	_, err = dbInstance.UpdatePreset(preset.Name, preset)
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "updating preset", err)
