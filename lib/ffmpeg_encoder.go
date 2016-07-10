@@ -8,12 +8,6 @@ import (
 	"github.com/flavioribeiro/snickers/types"
 )
 
-func FFMPEGEncode(jobID string) error {
-	dbInstance, _ := db.GetDatabase()
-	job, _ := dbInstance.RetrieveJob(jobID)
-	return encode(job)
-}
-
 func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 	var cc *CodecCtx
 	var ost *Stream
@@ -67,9 +61,10 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 	return ist.Index(), ost.Index(), nil
 }
 
-// Encode function is responsible for encoding the file
-func encode(job types.Job) error {
+// FFMPEGEncode function is responsible for encoding the file
+func FFMPEGEncode(jobID string) error {
 	dbInstance, _ := db.GetDatabase()
+	job, _ := dbInstance.RetrieveJob(jobID)
 	srcFileName := job.LocalSource
 	dstFileName := job.LocalDestination
 	stMap := make(map[int]int, 0)
