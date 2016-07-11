@@ -3,6 +3,7 @@ package snickers_test
 import (
 	"os"
 
+	"github.com/flavioribeiro/gonfig"
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/lib"
 	"github.com/flavioribeiro/snickers/types"
@@ -14,11 +15,13 @@ var _ = Describe("Library", func() {
 	Context("HTTP Downloader", func() {
 		var (
 			dbInstance db.DatabaseInterface
+			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
 			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
+			cfg, _ = gonfig.FromJsonFile("../config.json")
 		})
 
 		It("Should change job status and details on error", func() {
@@ -53,10 +56,11 @@ var _ = Describe("Library", func() {
 			lib.HTTPDownload(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
-			sourceExpected := os.Getenv("SNICKERS_SWAPDIR") + "source_here.mp4"
+			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
+			sourceExpected := swapDir + "source_here.mp4"
 			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
 
-			destinationExpected := os.Getenv("SNICKERS_SWAPDIR") + "dest/123/source_here.mp4"
+			destinationExpected := swapDir + "dest/123/source_here.mp4"
 			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
 		})
 	})
@@ -64,11 +68,13 @@ var _ = Describe("Library", func() {
 	Context("FFMPEG Encoder", func() {
 		var (
 			dbInstance db.DatabaseInterface
+			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
 			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
+			cfg, _ = gonfig.FromJsonFile("../config.json")
 		})
 
 		It("Should change job status and details if input is not found", func() {
@@ -115,6 +121,7 @@ var _ = Describe("Library", func() {
 
 		It("Should change job status and details when encoding", func() {
 			projectPath, _ := os.Getwd()
+			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 			exampleJob := types.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
@@ -123,7 +130,7 @@ var _ = Describe("Library", func() {
 				Status:           types.JobCreated,
 				Details:          "",
 				LocalSource:      projectPath + "/videos/nyt.mp4",
-				LocalDestination: os.Getenv("SNICKERS_SWAPDIR") + "/output.mp4",
+				LocalDestination: swapDir + "/output.mp4",
 			}
 
 			dbInstance.StoreJob(exampleJob)

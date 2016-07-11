@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/cavaliercoder/grab"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
 )
@@ -13,7 +14,8 @@ import (
 // HTTPDownload function downloads sources using
 // http protocol.
 func HTTPDownload(jobID string) error {
-	swapDir := os.Getenv("SNICKERS_SWAPDIR")
+	cfg, _ := gonfig.FromJsonFile("../config.json")
+	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 

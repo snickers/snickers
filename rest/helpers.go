@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/flavioribeiro/gonfig"
 )
 
 // HTTPError is a helper to return errors on handlers
@@ -26,7 +28,9 @@ func JSONHandler(actual http.Handler) http.Handler {
 // for http requests log
 func GetLogOutput() io.Writer {
 	var logOutput io.Writer
-	if os.Getenv("SNICKERS_ENV") == "test" {
+	cfg, _ := gonfig.FromJsonFile("../config.json")
+	logfile, _ := cfg.GetString("LOGFILE", "")
+	if logfile == "" {
 		logOutput = ioutil.Discard
 	} else {
 		logOutput = os.Stdout

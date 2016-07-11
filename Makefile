@@ -6,7 +6,7 @@ build:
 	go get github.com/onsi/gomega
 
 test:
-	SNICKERS_SWAPDIR=/tmp/ SNICKERS_ENV=test ginkgo tests
+	ginkgo tests
 
 run:
 	go run main.go
