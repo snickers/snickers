@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"log"
 	"net/url"
 	"os"
 	"strings"
@@ -42,7 +41,7 @@ func S3Upload(jobID string) error {
 	}
 
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	result, err := uploader.Upload(&s3manager.UploadInput{
+	_, err = uploader.Upload(&s3manager.UploadInput{
 		Body:   file,
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
