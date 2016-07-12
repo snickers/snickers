@@ -91,7 +91,7 @@ func FFMPEGEncode(jobID string) error {
 	defer outputCtx.CloseOutputAndRelease()
 
 	job.Status = types.JobEncoding
-	job.Details = "0"
+	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
@@ -155,7 +155,7 @@ func FFMPEGEncode(jobID string) error {
 
 			ost.Pts++
 			framesCount++
-			percentage := strconv.FormatInt(int64(framesCount/totalFrames*100), 10)
+			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
 			if percentage != job.Details {
 				job.Details = percentage
 				dbInstance.UpdateJob(job.ID, job)
@@ -202,8 +202,8 @@ func FFMPEGEncode(jobID string) error {
 
 		gmf.Release(frame)
 	}
-	if job.Details != "100" {
-		job.Details = "100"
+	if job.Details != "100%" {
+		job.Details = "100%"
 		dbInstance.UpdateJob(job.ID, job)
 	}
 
