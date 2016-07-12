@@ -3,16 +3,16 @@ package lib
 import (
 	"fmt"
 
-	. "github.com/3d0c/gmf"
+	"github.com/3d0c/gmf"
 	"github.com/flavioribeiro/snickers/db"
 	"github.com/flavioribeiro/snickers/types"
 )
 
-func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
-	var cc *CodecCtx
-	var ost *Stream
+func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
+	var cc *gmf.CodecCtx
+	var ost *gmf.Stream
 
-	codec, err := FindEncoder(codecName)
+	codec, err := gmf.FindEncoder(codecName)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -20,23 +20,23 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 	if ost = oc.NewStream(codec); ost == nil {
 		fmt.Println("unable to create stream in output context")
 	}
-	defer Release(ost)
+	defer gmf.Release(ost)
 
-	if cc = NewCodecCtx(codec); cc == nil {
+	if cc = gmf.NewCodecCtx(codec); cc == nil {
 		fmt.Println("unable to create codec context")
 	}
 
-	defer Release(cc)
+	defer gmf.Release(cc)
 
 	if oc.IsGlobalHeader() {
-		cc.SetFlag(CODEC_FLAG_GLOBAL_HEADER)
+		cc.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
 	}
 
 	if codec.IsExperimental() {
-		cc.SetStrictCompliance(FF_COMPLIANCE_EXPERIMENTAL)
+		cc.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
 	}
 
-	if cc.Type() == AVMEDIA_TYPE_AUDIO {
+	if cc.Type() == gmf.AVMEDIA_TYPE_AUDIO {
 		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
 		cc.SetSampleRate(ist.CodecCtx().SampleRate())
 		cc.SetChannels(ist.CodecCtx().Channels())
@@ -45,9 +45,9 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 
 	}
 
-	if cc.Type() == AVMEDIA_TYPE_VIDEO {
-		cc.SetTimeBase(AVR{1, 25})
-		cc.SetProfile(FF_PROFILE_MPEG4_SIMPLE)
+	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
+		cc.SetTimeBase(gmf.AVR{1, 25})
+		cc.SetProfile(gmf.FF_PROFILE_MPEG4_SIMPLE)
 		cc.SetDimension(ist.CodecCtx().Width(), ist.CodecCtx().Height())
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
@@ -63,7 +63,7 @@ func addStream(codecName string, oc *FmtCtx, ist *Stream) (int, int, error) {
 
 // FFMPEGEncode function is responsible for encoding the file
 func FFMPEGEncode(jobID string) error {
-	LogSetLevel(AV_LOG_FATAL)
+	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 	srcFileName := job.LocalSource
@@ -71,7 +71,7 @@ func FFMPEGEncode(jobID string) error {
 	stMap := make(map[int]int, 0)
 	var lastDelta int64
 
-	inputCtx, err := NewInputCtx(srcFileName)
+	inputCtx, err := gmf.NewInputCtx(srcFileName)
 	if err != nil {
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -80,7 +80,7 @@ func FFMPEGEncode(jobID string) error {
 	}
 	defer inputCtx.CloseInputAndRelease()
 
-	outputCtx, err := NewOutputCtx(dstFileName)
+	outputCtx, err := gmf.NewOutputCtx(dstFileName)
 	if err != nil {
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -93,11 +93,11 @@ func FFMPEGEncode(jobID string) error {
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	srcVideoStream, _ := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
+	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
 	i, o, _ := addStream("mpeg4", outputCtx, srcVideoStream)
 	stMap[i] = o
 
-	srcAudioStream, _ := inputCtx.GetBestStream(AVMEDIA_TYPE_AUDIO)
+	srcAudioStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)
 	i, o, _ = addStream("aac", outputCtx, srcAudioStream)
 	stMap[i] = o
 
@@ -117,12 +117,12 @@ func FFMPEGEncode(jobID string) error {
 
 		for frame := range packet.Frames(ist.CodecCtx()) {
 			if ost.IsAudio() {
-				fsTb := AVR{1, ist.CodecCtx().SampleRate()}
-				outTb := AVR{1, ist.CodecCtx().SampleRate()}
+				fsTb := gmf.AVR{1, ist.CodecCtx().SampleRate()}
+				outTb := gmf.AVR{1, ist.CodecCtx().SampleRate()}
 
 				frame.SetPts(packet.Pts())
 
-				pts := RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
+				pts := gmf.RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
 
 				frame.
 					SetNbSamples(ost.CodecCtx().FrameSize()).
@@ -134,12 +134,12 @@ func FFMPEGEncode(jobID string) error {
 			}
 
 			if p, ready, _ := frame.EncodeNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != AV_NOPTS_VALUE {
-					p.SetPts(RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				if p.Pts() != gmf.AV_NOPTS_VALUE {
+					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
 				}
 
-				if p.Dts() != AV_NOPTS_VALUE {
-					p.SetDts(RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				if p.Dts() != gmf.AV_NOPTS_VALUE {
+					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
 				}
 
 				p.SetStreamIndex(ost.Index())
@@ -147,16 +147,14 @@ func FFMPEGEncode(jobID string) error {
 				if err := outputCtx.WritePacket(p); err != nil {
 					return err
 				}
-				Release(p)
+				gmf.Release(p)
 			}
 
 			ost.Pts++
 		}
-		Release(packet)
+		gmf.Release(packet)
 	}
 
-	// Flush encoders
-	// @todo refactor it (should be a better way)
 	for i := 0; i < outputCtx.StreamsCnt(); i++ {
 		ist, err := inputCtx.GetStream(0)
 		if err != nil {
@@ -167,16 +165,16 @@ func FFMPEGEncode(jobID string) error {
 			return err
 		}
 
-		frame := NewFrame()
+		frame := gmf.NewFrame()
 
 		for {
 			if p, ready, _ := frame.FlushNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != AV_NOPTS_VALUE {
-					p.SetPts(RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				if p.Pts() != gmf.AV_NOPTS_VALUE {
+					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
 				}
 
-				if p.Dts() != AV_NOPTS_VALUE {
-					p.SetDts(RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				if p.Dts() != gmf.AV_NOPTS_VALUE {
+					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
 				}
 
 				p.SetStreamIndex(ost.Index())
@@ -184,16 +182,16 @@ func FFMPEGEncode(jobID string) error {
 				if err := outputCtx.WritePacket(p); err != nil {
 					return err
 				}
-				Release(p)
+				gmf.Release(p)
 			} else {
-				Release(p)
+				gmf.Release(p)
 				break
 			}
 
 			ost.Pts++
 		}
 
-		Release(frame)
+		gmf.Release(frame)
 	}
 
 	return nil
