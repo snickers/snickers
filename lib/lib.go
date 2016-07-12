@@ -6,14 +6,11 @@ import (
 
 // StartJob starts the job
 func StartJob(job types.Job) {
-	var err error
-	err = HTTPDownload(job.ID)
-	if err != nil {
+	if err := HTTPDownload(job.ID); err != nil {
 		return
 	}
 
-	err = FFMPEGEncode(job.ID)
-	if err != nil {
+	if err := FFMPEGEncode(job.ID); err != nil {
 		return
 	}
 }
