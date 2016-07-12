@@ -20,6 +20,10 @@ func StartJob(job types.Job) {
 	if err := FFMPEGEncode(job.ID); err != nil {
 		return
 	}
+
+	if err := S3Upload(job.ID); err != nil {
+		return
+	}
 }
 
 func GetDownloadFunc(jobSource string) DownloadFunc {
