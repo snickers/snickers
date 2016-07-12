@@ -57,10 +57,10 @@ var _ = Describe("Library", func() {
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-			sourceExpected := swapDir + "source_here.mp4"
+			sourceExpected := swapDir + "123/src/source_here.mp4"
 			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
 
-			destinationExpected := swapDir + "dest/123/source_here.mp4"
+			destinationExpected := swapDir + "123/dst/source_here.mp4"
 			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
 		})
 	})

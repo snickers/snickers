@@ -19,16 +19,18 @@ func HTTPDownload(jobID string) error {
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 
-	job.LocalSource = swapDir + path.Base(job.Source)
+	basePath := swapDir + string(job.ID)
 
-	outputDir := swapDir + "dest/" + string(job.ID)
+	job.LocalSource = basePath + "/src/" + path.Base(job.Source)
+
+	outputDir := basePath + "/dst/"
 	os.MkdirAll(outputDir, 0777)
-	job.LocalDestination = outputDir + "/" + path.Base(job.Source)
+	job.LocalDestination = outputDir + path.Base(job.Source)
 
 	job.Status = types.JobDownloading
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(swapDir, job.Source)
+	respch, _ := grab.GetAsync(basePath+"/dst/", job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {
