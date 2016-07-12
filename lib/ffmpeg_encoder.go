@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/3d0c/gmf"
 	"github.com/flavioribeiro/snickers/db"
@@ -46,7 +47,7 @@ func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, err
 	}
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		cc.SetTimeBase(gmf.AVR{1, 25})
+		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
 		cc.SetProfile(gmf.FF_PROFILE_MPEG4_SIMPLE)
 		cc.SetDimension(ist.CodecCtx().Width(), ist.CodecCtx().Height())
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
@@ -104,6 +105,8 @@ func FFMPEGEncode(jobID string) error {
 	if err := outputCtx.WriteHeader(); err != nil {
 		return err
 	}
+	totalFrames := float64(srcVideoStream.NbFrames() + srcAudioStream.NbFrames())
+	framesCount := float64(0)
 
 	for packet := range inputCtx.GetNewPackets() {
 		ist, err := inputCtx.GetStream(packet.StreamIndex())
@@ -117,8 +120,8 @@ func FFMPEGEncode(jobID string) error {
 
 		for frame := range packet.Frames(ist.CodecCtx()) {
 			if ost.IsAudio() {
-				fsTb := gmf.AVR{1, ist.CodecCtx().SampleRate()}
-				outTb := gmf.AVR{1, ist.CodecCtx().SampleRate()}
+				fsTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
+				outTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
 
 				frame.SetPts(packet.Pts())
 
@@ -151,6 +154,12 @@ func FFMPEGEncode(jobID string) error {
 			}
 
 			ost.Pts++
+			framesCount++
+			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
+			if percentage != job.Details {
+				job.Details = percentage
+				dbInstance.UpdateJob(job.ID, job)
+			}
 		}
 		gmf.Release(packet)
 	}
@@ -192,6 +201,10 @@ func FFMPEGEncode(jobID string) error {
 		}
 
 		gmf.Release(frame)
+	}
+	if job.Details != "100%" {
+		job.Details = "100%"
+		dbInstance.UpdateJob(job.ID, job)
 	}
 
 	return nil

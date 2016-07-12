@@ -138,7 +138,7 @@ var _ = Describe("Library", func() {
 			lib.FFMPEGEncode(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
-			Expect(changedJob.Details).To(Equal("0%"))
+			Expect(changedJob.Details).To(Equal("100%"))
 			Expect(changedJob.Status).To(Equal(types.JobEncoding))
 		})
 	})
