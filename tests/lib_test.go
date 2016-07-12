@@ -146,13 +146,11 @@ var _ = Describe("Library", func() {
 	Context("S3 Uploader", func() {
 		var (
 			dbInstance db.DatabaseInterface
-			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
 			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
-			cfg, _ = gonfig.FromJsonFile("../config.json")
 		})
 
 		It("Should get bucket from URL Destination", func() {
