@@ -141,6 +141,37 @@ var _ = Describe("Library", func() {
 			Expect(changedJob.Details).To(Equal("0%"))
 			Expect(changedJob.Status).To(Equal(types.JobEncoding))
 		})
+	})
 
+	Context("S3 Uploader", func() {
+		var (
+			dbInstance db.DatabaseInterface
+			cfg        gonfig.Gonfig
+		)
+
+		BeforeEach(func() {
+			dbInstance, _ = db.GetDatabase()
+			dbInstance.ClearDatabase()
+			cfg, _ = gonfig.FromJsonFile("../config.json")
+		})
+
+		It("Should get bucket from URL Destination", func() {
+			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
+			bucket, _ := lib.GetAWSBucket(destination)
+			Expect(bucket).To(Equal("BUCKET"))
+		})
+
+		It("Should set credentials from URL Destination", func() {
+			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
+			lib.SetAWSCredentials(destination)
+			Expect(os.Getenv("AWS_ACCESS_KEY_ID")).To(Equal("AWSKEY"))
+			Expect(os.Getenv("AWS_SECRET_ACCESS_KEY")).To(Equal("AWSSECRET"))
+		})
+
+		It("Should get path and filename from URL Destination", func() {
+			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT/HERE.mp4"
+			key, _ := lib.GetAWSKey(destination)
+			Expect(key).To(Equal("/OBJECT/HERE.mp4"))
+		})
 	})
 })
