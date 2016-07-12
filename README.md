@@ -1,16 +1,28 @@
 <p align="center">
   <img src="https://cloud.githubusercontent.com/assets/244265/16285772/292ffa0e-38a6-11e6-922e-a96f98699c63.png">
 </p>
-
+<br><br>
 [![Build Status](https://travis-ci.org/flavioribeiro/snickers.svg?branch=master)](https://travis-ci.org/flavioribeiro/snickers)
 [![codecov](https://codecov.io/gh/flavioribeiro/snickers/branch/master/graph/badge.svg)](https://codecov.io/gh/flavioribeiro/snickers)
 [![Go Report Card](https://goreportcard.com/badge/github.com/flavioribeiro/snickers)](https://goreportcard.com/report/github.com/flavioribeiro/snickers)
-
-Snickers is a HTTP API to encode videos.
+<br><br>
+Snickers is an open source alternative to the existent cloud encoding services. It is a HTTP API that encode videos.
 
 ## Setting Up
 
-With [Go](https://golang.org/dl/) installed...
+First make sure you have [Go](https://golang.org/dl/) and [FFmpeg](http://ffmpeg.org/) with `--enable-shared` installed on your machine. If you don't know what this means, follow the [instructions](https://github.com/3d0c/gmf#build).
+
+Download the dependencies:
+
+```
+$ make build
+```
+
+Run!
+
+```
+$ make run
+```
 
 ## Running tests
 
@@ -20,7 +32,7 @@ $ make test
 
 ## Using the API
 
-Check out on our Wiki [how to](https://github.com/flavioribeiro/snickers/wiki/How-to-Use-the-API) use this API.
+Check out the [Wiki](https://github.com/flavioribeiro/snickers/wiki/How-to-Use-the-API) to learn how to use the API.
 
 ## Contributing
 
