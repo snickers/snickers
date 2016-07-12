@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 
 	"github.com/3d0c/gmf"
@@ -19,12 +19,12 @@ func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, err
 	}
 
 	if ost = oc.NewStream(codec); ost == nil {
-		fmt.Println("unable to create stream in output context")
+		return 0, 0, errors.New("unable to create stream in output context")
 	}
 	defer gmf.Release(ost)
 
 	if cc = gmf.NewCodecCtx(codec); cc == nil {
-		fmt.Println("unable to create codec context")
+		return 0, 0, errors.New("unable to create codec context")
 	}
 
 	defer gmf.Release(cc)
@@ -54,7 +54,7 @@ func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, err
 	}
 
 	if err := cc.Open(nil); err != nil {
-		fmt.Println(err.Error())
+		return 0, 0, err
 	}
 
 	ost.SetCodecCtx(cc)
@@ -95,11 +95,21 @@ func FFMPEGEncode(jobID string) error {
 	dbInstance.UpdateJob(job.ID, job)
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
-	i, o, _ := addStream("mpeg4", outputCtx, srcVideoStream)
+	i, o, err := addStream("mpeg4", outputCtx, srcVideoStream)
+	if err != nil {
+		return err
+	}
 	stMap[i] = o
 
-	srcAudioStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)
-	i, o, _ = addStream("aac", outputCtx, srcAudioStream)
+	srcAudioStream, err := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)
+	if err != nil {
+		return err
+	}
+
+	i, o, err = addStream("aac", outputCtx, srcAudioStream)
+	if err != nil {
+		return err
+	}
 	stMap[i] = o
 
 	if err := outputCtx.WriteHeader(); err != nil {
