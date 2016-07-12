@@ -2,6 +2,7 @@ package snickers_test
 
 import (
 	"os"
+	"reflect"
 
 	"github.com/flavioribeiro/gonfig"
 	"github.com/flavioribeiro/snickers/db"
@@ -12,6 +13,24 @@ import (
 )
 
 var _ = Describe("Library", func() {
+	Context("Pipeline", func() {
+		It("Should get the HTTPDownload function if source is HTTP", func() {
+			jobSource := "http://flv.io/KailuaBeach.mp4"
+			downloadFunc := lib.GetDownloadFunc(jobSource)
+			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
+			expected := reflect.ValueOf(lib.HTTPDownload).Pointer()
+			Expect(funcPointer).To(BeIdenticalTo(expected))
+		})
+
+		It("Should get the S3Download function if source is S3", func() {
+			jobSource := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
+			downloadFunc := lib.GetDownloadFunc(jobSource)
+			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
+			expected := reflect.ValueOf(lib.S3Download).Pointer()
+			Expect(funcPointer).To(BeIdenticalTo(expected))
+		})
+	})
+
 	Context("HTTP Downloader", func() {
 		var (
 			dbInstance db.DatabaseInterface
@@ -143,7 +162,7 @@ var _ = Describe("Library", func() {
 		})
 	})
 
-	Context("S3 Uploader", func() {
+	Context("AWS Helpers", func() {
 		var (
 			dbInstance db.DatabaseInterface
 		)
