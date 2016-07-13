@@ -2,6 +2,8 @@ package snickers_test
 
 import (
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/flavioribeiro/gonfig"
 	"github.com/flavioribeiro/snickers/db"
@@ -12,7 +14,7 @@ import (
 )
 
 var _ = Describe("FFmpeg Encoder", func() {
-	Context("FFMPEG Encoder", func() {
+	Context("when calling", func() {
 		var (
 			dbInstance db.DatabaseInterface
 			cfg        gonfig.Gonfig
@@ -103,4 +105,54 @@ var _ = Describe("FFmpeg Encoder", func() {
 			Expect(changedJob.Status).To(Equal(types.JobEncoding))
 		})
 	})
+
+	Context("Regarding the application of presets", func() {
+		It("should create h264/mp4 output", func() {
+			currentDir, _ := os.Getwd()
+
+			job := types.Job{
+				ID: "123",
+				Preset: types.Preset{
+					Container:    "mp4", // OK
+					Profile:      "main",
+					ProfileLevel: "3.1",
+					RateControl:  "VBR",
+					Video: types.VideoPreset{
+						Height:        "240",
+						Width:         "426",
+						Codec:         "h264", // OK
+						Bitrate:       "1000000",
+						GopSize:       "90",
+						GopMode:       "fixed",
+						InterlaceMode: "progressive",
+					},
+					Audio: types.AudioPreset{
+						Codec:   "aac", // OK
+						Bitrate: "64000",
+					},
+				},
+				Status:           types.JobCreated,
+				Details:          "0%",
+				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalDestination: "/tmp/o.mp4",
+			}
+
+			dbInstance, _ := db.GetDatabase()
+			dbInstance.StoreJob(job)
+			lib.FFMPEGEncode(job.ID)
+
+			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", "/tmp/o.mp4").Output()
+			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("mpeg-4"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", "/tmp/o.mp4").Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("aac lc"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Codec%;", "/tmp/o.mp4").Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("avc")) // AVC == H264
+		})
+	})
+
 })

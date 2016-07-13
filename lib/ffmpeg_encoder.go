@@ -26,7 +26,6 @@ func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, err
 	if cc = gmf.NewCodecCtx(codec); cc == nil {
 		return 0, 0, errors.New("unable to create codec context")
 	}
-
 	defer gmf.Release(cc)
 
 	if oc.IsGlobalHeader() {
@@ -89,7 +88,14 @@ func FFMPEGEncode(jobID string) error {
 	dbInstance.UpdateJob(job.ID, job)
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
-	i, o, err := addStream("mpeg4", outputCtx, srcVideoStream)
+
+	videoCodec := "mpeg4" // default codec
+
+	if job.Preset.Video.Codec == "h264" {
+		videoCodec = "libx264"
+	}
+
+	i, o, err := addStream(videoCodec, outputCtx, srcVideoStream)
 	if err != nil {
 		return err
 	}
@@ -100,7 +106,12 @@ func FFMPEGEncode(jobID string) error {
 		return err
 	}
 
-	i, o, err = addStream("aac", outputCtx, srcAudioStream)
+	audioCodec := "aac" // default codec
+	if job.Preset.Audio.Codec != "aac" {
+		audioCodec = job.Preset.Audio.Codec
+	}
+
+	i, o, err = addStream(audioCodec, outputCtx, srcAudioStream)
 	if err != nil {
 		return err
 	}
