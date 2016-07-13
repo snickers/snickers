@@ -40,15 +40,16 @@ var _ = Describe("Library", func() {
 		BeforeEach(func() {
 			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
-			cfg, _ = gonfig.FromJsonFile("../config.json")
+			currentDir, _ := os.Getwd()
+			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
 		})
 
 		It("should return an error if source couldn't be fetched", func() {
 			exampleJob := types.Job{
 				ID:          "123",
 				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:      types.JobCreated,
 				Details:     "",
 			}
@@ -62,8 +63,8 @@ var _ = Describe("Library", func() {
 			exampleJob := types.Job{
 				ID:          "123",
 				Source:      "http://flv.io/source_here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "240p", Container: "mp4"},
 				Status:      types.JobCreated,
 				Details:     "",
 			}
@@ -76,7 +77,7 @@ var _ = Describe("Library", func() {
 			sourceExpected := swapDir + "123/src/source_here.mp4"
 			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
 
-			destinationExpected := swapDir + "123/dst/source_here.mp4"
+			destinationExpected := swapDir + "123/dst/source_here_240p.mp4"
 			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
 		})
 	})
@@ -90,15 +91,16 @@ var _ = Describe("Library", func() {
 		BeforeEach(func() {
 			dbInstance, _ = db.GetDatabase()
 			dbInstance.ClearDatabase()
-			cfg, _ = gonfig.FromJsonFile("../config.json")
+			currentDir, _ := os.Getwd()
+			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
 		})
 
 		It("should return an error if input is not found", func() {
 			exampleJob := types.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
-				Destination:      "s3://user@pass:/bucket/destination.mp4",
-				Preset:           types.Preset{Name: "presetHere"},
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:           types.JobCreated,
 				Details:          "",
 				LocalSource:      "notfound.mp4",
@@ -115,8 +117,8 @@ var _ = Describe("Library", func() {
 			exampleJob := types.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
-				Destination:      "s3://user@pass:/bucket/destination.mp4",
-				Preset:           types.Preset{Name: "presetHere"},
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:           types.JobCreated,
 				Details:          "",
 				LocalSource:      projectPath + "/videos/comingsoon.mov",
@@ -135,8 +137,8 @@ var _ = Describe("Library", func() {
 			exampleJob := types.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
-				Destination:      "s3://user@pass:/bucket/destination.mp4",
-				Preset:           types.Preset{Name: "presetHere"},
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:           types.JobCreated,
 				Details:          "",
 				LocalSource:      projectPath + "/videos/nyt.mp4",

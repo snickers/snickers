@@ -15,7 +15,8 @@ import (
 // HTTPDownload function downloads sources using
 // http protocol.
 func HTTPDownload(jobID string) error {
-	cfg, _ := gonfig.FromJsonFile("./config.json")
+	currentDir, _ := os.Getwd()
+	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
 	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)

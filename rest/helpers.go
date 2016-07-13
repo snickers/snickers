@@ -28,7 +28,8 @@ func JSONHandler(actual http.Handler) http.Handler {
 // for http requests log
 func GetLogOutput() io.Writer {
 	var logOutput io.Writer
-	cfg, _ := gonfig.FromJsonFile("./config.json")
+	currentDir, _ := os.Getwd()
+	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
 	logfile, _ := cfg.GetString("LOGFILE", "")
 	if logfile == "" {
 		logOutput = ioutil.Discard
