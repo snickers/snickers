@@ -4,12 +4,12 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/3d0c/gmf"
+	"github.com/snickers/gmf"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
 
-func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
+func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
 	var cc *gmf.CodecCtx
 	var ost *gmf.Stream
 
@@ -47,7 +47,15 @@ func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, err
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
 		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
-		cc.SetProfile(gmf.FF_PROFILE_MPEG4_SIMPLE)
+		if job.Preset.Video.Codec == "h264" {
+			if job.Preset.Profile == "baseline" {
+				cc.SetProfile(gmf.FF_PROFILE_H264_BASELINE)
+			} else if job.Preset.Profile == "main" {
+				cc.SetProfile(gmf.FF_PROFILE_H264_MAIN)
+			} else if job.Preset.Profile == "high" {
+				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
+			}
+		}
 		cc.SetDimension(ist.CodecCtx().Width(), ist.CodecCtx().Height())
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
@@ -95,7 +103,7 @@ func FFMPEGEncode(jobID string) error {
 		videoCodec = "libx264"
 	}
 
-	i, o, err := addStream(videoCodec, outputCtx, srcVideoStream)
+	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
 	if err != nil {
 		return err
 	}
@@ -111,7 +119,7 @@ func FFMPEGEncode(jobID string) error {
 		audioCodec = job.Preset.Audio.Codec
 	}
 
-	i, o, err = addStream(audioCodec, outputCtx, srcAudioStream)
+	i, o, err = addStream(job, audioCodec, outputCtx, srcAudioStream)
 	if err != nil {
 		return err
 	}
