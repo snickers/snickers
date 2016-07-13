@@ -45,9 +45,6 @@ func HTTPDownload(jobID string) error {
 	}
 
 	if resp.Error != nil {
-		job.Status = types.JobError
-		job.Details = string(resp.Error.Error())
-		dbInstance.UpdateJob(job.ID, job)
 		return resp.Error
 	}
 

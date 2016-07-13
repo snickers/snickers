@@ -74,18 +74,12 @@ func FFMPEGEncode(jobID string) error {
 
 	inputCtx, err := gmf.NewInputCtx(srcFileName)
 	if err != nil {
-		job.Status = types.JobError
-		job.Details = err.Error()
-		dbInstance.UpdateJob(job.ID, job)
 		return err
 	}
 	defer inputCtx.CloseInputAndRelease()
 
 	outputCtx, err := gmf.NewOutputCtx(dstFileName)
 	if err != nil {
-		job.Status = types.JobError
-		job.Details = err.Error()
-		dbInstance.UpdateJob(job.ID, job)
 		return err
 	}
 	defer outputCtx.CloseOutputAndRelease()

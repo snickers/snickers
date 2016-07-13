@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/flavioribeiro/snickers/db"
+	"github.com/flavioribeiro/snickers/types"
 )
 
 // S3Upload sends the file to S3 bucket. Job Destination should be
@@ -38,6 +39,10 @@ func S3Upload(jobID string) error {
 		return err
 	}
 
+	job.Status = types.JobUploading
+	job.Details = "0%"
+	dbInstance.UpdateJob(job.ID, job)
+
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Body:   file,
@@ -47,5 +52,9 @@ func S3Upload(jobID string) error {
 	if err != nil {
 		return err
 	}
+
+	job.Details = "100%"
+	dbInstance.UpdateJob(job.ID, job)
+
 	return nil
 }

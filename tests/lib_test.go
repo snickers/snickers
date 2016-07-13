@@ -43,7 +43,7 @@ var _ = Describe("Library", func() {
 			cfg, _ = gonfig.FromJsonFile("../config.json")
 		})
 
-		It("Should change job status and details on error", func() {
+		It("should return an error if source couldn't be fetched", func() {
 			exampleJob := types.Job{
 				ID:          "123",
 				Source:      "http://source.here.mp4",
@@ -54,11 +54,8 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			lib.HTTPDownload(exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			Expect(changedJob.Status).To(Equal(types.JobError))
-			Expect(changedJob.Details).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
+			err := lib.HTTPDownload(exampleJob.ID)
+			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 
 		It("Should set the local source and local destination on Job", func() {
@@ -96,7 +93,7 @@ var _ = Describe("Library", func() {
 			cfg, _ = gonfig.FromJsonFile("../config.json")
 		})
 
-		It("Should change job status and details if input is not found", func() {
+		It("should return an error if input is not found", func() {
 			exampleJob := types.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
@@ -109,14 +106,11 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			lib.FFMPEGEncode(exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			Expect(changedJob.Status).To(Equal(types.JobError))
-			Expect(changedJob.Details).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
+			err := lib.FFMPEGEncode(exampleJob.ID)
+			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
 		})
 
-		It("Should change job status and details if output path doesn't exists", func() {
+		It("should return error if output path doesn't exists", func() {
 			projectPath, _ := os.Getwd()
 			exampleJob := types.Job{
 				ID:               "123",
@@ -131,11 +125,8 @@ var _ = Describe("Library", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			lib.FFMPEGEncode(exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			Expect(changedJob.Status).To(Equal(types.JobError))
-			Expect(changedJob.Details).To(Equal("output format is not initialized. Unable to allocate context"))
+			err := lib.FFMPEGEncode(exampleJob.ID)
+			Expect(err.Error()).To(Equal("output format is not initialized. Unable to allocate context"))
 		})
 
 		It("Should change job status and details when encoding", func() {
