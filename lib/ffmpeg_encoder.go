@@ -37,6 +37,12 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_AUDIO {
+		bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		cc.SetBitRate(bitrate)
 		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
 		cc.SetSampleRate(ist.CodecCtx().SampleRate())
 		cc.SetChannels(ist.CodecCtx().Channels())
@@ -63,6 +69,13 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		if err != nil {
 			return 0, 0, err
 		}
+
+		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		cc.SetBitRate(bitrate)
 		cc.SetDimension(width, height)
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}

@@ -3,8 +3,10 @@ package snickers_test
 import (
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
+	"github.com/dchest/uniuri"
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -109,61 +111,76 @@ var _ = Describe("FFmpeg Encoder", func() {
 	Context("Regarding the application of presets", func() {
 		It("should create h264/mp4 output", func() {
 			currentDir, _ := os.Getwd()
+			destinationFile := "/tmp/" + uniuri.New() + ".mp4"
 
 			job := types.Job{
 				ID: "123",
 				Preset: types.Preset{
 					Container:    "mp4",  // OK
 					Profile:      "main", // OK
-					ProfileLevel: "3.1",
-					RateControl:  "VBR",
+					ProfileLevel: "3.1",  // NOK
+					RateControl:  "vbr",  // NOK
 					Video: types.VideoPreset{
-						Height:        "240",  // OK
-						Width:         "426",  // OK
-						Codec:         "h264", // OK
-						Bitrate:       "1000000",
+						Height:        "240",    // OK
+						Width:         "426",    // OK
+						Codec:         "h264",   // OK
+						Bitrate:       "400000", // OK
 						GopSize:       "90",
 						GopMode:       "fixed",
 						InterlaceMode: "progressive",
 					},
 					Audio: types.AudioPreset{
-						Codec:   "aac", // OK
-						Bitrate: "64000",
+						Codec:   "aac",   // OK
+						Bitrate: "64000", // OK
 					},
 				},
 				Status:           types.JobCreated,
 				Details:          "0%",
 				LocalSource:      currentDir + "/videos/nyt.mp4",
-				LocalDestination: "/tmp/o.mp4",
+				LocalDestination: destinationFile,
 			}
 
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
 			lib.FFMPEGEncode(job.ID)
 
-			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", "/tmp/o.mp4").Output()
+			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal("mpeg-4"))
 
-			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", "/tmp/o.mp4").Output()
-			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
-			Expect(result).To(Equal("aac lc"))
+			//			out, _ = exec.Command("mediainfo", "--Inform=General;%OverallBitRate_Mode%;", destinationFile).Output()
+			//			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			//			Expect(result).To(Equal(job.Preset.RateControl))
 
-			out, _ = exec.Command("mediainfo", "--Inform=Video;%Codec%;", "/tmp/o.mp4").Output()
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Codec%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal("avc")) // AVC == H264
 
-			out, _ = exec.Command("mediainfo", "--Inform=Video;%Format_Profile%;", "/tmp/o.mp4").Output()
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Format_Profile%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(ContainSubstring(job.Preset.Profile))
 
-			out, _ = exec.Command("mediainfo", "--Inform=Video;%Width%;", "/tmp/o.mp4").Output()
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Width%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal(job.Preset.Video.Width))
 
-			out, _ = exec.Command("mediainfo", "--Inform=Video;%Height%;", "/tmp/o.mp4").Output()
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Height%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal(job.Preset.Video.Height))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%BitRate%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			resultInt, _ := strconv.Atoi(result)
+			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 300000), BeNumerically("<", 400000)))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("aac lc"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Audio;%BitRate%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			resultInt, _ = strconv.Atoi(result)
+			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 50000), BeNumerically("<", 70000)))
 		})
 	})
 
