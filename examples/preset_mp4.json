@@ -1,13 +1,13 @@
 {
-  "name": "hls",
+  "name": "mp4_240p",
   "description": "HLS 1080 for tests",
-  "container": "m3u8",
+  "container": "mp4",
   "profile": "Main",
   "profileLevel": "3.1",
   "rateControl": "VBR",
   "video": {
-      "height": "720",
-      "width": "1080",
+      "height": "240",
+      "width": "426",
       "codec": "h264",
       "bitrate": "1000000",
       "gopSize": "90",

@@ -1,4 +1,4 @@
 {
   "SWAP_DIRECTORY": "/tmp/",
-  "LOGFILE": ""
+  "LOGFILE": "/tmp/output.log"
 }
