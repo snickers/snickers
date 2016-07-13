@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/cavaliercoder/grab"
 	"github.com/flavioribeiro/gonfig"
@@ -14,7 +15,7 @@ import (
 // HTTPDownload function downloads sources using
 // http protocol.
 func HTTPDownload(jobID string) error {
-	cfg, _ := gonfig.FromJsonFile("../config.json")
+	cfg, _ := gonfig.FromJsonFile("./config.json")
 	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
@@ -27,9 +28,11 @@ func HTTPDownload(jobID string) error {
 	outputDir := basePath + "/dst/"
 	os.MkdirAll(sourceDir, 0777)
 	os.MkdirAll(outputDir, 0777)
-	job.LocalDestination = outputDir + path.Base(job.Source)
-
+	outputFilename := strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
+	job.LocalDestination = outputDir + outputFilename
+	job.Destination = job.Destination + outputFilename
 	job.Status = types.JobDownloading
+	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
 	respch, _ := grab.GetAsync(basePath+"/src/", job.Source)
