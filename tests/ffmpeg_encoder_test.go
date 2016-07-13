@@ -168,10 +168,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal(job.Preset.Video.Height))
 
-			out, _ = exec.Command("mediainfo", "--Inform=Video;%BitRate%;", destinationFile).Output()
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%BitRate_Nominal%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
-			resultInt, _ := strconv.Atoi(result)
-			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 300000), BeNumerically("<", 400000)))
+			Expect(result).To(Equal(job.Preset.Video.Bitrate))
 
 			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -179,7 +178,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			out, _ = exec.Command("mediainfo", "--Inform=Audio;%BitRate%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
-			resultInt, _ = strconv.Atoi(result)
+			resultInt, _ := strconv.Atoi(result)
 			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 50000), BeNumerically("<", 70000)))
 		})
 	})
