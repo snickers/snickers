@@ -41,8 +41,14 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		if err != nil {
 			return 0, 0, err
 		}
-
 		cc.SetBitRate(bitrate)
+
+		gop, err := strconv.Atoi(job.Preset.Video.GopSize)
+		if err != nil {
+			return 0, 0, err
+		}
+		cc.SetGopSize(gop)
+
 		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
 		cc.SetSampleRate(ist.CodecCtx().SampleRate())
 		cc.SetChannels(ist.CodecCtx().Channels())

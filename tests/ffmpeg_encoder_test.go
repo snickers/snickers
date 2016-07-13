@@ -121,13 +121,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 					ProfileLevel: "3.1",  // NOK
 					RateControl:  "vbr",  // NOK
 					Video: types.VideoPreset{
-						Height:        "240",    // OK
-						Width:         "426",    // OK
-						Codec:         "h264",   // OK
-						Bitrate:       "400000", // OK
-						GopSize:       "90",
-						GopMode:       "fixed",
-						InterlaceMode: "progressive",
+						Height:        "240",         // OK
+						Width:         "426",         // OK
+						Codec:         "h264",        // OK
+						Bitrate:       "400000",      // OK
+						GopSize:       "90",          // NOK
+						GopMode:       "fixed",       // NOK
+						InterlaceMode: "progressive", // NOK
 					},
 					Audio: types.AudioPreset{
 						Codec:   "aac",   // OK
