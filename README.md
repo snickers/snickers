@@ -32,7 +32,7 @@ $ make test
 
 ## Using the API
 
-Check out the [Wiki](https://github.com/flavioribeiro/snickers/wiki/How-to-Use-the-API) to learn how to use the API.
+Check out the [Wiki](https://github.com/snickers/snickers/wiki/How-to-Use-the-API) to learn how to use the API.
 
 ## Contributing
 
@@ -44,5 +44,5 @@ Check out the [Wiki](https://github.com/flavioribeiro/snickers/wiki/How-to-Use-t
 
 ## License
 
-This code is under [Apache 2.0 License](https://github.com/flavioribeiro/snickers/blob/master/LICENSE). 
+This code is under [Apache 2.0 License](https://github.com/snickers/snickers/blob/master/LICENSE).
 

@@ -1,7 +1,7 @@
 package db
 
-import "github.com/flavioribeiro/snickers/types"
-import "github.com/flavioribeiro/snickers/db/memory"
+import "github.com/snickers/snickers/types"
+import "github.com/snickers/snickers/db/memory"
 
 // DatabaseInterface defines functions for accessing data
 type DatabaseInterface interface {

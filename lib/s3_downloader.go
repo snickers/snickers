@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/flavioribeiro/snickers/db"
+	"github.com/snickers/snickers/db"
 )
 
 // S3Download downloads the file from S3 bucket. Job Source should be

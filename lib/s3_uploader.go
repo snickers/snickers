@@ -6,8 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // S3Upload sends the file to S3 bucket. Job Destination should be

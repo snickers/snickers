@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/flavioribeiro/snickers/rest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/rest"
 )
 
 var _ = Describe("Rest API", func() {

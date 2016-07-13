@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/dchest/uniuri"
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/lib"
-	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/lib"
+	"github.com/snickers/snickers/types"
 )
 
 // CreateJob creates a job

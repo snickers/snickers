@@ -3,8 +3,8 @@ package lib
 import (
 	"strings"
 
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // DownloadFunc is a function type for the multiple

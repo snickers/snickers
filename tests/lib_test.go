@@ -5,11 +5,11 @@ import (
 	"reflect"
 
 	"github.com/flavioribeiro/gonfig"
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/lib"
-	"github.com/flavioribeiro/snickers/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/lib"
+	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("Library", func() {

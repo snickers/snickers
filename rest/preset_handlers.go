@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // CreatePreset creates a preset

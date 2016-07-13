@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/flavioribeiro/snickers/rest"
+	"github.com/snickers/snickers/rest"
 	"log"
 	"net/http"
 )

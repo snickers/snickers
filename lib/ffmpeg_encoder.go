@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/3d0c/gmf"
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 func addStream(codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {

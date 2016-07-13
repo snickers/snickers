@@ -1,8 +1,8 @@
 package snickers_test
 
 import (
-	"github.com/flavioribeiro/snickers/db/memory"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/db/memory"
+	"github.com/snickers/snickers/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

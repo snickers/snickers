@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/rest"
-	"github.com/flavioribeiro/snickers/types"
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/rest"
+	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("Rest API", func() {

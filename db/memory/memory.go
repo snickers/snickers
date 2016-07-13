@@ -2,7 +2,7 @@ package memory
 
 import (
 	"errors"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/types"
 )
 
 // Database struct that persists configurations

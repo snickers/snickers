@@ -8,8 +8,8 @@ import (
 
 	"github.com/cavaliercoder/grab"
 	"github.com/flavioribeiro/gonfig"
-	"github.com/flavioribeiro/snickers/db"
-	"github.com/flavioribeiro/snickers/types"
+	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // HTTPDownload function downloads sources using
