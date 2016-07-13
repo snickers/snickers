@@ -2,9 +2,9 @@
   <img src="https://cloud.githubusercontent.com/assets/244265/16285772/292ffa0e-38a6-11e6-922e-a96f98699c63.png">
 </p>
 <br><br>
-[![Build Status](https://travis-ci.org/flavioribeiro/snickers.svg?branch=master)](https://travis-ci.org/flavioribeiro/snickers)
-[![codecov](https://codecov.io/gh/flavioribeiro/snickers/branch/master/graph/badge.svg)](https://codecov.io/gh/flavioribeiro/snickers)
-[![Go Report Card](https://goreportcard.com/badge/github.com/flavioribeiro/snickers)](https://goreportcard.com/report/github.com/flavioribeiro/snickers)
+[![Build Status](https://travis-ci.org/snickers/snickers.svg?branch=master)](https://travis-ci.org/snickers/snickers)
+[![codecov](https://codecov.io/gh/snickers/snickers/branch/master/graph/badge.svg)](https://codecov.io/gh/snickers/snickers)
+[![Go Report Card](https://goreportcard.com/badge/github.com/snickers/snickers)](https://goreportcard.com/report/github.com/snickers/snickers)
 <br><br>
 Snickers is an open source alternative to the existent cloud encoding services. It is a HTTP API that encode videos.
 
