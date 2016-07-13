@@ -7,8 +7,8 @@ import (
 )
 
 // GetAWSKey grabs the path and filename for destination
-func GetAWSKey(jobSource string) (string, error) {
-	parsedURL, err := url.Parse(jobSource)
+func GetAWSKey(jobURL string) (string, error) {
+	parsedURL, err := url.Parse(jobURL)
 	if err != nil {
 		return "", err
 	}
@@ -17,20 +17,20 @@ func GetAWSKey(jobSource string) (string, error) {
 }
 
 // GetAWSBucket grabs the bucket from a given s3 url
-func GetAWSBucket(jobSource string) (string, error) {
-	parsedURL, err := url.Parse(jobSource)
+func GetAWSBucket(jobURL string) (string, error) {
+	parsedURL, err := url.Parse(jobURL)
 	if err != nil {
 		return "", err
 	}
 
-	region := strings.Split(parsedURL.Host, ".")[0]
-	return region, nil
+	bucket := strings.Split(parsedURL.Host, ".")[0]
+	return bucket, nil
 }
 
 // SetAWSCredentials will parse the job source and set the credentials
 // on environment variables
-func SetAWSCredentials(jobSource string) error {
-	parsedURL, err := url.Parse(jobSource)
+func SetAWSCredentials(jobURL string) error {
+	parsedURL, err := url.Parse(jobURL)
 	if err != nil {
 		return err
 	}
