@@ -42,7 +42,6 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		cc.SetChannels(ist.CodecCtx().Channels())
 		cc.SelectChannelLayout()
 		cc.SelectSampleRate()
-
 	}
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
@@ -56,7 +55,15 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
 			}
 		}
-		cc.SetDimension(ist.CodecCtx().Width(), ist.CodecCtx().Height())
+		width, err := strconv.Atoi(job.Preset.Video.Width)
+		if err != nil {
+			return 0, 0, err
+		}
+		height, err := strconv.Atoi(job.Preset.Video.Height)
+		if err != nil {
+			return 0, 0, err
+		}
+		cc.SetDimension(width, height)
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
 
