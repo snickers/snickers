@@ -36,6 +36,9 @@ func StartJob(job types.Job) {
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
+
+	job.Status = types.JobFinished
+	dbInstance.UpdateJob(job.ID, job)
 }
 
 // GetDownloadFunc returns the download function
