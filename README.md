@@ -26,6 +26,8 @@ $ make run
 
 ## Running tests
 
+Make sure you have [mediainfo](https://sourceforge.net/projects/mediainfo/) installed and run:
+
 ```
 $ make test
 ```
