@@ -156,6 +156,10 @@ var _ = Describe("FFmpeg Encoder", func() {
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(Equal("avc")) // AVC == H264
 
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%ScanType%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(ContainSubstring(job.Preset.Video.InterlaceMode))
+
 			out, _ = exec.Command("mediainfo", "--Inform=Video;%Format_Profile%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
 			Expect(result).To(ContainSubstring(job.Preset.Profile))
