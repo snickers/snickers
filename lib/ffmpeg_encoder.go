@@ -127,6 +127,8 @@ func FFMPEGEncode(jobID string) error {
 
 	if job.Preset.Video.Codec == "h264" {
 		videoCodec = "libx264"
+	} else if job.Preset.Video.Codec == "vp8" {
+		videoCodec = "libvpx"
 	}
 
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
