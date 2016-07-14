@@ -77,7 +77,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Container:    "mp4",
 					Profile:      "main",
 					ProfileLevel: "3.1",
-					RateControl:  "VBR",
+					RateControl:  "vbr",
 					Video: types.VideoPreset{
 						Height:        "240",
 						Width:         "426",

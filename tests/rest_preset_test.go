@@ -61,7 +61,7 @@ var _ = Describe("Rest API", func() {
 				Container:    "mp4",
 				Profile:      "high",
 				ProfileLevel: "3.1",
-				RateControl:  "VBR",
+				RateControl:  "vbr",
 				Video: types.VideoPreset{
 					Width:         "720",
 					Height:        "1080",

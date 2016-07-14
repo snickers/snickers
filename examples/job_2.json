@@ -1,5 +1,5 @@
 {
   "source": "http://flv.io/KailuaBeach.mp4",
   "destination": "ftp://login:pass@flv.io/output/",
-  "preset": "hls"
+  "preset": "mp4_240p"
 }

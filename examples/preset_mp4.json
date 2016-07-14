@@ -2,9 +2,9 @@
   "name": "mp4_240p",
   "description": "HLS 1080 for tests",
   "container": "mp4",
-  "profile": "Main",
+  "profile": "main",
   "profileLevel": "3.1",
-  "rateControl": "VBR",
+  "rateControl": "vbr",
   "video": {
       "height": "240",
       "width": "426",
