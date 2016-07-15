@@ -34,7 +34,13 @@ func GetLogOutput() io.Writer {
 	if logfile == "" {
 		logOutput = ioutil.Discard
 	} else {
-		logOutput = os.Stdout
+		fmt.Println("Logging requests on", logfile)
+		f, err := os.Create(logfile)
+		if err != nil {
+			panic(err)
+		}
+
+		logOutput = f
 	}
 
 	return logOutput
