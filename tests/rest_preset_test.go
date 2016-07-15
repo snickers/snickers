@@ -107,6 +107,9 @@ var _ = Describe("Rest API", func() {
 			server.ServeHTTP(response, request)
 
 			presets, _ := dbInstance.GetPresets()
+			responseBody, _ := json.Marshal(response.Body.String())
+			expected, _ := json.Marshal(`{"name":"storedPreset","video":{},"audio":{}}`)
+			Expect(responseBody).To(Equal(expected))
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			Expect(len(presets)).To(Equal(1))

@@ -30,6 +30,8 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	result, err := json.Marshal(preset)
+	fmt.Fprintf(w, "%s", result)
 }
 
 // UpdatePreset updates a preset
