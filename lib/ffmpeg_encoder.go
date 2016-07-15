@@ -59,11 +59,11 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
 		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
 		if job.Preset.Video.Codec == "h264" {
-			if job.Preset.Profile == "baseline" {
+			if job.Preset.Video.Profile == "baseline" {
 				cc.SetProfile(gmf.FF_PROFILE_H264_BASELINE)
-			} else if job.Preset.Profile == "main" {
+			} else if job.Preset.Video.Profile == "main" {
 				cc.SetProfile(gmf.FF_PROFILE_H264_MAIN)
-			} else if job.Preset.Profile == "high" {
+			} else if job.Preset.Video.Profile == "high" {
 				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
 			}
 		}

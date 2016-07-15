@@ -2,14 +2,12 @@ package types
 
 // Preset define the set of parameters of a given preset
 type Preset struct {
-	Name         string      `json:"name,omitempty"`
-	Description  string      `json:"description,omitempty"`
-	Container    string      `json:"container,omitempty"`
-	Profile      string      `json:"profile,omitempty"`
-	ProfileLevel string      `json:"profileLevel,omitempty"`
-	RateControl  string      `json:"rateControl,omitempty"`
-	Video        VideoPreset `json:"video"`
-	Audio        AudioPreset `json:"audio"`
+	Name        string      `json:"name,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Container   string      `json:"container,omitempty"`
+	RateControl string      `json:"rateControl,omitempty"`
+	Video       VideoPreset `json:"video"`
+	Audio       AudioPreset `json:"audio"`
 }
 
 // VideoPreset define the set of parameters for video on a given preset
@@ -20,6 +18,8 @@ type VideoPreset struct {
 	Bitrate       string `json:"bitrate,omitempty"`
 	GopSize       string `json:"gopSize,omitempty"`
 	GopMode       string `json:"gopMode,omitempty"`
+	Profile       string `json:"profile,omitempty"`
+	ProfileLevel  string `json:"profileLevel,omitempty"`
 	InterlaceMode string `json:"interlaceMode,omitempty"`
 }
 

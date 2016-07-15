@@ -73,11 +73,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/",
 				Preset: types.Preset{
-					Name:         "presetHere",
-					Container:    "mp4",
-					Profile:      "main",
-					ProfileLevel: "3.1",
-					RateControl:  "vbr",
+					Name:        "presetHere",
+					Container:   "mp4",
+					RateControl: "vbr",
 					Video: types.VideoPreset{
 						Height:        "240",
 						Width:         "426",
@@ -85,6 +83,8 @@ var _ = Describe("FFmpeg Encoder", func() {
 						Bitrate:       "1000000",
 						GopSize:       "90",
 						GopMode:       "fixed",
+						Profile:       "main",
+						ProfileLevel:  "3.1",
 						InterlaceMode: "progressive",
 					},
 					Audio: types.AudioPreset{
@@ -116,17 +116,18 @@ var _ = Describe("FFmpeg Encoder", func() {
 			job := types.Job{
 				ID: "123",
 				Preset: types.Preset{
-					Container:    "mp4",  // OK
-					Profile:      "main", // OK
-					ProfileLevel: "3.1",  // NOK
-					RateControl:  "vbr",  // NOK
+					Container:   "mp4", // OK
+					RateControl: "vbr", // NOK
 					Video: types.VideoPreset{
-						Height:        "240",         // OK
-						Width:         "426",         // OK
-						Codec:         "h264",        // OK
-						Bitrate:       "400000",      // OK
-						GopSize:       "90",          // NOK
-						GopMode:       "fixed",       // NOK
+						Height:       "240",    // OK
+						Width:        "426",    // OK
+						Codec:        "h264",   // OK
+						Bitrate:      "400000", // OK
+						GopSize:      "90",     // NOK
+						GopMode:      "fixed",  // NOK
+						Profile:      "main",   // OK
+						ProfileLevel: "3.1",    // NOK
+
 						InterlaceMode: "progressive", // NOK
 					},
 					Audio: types.AudioPreset{
@@ -158,7 +159,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			out, _ = exec.Command("mediainfo", "--Inform=Video;%Format_Profile%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
-			Expect(result).To(ContainSubstring(job.Preset.Profile))
+			Expect(result).To(ContainSubstring(job.Preset.Video.Profile))
 
 			out, _ = exec.Command("mediainfo", "--Inform=Video;%Width%;", destinationFile).Output()
 			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)

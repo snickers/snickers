@@ -21,12 +21,10 @@ var _ = Describe("Database", func() {
 
 		It("should be able to store a preset", func() {
 			examplePreset := types.Preset{
-				Name:         "examplePreset",
-				Description:  "This is an example of preset",
-				Container:    "mp4",
-				Profile:      "high",
-				ProfileLevel: "3.1",
-				RateControl:  "vbr",
+				Name:        "examplePreset",
+				Description: "This is an example of preset",
+				Container:   "mp4",
+				RateControl: "vbr",
 				Video: types.VideoPreset{
 					Width:         "720",
 					Height:        "1080",
@@ -34,6 +32,8 @@ var _ = Describe("Database", func() {
 					Bitrate:       "10000",
 					GopSize:       "90",
 					GopMode:       "fixed",
+					Profile:       "high",
+					ProfileLevel:  "3.1",
 					InterlaceMode: "progressive",
 				},
 				Audio: types.AudioPreset{
