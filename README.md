@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cloud.githubusercontent.com/assets/244265/16285772/292ffa0e-38a6-11e6-922e-a96f98699c63.png">
+  <img src="https://cloud.githubusercontent.com/assets/244265/16903251/00c5f2f8-4c47-11e6-9f2c-9c86bb37f114.png">
 </p>
 <br><br>
 [![Build Status](https://travis-ci.org/snickers/snickers.svg?branch=master)](https://travis-ci.org/snickers/snickers)
