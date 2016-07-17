@@ -61,9 +61,9 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 }
 
 // StoreJob stores job information
-func (r *Database) StoreJob(job types.Job) (map[string]types.Job, error) {
+func (r *Database) StoreJob(job types.Job) (types.Job, error) {
 	r.jobs[job.ID] = job
-	return r.jobs, nil
+	return job, nil
 }
 
 // RetrieveJob retrieves one job from the database

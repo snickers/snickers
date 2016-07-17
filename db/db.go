@@ -12,7 +12,7 @@ type DatabaseInterface interface {
 	GetPresets() ([]types.Preset, error)
 
 	// Job methods
-	StoreJob(types.Job) (map[string]types.Job, error)
+	StoreJob(types.Job) (types.Job, error)
 	RetrieveJob(string) (types.Job, error)
 	UpdateJob(string, types.Job) (types.Job, error)
 	GetJobs() ([]types.Job, error)

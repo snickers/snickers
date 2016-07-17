@@ -66,3 +66,39 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 	c.Find(nil).All(&results)
 	return results, nil
 }
+
+// StoreJob stores job information
+func (r *Database) StoreJob(job types.Job) (types.Job, error) {
+	c := r.db.C("jobs")
+	err := c.Insert(job)
+	if err != nil {
+		return types.Job{}, err
+	}
+	return job, nil
+}
+
+// RetrieveJob retrieves one job from the database
+func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
+	c := r.db.C("jobs")
+	result := types.Job{}
+	err := c.Find(bson.M{"id": jobID}).One(&result)
+	return result, err
+}
+
+// UpdateJob updates a job
+func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) {
+	c := r.db.C("jobs")
+	err := c.Update(bson.M{"id": jobID}, newJob)
+	if err != nil {
+		return types.Job{}, err
+	}
+	return newJob, nil
+}
+
+//GetJobs retrieves all jobs of the database
+func (r *Database) GetJobs() ([]types.Job, error) {
+	results := []types.Job{}
+	c := r.db.C("jobs")
+	c.Find(nil).All(&results)
+	return results, nil
+}
