@@ -18,6 +18,8 @@ Download the dependencies:
 $ make build
 ```
 
+If you have a `MONGODB_HOST` set on the [configuration file](https://github.com/snickers/snickers/blob/master/config.json#L5), Snickers will use it to store jobs and presets. Otherwise it will use the memory. 
+
 Run!
 
 ```
