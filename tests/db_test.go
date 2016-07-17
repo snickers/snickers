@@ -41,9 +41,8 @@ var _ = Describe("Database", func() {
 					Bitrate: "64000",
 				},
 			}
-			expected := map[string]types.Preset{"examplePreset": examplePreset}
 			res, _ := dbInstance.StorePreset(examplePreset)
-			Expect(res).To(Equal(expected))
+			Expect(res).To(Equal(examplePreset))
 		})
 
 		It("should be able to retrieve a preset by its name", func() {

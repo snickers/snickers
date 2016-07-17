@@ -32,9 +32,9 @@ func (r *Database) ClearDatabase() error {
 }
 
 // StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) (map[string]types.Preset, error) {
+func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 	r.presets[preset.Name] = preset
-	return r.presets, nil
+	return preset, nil
 }
 
 // RetrievePreset retrieves one preset from the database

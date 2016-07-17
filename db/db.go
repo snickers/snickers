@@ -6,7 +6,7 @@ import "github.com/snickers/snickers/db/memory"
 // DatabaseInterface defines functions for accessing data
 type DatabaseInterface interface {
 	// Preset methods
-	StorePreset(types.Preset) (map[string]types.Preset, error)
+	StorePreset(types.Preset) (types.Preset, error)
 	RetrievePreset(string) (types.Preset, error)
 	UpdatePreset(string, types.Preset) (types.Preset, error)
 	GetPresets() ([]types.Preset, error)
