@@ -34,8 +34,7 @@ func GetDatabase() (*Database, error) {
 
 // ClearDatabase clears the database
 func (r *Database) ClearDatabase() error {
-	r.db.DropDatabase()
-	return nil
+	return r.db.DropDatabase()
 }
 
 // StorePreset stores preset information
@@ -70,8 +69,8 @@ func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
 func (r *Database) GetPresets() ([]types.Preset, error) {
 	results := []types.Preset{}
 	c := r.db.C("presets")
-	c.Find(nil).All(&results)
-	return results, nil
+	err := c.Find(nil).All(&results)
+	return results, err
 }
 
 // StoreJob stores job information
@@ -106,6 +105,6 @@ func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) 
 func (r *Database) GetJobs() ([]types.Job, error) {
 	results := []types.Job{}
 	c := r.db.C("jobs")
-	c.Find(nil).All(&results)
-	return results, nil
+	err := c.Find(nil).All(&results)
+	return results, err
 }
