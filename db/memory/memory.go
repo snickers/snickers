@@ -32,9 +32,9 @@ func (r *Database) ClearDatabase() error {
 }
 
 // StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) (map[string]types.Preset, error) {
+func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 	r.presets[preset.Name] = preset
-	return r.presets, nil
+	return preset, nil
 }
 
 // RetrievePreset retrieves one preset from the database
@@ -61,9 +61,9 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 }
 
 // StoreJob stores job information
-func (r *Database) StoreJob(job types.Job) (map[string]types.Job, error) {
+func (r *Database) StoreJob(job types.Job) (types.Job, error) {
 	r.jobs[job.ID] = job
-	return r.jobs, nil
+	return job, nil
 }
 
 // RetrieveJob retrieves one job from the database
