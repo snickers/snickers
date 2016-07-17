@@ -229,5 +229,23 @@ var _ = Describe("Database", func() {
 			res, _ := dbInstance.StorePreset(examplePreset)
 			Expect(res).To(Equal(examplePreset))
 		})
+
+		It("should be able to retrieve a preset by its name", func() {
+			preset1 := types.Preset{
+				Name:        "presetOne",
+				Description: "This is preset one",
+			}
+
+			preset2 := types.Preset{
+				Name:        "presetTwo",
+				Description: "This is preset two",
+			}
+
+			dbInstance.StorePreset(preset1)
+			dbInstance.StorePreset(preset2)
+
+			res, _ := dbInstance.RetrievePreset("presetOne")
+			Expect(res).To(Equal(preset1))
+		})
 	})
 })

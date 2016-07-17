@@ -3,6 +3,7 @@ package mongo
 import (
 	"github.com/snickers/snickers/types"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Database struct that persists configurations
@@ -37,4 +38,12 @@ func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 		return types.Preset{}, err
 	}
 	return preset, nil
+}
+
+// RetrievePreset retrieves one preset from the database
+func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
+	c := r.db.C("presets")
+	result := types.Preset{}
+	err := c.Find(bson.M{"name": presetName}).One(&result)
+	return result, err
 }
