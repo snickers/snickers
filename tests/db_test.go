@@ -270,5 +270,20 @@ var _ = Describe("Database", func() {
 			presets, _ = dbInstance.GetPresets()
 			Expect(len(presets)).To(Equal(2))
 		})
+
+		It("should be able to update preset", func() {
+			preset := types.Preset{
+				Name:        "presetOne",
+				Description: "This is preset one",
+			}
+			dbInstance.StorePreset(preset)
+
+			expectedDescription := "New description for this preset"
+			preset.Description = expectedDescription
+			dbInstance.UpdatePreset("presetOne", preset)
+			res, _ := dbInstance.GetPresets()
+
+			Expect(res[0].Description).To(Equal(expectedDescription))
+		})
 	})
 })

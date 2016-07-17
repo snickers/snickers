@@ -8,8 +8,7 @@ import (
 
 // Database struct that persists configurations
 type Database struct {
-	session *mgo.Session
-	db      *mgo.Database
+	db *mgo.Database
 }
 
 var instance *Database
@@ -22,7 +21,6 @@ func GetDatabase() (*Database, error) {
 		panic(err)
 	}
 	session.SetMode(mgo.Monotonic, true)
-	instance.session = session
 	instance.db = session.DB("snickers")
 	return instance, nil
 }
@@ -41,6 +39,16 @@ func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 		return types.Preset{}, err
 	}
 	return preset, nil
+}
+
+// UpdatePreset updates a preset
+func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
+	c := r.db.C("presets")
+	err := c.Update(bson.M{"name": presetName}, newPreset)
+	if err != nil {
+		return types.Preset{}, err
+	}
+	return newPreset, nil
 }
 
 // RetrievePreset retrieves one preset from the database
