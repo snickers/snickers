@@ -2,6 +2,7 @@ package snickers_test
 
 import (
 	"github.com/snickers/snickers/db/memory"
+	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
 
 	. "github.com/onsi/ginkgo"
@@ -190,6 +191,43 @@ var _ = Describe("Database", func() {
 			res, _ := dbInstance.GetJobs()
 
 			Expect(res[0].Status).To(Equal(expectedStatus))
+		})
+	})
+
+	Context("mongo", func() {
+		var (
+			dbInstance *mongo.Database
+		)
+
+		BeforeEach(func() {
+			dbInstance, _ = mongo.GetDatabase()
+			dbInstance.ClearDatabase()
+		})
+
+		It("should be able to store a preset", func() {
+			examplePreset := types.Preset{
+				Name:        "examplePreset",
+				Description: "This is an example of preset",
+				Container:   "mp4",
+				RateControl: "vbr",
+				Video: types.VideoPreset{
+					Width:         "720",
+					Height:        "1080",
+					Codec:         "h264",
+					Bitrate:       "10000",
+					GopSize:       "90",
+					GopMode:       "fixed",
+					Profile:       "high",
+					ProfileLevel:  "3.1",
+					InterlaceMode: "progressive",
+				},
+				Audio: types.AudioPreset{
+					Codec:   "aac",
+					Bitrate: "64000",
+				},
+			}
+			res, _ := dbInstance.StorePreset(examplePreset)
+			Expect(res).To(Equal(examplePreset))
 		})
 	})
 })
