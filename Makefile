@@ -2,6 +2,7 @@
 
 build:
 	go get
+	go get gopkg.in/mgo.v2
 	go get github.com/onsi/ginkgo/ginkgo
 	go get github.com/onsi/gomega
 
