@@ -28,7 +28,7 @@ $ make run
 
 ## Running tests
 
-Make sure you have [mediainfo](https://sourceforge.net/projects/mediainfo/) installed and run:
+Make sure you have [mediainfo](https://sourceforge.net/projects/mediainfo/) installed and a local instance of [MongoDB](https://github.com/mongodb/mongo) running.
 
 ```
 $ make test
