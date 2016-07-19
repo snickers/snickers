@@ -1,6 +1,7 @@
 package snickers_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -299,5 +300,64 @@ var _ = Describe("FFmpeg Encoder", func() {
 			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 100000), BeNumerically("<", 300000)))
 		})
 
+		It("should create ogg/theora output", func() {
+			currentDir, _ := os.Getwd()
+			destinationFile := "/tmp/" + uniuri.New() + ".ogg"
+
+			job := types.Job{
+				ID: "123",
+				Preset: types.Preset{
+					Container:   "ogg",
+					RateControl: "vbr",
+					Video: types.VideoPreset{
+						Height:  "360",
+						Width:   "640",
+						Codec:   "theora",
+						Bitrate: "200000",
+						GopSize: "90",
+						GopMode: "fixed",
+					},
+					Audio: types.AudioPreset{
+						Codec:   "vorbis",
+						Bitrate: "64000",
+					},
+				},
+				Status:           types.JobCreated,
+				Details:          "0%",
+				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalDestination: destinationFile,
+			}
+
+			dbInstance, _ := db.GetDatabase()
+			dbInstance.StoreJob(job)
+			lib.FFMPEGEncode(job.ID)
+
+			fmt.Println("------->", destinationFile)
+
+			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
+			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("ogg"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Codec%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("theora"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Width%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal(job.Preset.Video.Width))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Height%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal(job.Preset.Video.Height))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("vorbis"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=General;%BitRate%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			resultInt, _ := strconv.Atoi(result)
+			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 100000), BeNumerically("<", 400000)))
+		})
 	})
 })

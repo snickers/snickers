@@ -131,6 +131,8 @@ func FFMPEGEncode(jobID string) error {
 		videoCodec = "libvpx"
 	} else if job.Preset.Video.Codec == "vp9" {
 		videoCodec = "libvpx-vp9"
+	} else if job.Preset.Video.Codec == "theora" {
+		videoCodec = "libtheora"
 	}
 
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
