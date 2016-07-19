@@ -2,6 +2,7 @@ package memory
 
 import (
 	"errors"
+
 	"github.com/snickers/snickers/types"
 )
 
@@ -58,6 +59,12 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 		res = append(res, value)
 	}
 	return res, nil
+}
+
+// DeletePreset deletes a preset from the database
+func (r *Database) DeletePreset(presetName string) (bool, error) {
+	delete(r.presets, presetName)
+	return true, nil
 }
 
 // StoreJob stores job information
