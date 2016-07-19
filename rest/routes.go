@@ -35,6 +35,7 @@ var routes = Routes{
 	Route{"PUT", "/presets", UpdatePreset},
 	Route{"GET", "/presets", ListPresets},
 	Route{"GET", "/presets/{presetName}", GetPresetDetails},
+	Route{"DELETE", "/presets/{presetName}", DeletePreset},
 
 	// Job routes
 	Route{"POST", "/jobs", CreateJob},
