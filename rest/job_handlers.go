@@ -45,7 +45,12 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	result, err := json.Marshal(job)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "packing job data", err)
+		return
+	}
+	fmt.Fprintf(w, "%s", result)
 }
 
 // ListJobs lists all jobs
