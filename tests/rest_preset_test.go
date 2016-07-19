@@ -169,4 +169,49 @@ var _ = Describe("Rest API", func() {
 			})
 		})
 	})
+
+	Describe("DELETE /presets/:name", func() {
+		It("should delete the preset", func() {
+			examplePreset := types.Preset{
+				Name:        "examplePreset",
+				Description: "This is an example of preset",
+				Container:   "mp4",
+				RateControl: "vbr",
+				Video: types.VideoPreset{
+					Width:        "720",
+					Height:       "1080",
+					Codec:        "h264",
+					Bitrate:      "10000",
+					GopSize:      "90",
+					GopMode:      "fixed",
+					Profile:      "high",
+					ProfileLevel: "3.1",
+
+					InterlaceMode: "progressive",
+				},
+				Audio: types.AudioPreset{
+					Codec:   "aac",
+					Bitrate: "64000",
+				},
+			}
+			dbInstance.StorePreset(examplePreset)
+
+			request, _ := http.NewRequest("DELETE", "/presets/examplePreset", nil)
+			server.ServeHTTP(response, request)
+
+			Expect(response.Code).To(Equal(http.StatusOK))
+		})
+
+		Context("when deleting the preset fails", func() {
+			It("should return BadRequest", func() {
+				request, _ := http.NewRequest("DELETE", "/presets/yoyoyo", nil)
+				server.ServeHTTP(response, request)
+				expected, _ := json.Marshal(`{"error": "deleting preset: preset not found"}`)
+				responseBody, _ := json.Marshal(response.Body.String())
+				Expect(responseBody).To(Equal(expected))
+				Expect(response.Code).To(Equal(http.StatusBadRequest))
+				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
+			})
+		})
+	})
 })

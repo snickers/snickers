@@ -116,7 +116,7 @@ func DeletePreset(w http.ResponseWriter, r *http.Request) {
 	presetName := vars["presetName"]
 	_, err = dbInstance.DeletePreset(presetName)
 	if err != nil {
-		HTTPError(w, http.StatusBadRequest, "retrieving preset", err)
+		HTTPError(w, http.StatusBadRequest, "deleting preset", err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

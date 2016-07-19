@@ -16,7 +16,7 @@ type DatabaseInterface interface {
 	RetrievePreset(string) (types.Preset, error)
 	UpdatePreset(string, types.Preset) (types.Preset, error)
 	GetPresets() ([]types.Preset, error)
-	DeletePreset(string) (bool, error)
+	DeletePreset(string) (types.Preset, error)
 
 	// Job methods
 	StoreJob(types.Job) (types.Job, error)
