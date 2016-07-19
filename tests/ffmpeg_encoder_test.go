@@ -240,5 +240,64 @@ var _ = Describe("FFmpeg Encoder", func() {
 			resultInt, _ := strconv.Atoi(result)
 			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 700000), BeNumerically("<", 900000)))
 		})
+
+		It("should create webm/vp9 output", func() {
+			currentDir, _ := os.Getwd()
+			destinationFile := "/tmp/" + uniuri.New() + ".webm"
+
+			job := types.Job{
+				ID: "123",
+				Preset: types.Preset{
+					Container:   "webm",
+					RateControl: "vbr",
+					Video: types.VideoPreset{
+						Height:  "360",
+						Width:   "640",
+						Codec:   "vp9",
+						Bitrate: "200000",
+						GopSize: "90",
+						GopMode: "fixed",
+					},
+					Audio: types.AudioPreset{
+						Codec:   "vorbis",
+						Bitrate: "64000",
+					},
+				},
+				Status:           types.JobCreated,
+				Details:          "0%",
+				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalDestination: destinationFile,
+			}
+
+			dbInstance, _ := db.GetDatabase()
+			dbInstance.StoreJob(job)
+			lib.FFMPEGEncode(job.ID)
+
+			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
+			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("webm"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Codec%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("v_vp9"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Width%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal(job.Preset.Video.Width))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Video;%Height%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal(job.Preset.Video.Height))
+
+			out, _ = exec.Command("mediainfo", "--Inform=Audio;%Codec%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			Expect(result).To(Equal("vorbis"))
+
+			out, _ = exec.Command("mediainfo", "--Inform=General;%BitRate%;", destinationFile).Output()
+			result = strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
+			resultInt, _ := strconv.Atoi(result)
+			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 100000), BeNumerically("<", 300000)))
+		})
+
 	})
 })
