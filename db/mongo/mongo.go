@@ -25,7 +25,7 @@ func GetDatabase() (*Database, error) {
 	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
 	session, err := mgo.Dial(mongoHost)
 	if err != nil {
-		panic(err)
+		return Database{}, err
 	}
 	session.SetMode(mgo.Monotonic, true)
 	instance.db = session.DB("snickers")
