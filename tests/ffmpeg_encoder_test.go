@@ -1,7 +1,6 @@
 package snickers_test
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -331,8 +330,6 @@ var _ = Describe("FFmpeg Encoder", func() {
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
 			lib.FFMPEGEncode(job.ID)
-
-			fmt.Println("------->", destinationFile)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)

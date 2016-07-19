@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/snickers/gmf"
+	"github.com/3d0c/gmf"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
