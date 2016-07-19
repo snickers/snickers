@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
@@ -59,11 +60,16 @@ var _ = Describe("Rest API", func() {
 			jobJSON := []byte(`{"source": "http://flv.io/src.mp4", "destination": "s3://l@p:google.com", "preset": "presetName"}`)
 			request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
 			server.ServeHTTP(response, request)
+			responseBody := response.Body.String()
 
 			jobs, _ := dbInstance.GetJobs()
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 			Expect(len(jobs)).To(Equal(1))
+			Expect(strings.Contains(responseBody, "id")).To(BeTrue())
+			Expect(strings.Contains(responseBody, `"status":"created"`)).To(BeTrue())
+			Expect(strings.Contains(responseBody, `"progress":""`)).To(BeTrue())
+
 			job := jobs[0]
 			Expect(job.Source).To(Equal("http://flv.io/src.mp4"))
 			Expect(job.Destination).To(Equal("s3://l@p:google.com"))
