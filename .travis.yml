@@ -2,9 +2,11 @@ language: go
 services: mongodb
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y -qq libjpeg-turbo8-dev libtheora-dev libvorbis-dev libvpx-dev libx264-dev libvlccore-dev libvlc-dev mediainfo 2>&1 > /dev/null
-  - wget https://github.com/snickers/misc/raw/master/ffmpeg.tar.gz
-  - sudo tar -xvzf ffmpeg.tar.gz --directory=/usr/local/
+  - sudo apt-get install -y -qq libfaac-dev libgpac-dev libmp3lame-dev libjpeg-turbo8-dev libtheora-dev libvorbis-dev libx264-dev libvlccore-dev libvlc-dev mediainfo 2>&1 > /dev/null
+  - wget https://github.com/snickers/misc/raw/master/libvpx_shared.tar.gz
+  - sudo tar -xvzf libvpx_shared.tar.gz --directory=/usr/local/
+  - wget https://github.com/snickers/misc/raw/master/ffmpeg_with_libvpx_vp9.tar.gz
+  - sudo tar -xvzf ffmpeg_with_libvpx_vp9.tar.gz --directory=/usr/local/
   - sudo sh -c "echo '/usr/local/lib' >> /etc/ld.so.conf"
   - sudo ldconfig
 install:
