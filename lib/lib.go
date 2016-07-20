@@ -26,28 +26,28 @@ func StartJob(job types.Job) {
 		"destination": job.Destination,
 	})
 
-	ctx.Info("Downloading")
+	ctx.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)
 	if err := downloadFunc(job.ID); err != nil {
-		ctx.WithError(err).Error("Download Failed")
+		ctx.WithError(err).Error("download failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
-	ctx.Info("Encodinging")
+	ctx.Info("encoding")
 	if err := FFMPEGEncode(job.ID); err != nil {
-		ctx.WithError(err).Error("Encode Failed")
+		ctx.WithError(err).Error("encode failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
-	ctx.Info("Uploading")
+	ctx.Info("uploading")
 	if err := S3Upload(job.ID); err != nil {
-		ctx.WithError(err).Error("Upload Failed")
+		ctx.WithError(err).Error("upload failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
