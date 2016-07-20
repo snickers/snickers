@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/flavioribeiro/gonfig"
@@ -17,7 +16,7 @@ func GetLogOutput() io.Writer {
 	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
 	logfile, _ := cfg.GetString("LOGFILE", "")
 	if logfile == "" {
-		logOutput = ioutil.Discard
+		logOutput = os.Stderr
 	} else {
 		fmt.Println("Logging requests on", logfile)
 		f, err := os.Create(logfile)
