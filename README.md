@@ -10,7 +10,7 @@ Snickers is an open source alternative to the existent cloud encoding services. 
 
 ## Setting Up
 
-First make sure you have [Go](https://golang.org/dl/) and [FFmpeg](http://ffmpeg.org/) with `--enable-shared` installed on your machine. If you don't know what this means, follow the [instructions](https://github.com/3d0c/gmf#build).
+First make sure you have [Go](https://golang.org/dl/) and [FFmpeg](http://ffmpeg.org/) with `--enable-shared` installed on your machine. If you don't know what this means, look at how its being done on this [Dockerfile](https://github.com/snickers/snickers-docker/blob/master/Dockerfile).
 
 Download the dependencies:
 
