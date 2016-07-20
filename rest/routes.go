@@ -3,8 +3,12 @@ package rest
 import (
 	"net/http"
 
-	"github.com/gorilla/handlers"
+	"github.com/apex/httplog"
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/text"
 	"github.com/gorilla/mux"
+
+	"github.com/snickers/snickers/lib"
 )
 
 // Route maps methods to endpoints
@@ -19,10 +23,11 @@ type Routes []Route
 
 // NewRouter creates a new router for HTTP requests
 func NewRouter() *mux.Router {
-	logOutput := GetLogOutput()
+	log.SetHandler(text.New(lib.GetLogOutput()))
+
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		handler := handlers.LoggingHandler(logOutput, JSONHandler(route.HandlerFunc))
+		handler := httplog.New(JSONHandler(route.HandlerFunc))
 		router.Methods(route.Method).Path(route.Pattern).Handler(handler)
 	}
 
