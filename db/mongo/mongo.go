@@ -73,6 +73,21 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 	return results, err
 }
 
+// DeletePreset deletes a preset from the database
+func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
+	result, err := r.RetrievePreset(presetName)
+	if err != nil {
+		return types.Preset{}, err
+	}
+
+	c := r.db.C("presets")
+	err = c.Remove(bson.M{"name": presetName})
+	if err != nil {
+		return types.Preset{}, err
+	}
+	return result, nil
+}
+
 // StoreJob stores job information
 func (r *Database) StoreJob(job types.Job) (types.Job, error) {
 	c := r.db.C("jobs")

@@ -103,3 +103,21 @@ func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "%s", result)
 }
+
+// DeletePreset creates a preset
+func DeletePreset(w http.ResponseWriter, r *http.Request) {
+	dbInstance, err := db.GetDatabase()
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "getting database", err)
+		return
+	}
+
+	vars := mux.Vars(r)
+	presetName := vars["presetName"]
+	_, err = dbInstance.DeletePreset(presetName)
+	if err != nil {
+		HTTPError(w, http.StatusBadRequest, "deleting preset", err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
