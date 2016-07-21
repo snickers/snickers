@@ -1,14 +1,9 @@
-FROM flavioribeiro/snickers-docker:v1
+FROM flavioribeiro/snickers-docker:v2
 
-# need to move this part to snickers-docker
-ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
-RUN sh -c "echo '/usr/local/lib' >> /etc/ld.so.conf"
-RUN ldconfig
-
-# Download Snickers
+# Download snickers
 RUN go get github.com/snickers/snickers
 
-# Run Snickers!
+# Run snickers!
 RUN curl -O http://flv.io/snickers/config.json
 RUN go install github.com/snickers/snickers
 ENTRYPOINT snickers
