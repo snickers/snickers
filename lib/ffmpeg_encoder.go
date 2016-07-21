@@ -67,11 +67,8 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
 			}
 		}
-		width, err := strconv.Atoi(job.Preset.Video.Width)
-		if err != nil {
-			return 0, 0, err
-		}
-		height, err := strconv.Atoi(job.Preset.Video.Height)
+
+		width, height, err := getResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
 		if err != nil {
 			return 0, 0, err
 		}
@@ -93,6 +90,19 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	ost.SetCodecCtx(cc)
 
 	return ist.Index(), ost.Index(), nil
+}
+
+func getResolution(job types.Job, inputWidth int, inputHeight int) (int, int, error) {
+	width, err := strconv.Atoi(job.Preset.Video.Width)
+	if err != nil {
+		return 0, 0, err
+	}
+	height, err := strconv.Atoi(job.Preset.Video.Height)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return width, height, nil
 }
 
 // FFMPEGEncode function is responsible for encoding the file
