@@ -5,6 +5,9 @@ import (
 
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
+
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/text"
 )
 
 // DownloadFunc is a function type for the multiple
@@ -15,22 +18,36 @@ type DownloadFunc func(jobID string) error
 func StartJob(job types.Job) {
 	dbInstance, _ := db.GetDatabase()
 
+	log.SetHandler(text.New(GetLogOutput()))
+	ctx := log.WithFields(log.Fields{
+		"id":          job.ID,
+		"status":      job.Status,
+		"source":      job.Source,
+		"destination": job.Destination,
+	})
+
+	ctx.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)
 	if err := downloadFunc(job.ID); err != nil {
+		ctx.WithError(err).Error("download failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
+	ctx.Info("encoding")
 	if err := FFMPEGEncode(job.ID); err != nil {
+		ctx.WithError(err).Error("encode failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
+	ctx.Info("uploading")
 	if err := S3Upload(job.ID); err != nil {
+		ctx.WithError(err).Error("upload failed")
 		job.Status = types.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
