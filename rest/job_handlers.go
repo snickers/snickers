@@ -68,7 +68,7 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, string(result))
+	fmt.Fprintf(w, "%s", string(result))
 }
 
 // GetJobDetails returns the details of a given job
