@@ -67,14 +67,8 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
 			}
 		}
-		width, err := strconv.Atoi(job.Preset.Video.Width)
-		if err != nil {
-			return 0, 0, err
-		}
-		height, err := strconv.Atoi(job.Preset.Video.Height)
-		if err != nil {
-			return 0, 0, err
-		}
+
+		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
 
 		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
 		if err != nil {
@@ -93,6 +87,24 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	ost.SetCodecCtx(cc)
 
 	return ist.Index(), ost.Index(), nil
+}
+
+// GetResolution calculate the output resolution based on the preset and input source
+func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+	var width, height int
+	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
+		return inputWidth, inputHeight
+	} else if job.Preset.Video.Width == "" {
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+		width = (inputWidth * height) / inputHeight
+	} else if job.Preset.Video.Height == "" {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height = (inputHeight * width) / inputWidth
+	} else {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+	}
+	return width, height
 }
 
 // FFMPEGEncode function is responsible for encoding the file

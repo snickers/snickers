@@ -357,4 +357,62 @@ var _ = Describe("FFmpeg Encoder", func() {
 			Expect(resultInt).To(SatisfyAll(BeNumerically(">", 100000), BeNumerically("<", 400000)))
 		})
 	})
+	Context("Regarding the definition of output resolution", func() {
+		It("should return width and height of job.Preset", func() {
+			job := types.Job{
+				Preset: types.Preset{
+					Video: types.VideoPreset{
+						Height: "360",
+						Width:  "1000",
+					},
+					Audio: types.AudioPreset{},
+				},
+			}
+
+			resultWidth, resultHeight := lib.GetResolution(job, 1280, 720)
+			Expect(resultWidth).To(Equal(1000))
+			Expect(resultHeight).To(Equal(360))
+		})
+
+		It("should maintain source's aspect ratio if one of the values on job.Preset is missing", func() {
+			job1 := types.Job{
+				Preset: types.Preset{
+					Video: types.VideoPreset{
+						Height: "360",
+						Width:  "",
+					},
+					Audio: types.AudioPreset{},
+				},
+			}
+			resultWidth, resultHeight := lib.GetResolution(job1, 1280, 720)
+			Expect(resultWidth).To(Equal(640))
+			Expect(resultHeight).To(Equal(360))
+
+			job2 := types.Job{
+				Preset: types.Preset{
+					Video: types.VideoPreset{
+						Height: "",
+						Width:  "640",
+					},
+					Audio: types.AudioPreset{},
+				},
+			}
+			resultWidth, resultHeight = lib.GetResolution(job2, 1280, 720)
+			Expect(resultWidth).To(Equal(640))
+			Expect(resultHeight).To(Equal(360))
+
+			job3 := types.Job{
+				Preset: types.Preset{
+					Video: types.VideoPreset{
+						Height: "",
+						Width:  "",
+					},
+					Audio: types.AudioPreset{},
+				},
+			}
+			resultWidth, resultHeight = lib.GetResolution(job3, 1280, 720)
+			Expect(resultWidth).To(Equal(1280))
+			Expect(resultHeight).To(Equal(720))
+		})
+	})
 })
