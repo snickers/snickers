@@ -43,7 +43,7 @@ func HTTPDownload(jobID string) error {
 		job, _ = dbInstance.RetrieveJob(jobID)
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
 		if job.Details != percentage {
-			job.Details = percentage
+			job.Details = percentage + "%"
 			dbInstance.UpdateJob(job.ID, job)
 		}
 	}
