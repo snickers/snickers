@@ -10,8 +10,8 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/lib"
 	"github.com/snickers/snickers/types"
 )
 
@@ -42,7 +42,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			err := lib.FFMPEGEncode(exampleJob.ID)
+			err := core.FFMPEGEncode(exampleJob.ID)
 			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
 		})
 
@@ -61,7 +61,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			err := lib.FFMPEGEncode(exampleJob.ID)
+			err := core.FFMPEGEncode(exampleJob.ID)
 			Expect(err.Error()).To(Equal("output format is not initialized. Unable to allocate context"))
 		})
 
@@ -100,7 +100,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			lib.FFMPEGEncode(exampleJob.ID)
+			core.FFMPEGEncode(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Details).To(Equal("100%"))
@@ -143,7 +143,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
-			lib.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -213,7 +213,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
-			lib.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -271,7 +271,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
-			lib.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -329,7 +329,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.StoreJob(job)
-			lib.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -369,7 +369,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 			}
 
-			resultWidth, resultHeight := lib.GetResolution(job, 1280, 720)
+			resultWidth, resultHeight := core.GetResolution(job, 1280, 720)
 			Expect(resultWidth).To(Equal(1000))
 			Expect(resultHeight).To(Equal(360))
 		})
@@ -384,7 +384,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight := lib.GetResolution(job1, 1280, 720)
+			resultWidth, resultHeight := core.GetResolution(job1, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -397,7 +397,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = lib.GetResolution(job2, 1280, 720)
+			resultWidth, resultHeight = core.GetResolution(job2, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -410,7 +410,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = lib.GetResolution(job3, 1280, 720)
+			resultWidth, resultHeight = core.GetResolution(job3, 1280, 720)
 			Expect(resultWidth).To(Equal(1280))
 			Expect(resultHeight).To(Equal(720))
 		})

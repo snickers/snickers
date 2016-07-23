@@ -8,7 +8,7 @@ import (
 	"github.com/apex/log/handlers/text"
 	"github.com/gorilla/mux"
 
-	"github.com/snickers/snickers/lib"
+	"github.com/snickers/snickers/core"
 )
 
 // Route maps methods to endpoints
@@ -23,7 +23,7 @@ type Routes []Route
 
 // NewRouter creates a new router for HTTP requests
 func NewRouter() *mux.Router {
-	log.SetHandler(text.New(lib.GetLogOutput()))
+	log.SetHandler(text.New(core.GetLogOutput()))
 
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {

@@ -7,26 +7,26 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/lib"
 	"github.com/snickers/snickers/types"
 )
 
-var _ = Describe("Library", func() {
+var _ = Describe("Core", func() {
 	Context("Pipeline", func() {
 		It("Should get the HTTPDownload function if source is HTTP", func() {
 			jobSource := "http://flv.io/KailuaBeach.mp4"
-			downloadFunc := lib.GetDownloadFunc(jobSource)
+			downloadFunc := core.GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
-			expected := reflect.ValueOf(lib.HTTPDownload).Pointer()
+			expected := reflect.ValueOf(core.HTTPDownload).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))
 		})
 
 		It("Should get the S3Download function if source is S3", func() {
 			jobSource := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			downloadFunc := lib.GetDownloadFunc(jobSource)
+			downloadFunc := core.GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
-			expected := reflect.ValueOf(lib.S3Download).Pointer()
+			expected := reflect.ValueOf(core.S3Download).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))
 		})
 	})
@@ -55,7 +55,7 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			err := lib.HTTPDownload(exampleJob.ID)
+			err := core.HTTPDownload(exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 
@@ -70,7 +70,7 @@ var _ = Describe("Library", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			lib.HTTPDownload(exampleJob.ID)
+			core.HTTPDownload(exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
@@ -93,20 +93,20 @@ var _ = Describe("Library", func() {
 
 		It("Should get bucket from URL Destination", func() {
 			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			bucket, _ := lib.GetAWSBucket(destination)
+			bucket, _ := core.GetAWSBucket(destination)
 			Expect(bucket).To(Equal("BUCKET"))
 		})
 
 		It("Should set credentials from URL Destination", func() {
 			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			lib.SetAWSCredentials(destination)
+			core.SetAWSCredentials(destination)
 			Expect(os.Getenv("AWS_ACCESS_KEY_ID")).To(Equal("AWSKEY"))
 			Expect(os.Getenv("AWS_SECRET_ACCESS_KEY")).To(Equal("AWSSECRET"))
 		})
 
 		It("Should get path and filename from URL Destination", func() {
 			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT/HERE.mp4"
-			key, _ := lib.GetAWSKey(destination)
+			key, _ := core.GetAWSKey(destination)
 			Expect(key).To(Equal("/OBJECT/HERE.mp4"))
 		})
 	})

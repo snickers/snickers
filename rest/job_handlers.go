@@ -7,8 +7,8 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
+	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/lib"
 	"github.com/snickers/snickers/types"
 )
 
@@ -32,7 +32,6 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO should we move this to lib?
 	var job types.Job
 	job.ID = uniuri.New()
 	job.Source = jobInput.Source
@@ -112,5 +111,5 @@ func StartJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	go lib.StartJob(job)
+	go core.StartJob(job)
 }
