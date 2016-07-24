@@ -1,6 +1,7 @@
 package snickers_test
 
 import (
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
@@ -10,369 +11,211 @@ import (
 )
 
 var _ = Describe("Database", func() {
-	Context("in memory", func() {
-		var (
-			dbInstance *memory.Database
-		)
+	var (
+		dbInstance       db.DatabaseInterface
+		runDatabaseSuite func()
 
-		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
-			dbInstance.ClearDatabase()
-		})
+		preset types.Preset
+		job    types.Job
+	)
 
-		It("should be able to store a preset", func() {
-			examplePreset := types.Preset{
-				Name:        "examplePreset",
-				Description: "This is an example of preset",
-				Container:   "mp4",
-				RateControl: "vbr",
-				Video: types.VideoPreset{
-					Width:         "720",
-					Height:        "1080",
-					Codec:         "h264",
-					Bitrate:       "10000",
-					GopSize:       "90",
-					GopMode:       "fixed",
-					Profile:       "high",
-					ProfileLevel:  "3.1",
-					InterlaceMode: "progressive",
-				},
-				Audio: types.AudioPreset{
-					Codec:   "aac",
-					Bitrate: "64000",
-				},
-			}
-			res, _ := dbInstance.StorePreset(examplePreset)
-			Expect(res).To(Equal(examplePreset))
-		})
+	BeforeEach(func() {
+		preset = types.Preset{
+			Name:        "examplePreset",
+			Description: "This is an example of preset",
+			Container:   "mp4",
+			RateControl: "vbr",
+			Video: types.VideoPreset{
+				Width:         "720",
+				Height:        "1080",
+				Codec:         "h264",
+				Bitrate:       "10000",
+				GopSize:       "90",
+				GopMode:       "fixed",
+				Profile:       "high",
+				ProfileLevel:  "3.1",
+				InterlaceMode: "progressive",
+			},
+			Audio: types.AudioPreset{
+				Codec:   "aac",
+				Bitrate: "64000",
+			},
+		}
 
-		It("should be able to retrieve a preset by its name", func() {
-			preset1 := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-
-			preset2 := types.Preset{
-				Name:        "presetTwo",
-				Description: "This is preset two",
-			}
-
-			dbInstance.StorePreset(preset1)
-			dbInstance.StorePreset(preset2)
-
-			res, _ := dbInstance.RetrievePreset("presetOne")
-			Expect(res).To(Equal(preset1))
-		})
-
-		It("should be able to list presets", func() {
-			preset1 := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-
-			preset2 := types.Preset{
-				Name:        "presetTwo",
-				Description: "This is preset two",
-			}
-
-			presets, _ := dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(0))
-
-			dbInstance.StorePreset(preset1)
-			presets, _ = dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(1))
-
-			dbInstance.StorePreset(preset2)
-			presets, _ = dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(2))
-		})
-
-		It("should be able to update preset", func() {
-			preset := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-			dbInstance.StorePreset(preset)
-
-			expectedDescription := "New description for this preset"
-			preset.Description = expectedDescription
-			dbInstance.UpdatePreset("presetOne", preset)
-			res, _ := dbInstance.GetPresets()
-
-			Expect(res[0].Description).To(Equal(expectedDescription))
-		})
-
-		It("should be able to store a job", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-			res, _ := dbInstance.StoreJob(exampleJob)
-			Expect(res).To(Equal(exampleJob))
-		})
-
-		It("should be able to retrieve a job by its name", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			job2 := types.Job{
-				ID:          "321",
-				Source:      "http://source2.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination2.mp4",
-				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			dbInstance.StoreJob(job1)
-			dbInstance.StoreJob(job2)
-
-			res, _ := dbInstance.RetrieveJob("123")
-			Expect(res).To(Equal(job1))
-		})
-
-		It("should be able to list jobs", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			job2 := types.Job{
-				ID:          "321",
-				Source:      "http://source2.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination2.mp4",
-				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			jobs, _ := dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(0))
-
-			dbInstance.StoreJob(job1)
-			jobs, _ = dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(1))
-
-			dbInstance.StoreJob(job2)
-			jobs, _ = dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(2))
-		})
-
-		It("should be able to update job", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			dbInstance.StoreJob(job1)
-
-			expectedStatus := types.JobDownloading
-			job1.Status = expectedStatus
-			dbInstance.UpdateJob("123", job1)
-			res, _ := dbInstance.GetJobs()
-
-			Expect(res[0].Status).To(Equal(expectedStatus))
-		})
+		job = types.Job{
+			ID:          "123",
+			Source:      "http://source.here.mp4",
+			Destination: "s3://user@pass:/bucket/destination.mp4",
+			Preset:      types.Preset{Name: "presetHere"},
+			Status:      types.JobCreated,
+			Details:     "0%",
+		}
 	})
 
-	Context("mongo", func() {
-		var (
-			dbInstance *mongo.Database
-		)
+	runDatabaseSuite = func() {
+		Describe("StorePreset", func() {
+			It("should be able to store a preset", func() {
+				res, err := dbInstance.StorePreset(preset)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res).To(Equal(preset))
+			})
+		})
 
+		Describe("RetrievePreset", func() {
+			JustBeforeEach(func() {
+				dbInstance.StorePreset(preset)
+			})
+
+			It("should be able to retrieve a preset by its name", func() {
+				res, err := dbInstance.RetrievePreset("examplePreset")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res).To(Equal(preset))
+			})
+
+			Context("when the present does not exist", func() {
+				It("should return an error", func() {
+					_, err := dbInstance.RetrievePreset("invalid-preset")
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("GetPresets", func() {
+			var anotherPreset types.Preset
+
+			BeforeEach(func() {
+				anotherPreset = types.Preset{
+					Name:        "anotherPreset",
+					Description: "This is another preset",
+				}
+			})
+
+			JustBeforeEach(func() {
+				dbInstance.StorePreset(preset)
+				dbInstance.StorePreset(anotherPreset)
+			})
+
+			It("should be able to list presets", func() {
+				presets, err := dbInstance.GetPresets()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(presets).To(ConsistOf(preset, anotherPreset))
+			})
+		})
+
+		Describe("UpdatePreset", func() {
+			JustBeforeEach(func() {
+				dbInstance.StorePreset(preset)
+			})
+
+			It("should be able to update preset", func() {
+				expectedDescription := "New description for this preset"
+				preset.Description = expectedDescription
+				dbInstance.UpdatePreset(preset.Name, preset)
+				res, err := dbInstance.GetPresets()
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(res[0].Description).To(Equal(expectedDescription))
+			})
+
+			Context("when the present does not exist", func() {
+				It("should return an error", func() {
+					_, err := dbInstance.RetrievePreset("invalid-preset")
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("StoreJob", func() {
+			It("should be able to store a job", func() {
+				res, err := dbInstance.StoreJob(job)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res).To(Equal(job))
+			})
+		})
+
+		Describe("RetrieveJob", func() {
+			JustBeforeEach(func() {
+				dbInstance.StoreJob(job)
+			})
+
+			It("should be able to retrieve a job by its name", func() {
+				res, err := dbInstance.RetrieveJob("123")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res).To(Equal(job))
+			})
+
+			Context("when the job does not exist", func() {
+				It("should return an error", func() {
+					_, err := dbInstance.RetrieveJob("invalid-job")
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("GetJobs", func() {
+			var anotherJob types.Job
+
+			BeforeEach(func() {
+				anotherJob = types.Job{
+					ID:          "321",
+					Source:      "http://source2.here.mp4",
+					Destination: "s3://user@pass:/bucket/destination2.mp4",
+					Preset:      types.Preset{Name: "presetHere2"},
+					Status:      types.JobCreated,
+					Details:     "0%",
+				}
+			})
+
+			JustBeforeEach(func() {
+				dbInstance.StoreJob(job)
+				dbInstance.StoreJob(anotherJob)
+			})
+
+			It("should be able to list jobs", func() {
+				jobs, err := dbInstance.GetJobs()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jobs).To(ConsistOf(job, anotherJob))
+			})
+		})
+
+		Describe("UpdateJob", func() {
+			JustBeforeEach(func() {
+				dbInstance.StoreJob(job)
+			})
+
+			It("should be able to update job", func() {
+				expectedStatus := types.JobDownloading
+				job.Status = expectedStatus
+				dbInstance.UpdateJob(job.ID, job)
+
+				res, err := dbInstance.GetJobs()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res[0].Status).To(Equal(expectedStatus))
+			})
+		})
+	}
+
+	Describe("when the storage is in memory", func() {
 		BeforeEach(func() {
-			dbInstance, _ = mongo.GetDatabase()
+			dbInstance, _ = memory.GetDatabase()
+		})
+
+		AfterEach(func() {
 			dbInstance.ClearDatabase()
 		})
 
-		It("should be able to store a preset", func() {
-			examplePreset := types.Preset{
-				Name:        "examplePreset",
-				Description: "This is an example of preset",
-				Container:   "mp4",
-				RateControl: "vbr",
-				Video: types.VideoPreset{
-					Width:         "720",
-					Height:        "1080",
-					Codec:         "h264",
-					Bitrate:       "10000",
-					GopSize:       "90",
-					GopMode:       "fixed",
-					Profile:       "high",
-					ProfileLevel:  "3.1",
-					InterlaceMode: "progressive",
-				},
-				Audio: types.AudioPreset{
-					Codec:   "aac",
-					Bitrate: "64000",
-				},
-			}
-			res, _ := dbInstance.StorePreset(examplePreset)
-			Expect(res).To(Equal(examplePreset))
+		runDatabaseSuite()
+	})
+
+	Describe("when the storage is mongodb", func() {
+		BeforeEach(func() {
+			dbInstance, _ = mongo.GetDatabase()
 		})
 
-		It("should be able to retrieve a preset by its name", func() {
-			preset1 := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-
-			preset2 := types.Preset{
-				Name:        "presetTwo",
-				Description: "This is preset two",
-			}
-
-			dbInstance.StorePreset(preset1)
-			dbInstance.StorePreset(preset2)
-
-			res, _ := dbInstance.RetrievePreset("presetOne")
-			Expect(res).To(Equal(preset1))
+		AfterEach(func() {
+			dbInstance.ClearDatabase()
 		})
 
-		It("should be able to list presets", func() {
-			preset1 := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-
-			preset2 := types.Preset{
-				Name:        "presetTwo",
-				Description: "This is preset two",
-			}
-
-			presets, _ := dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(0))
-
-			dbInstance.StorePreset(preset1)
-			presets, _ = dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(1))
-
-			dbInstance.StorePreset(preset2)
-			presets, _ = dbInstance.GetPresets()
-			Expect(len(presets)).To(Equal(2))
-		})
-
-		It("should be able to update preset", func() {
-			preset := types.Preset{
-				Name:        "presetOne",
-				Description: "This is preset one",
-			}
-			dbInstance.StorePreset(preset)
-
-			expectedDescription := "New description for this preset"
-			preset.Description = expectedDescription
-			dbInstance.UpdatePreset("presetOne", preset)
-			res, _ := dbInstance.GetPresets()
-
-			Expect(res[0].Description).To(Equal(expectedDescription))
-		})
-
-		It("should be able to store a job", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-			res, _ := dbInstance.StoreJob(exampleJob)
-			Expect(res).To(Equal(exampleJob))
-		})
-
-		It("should be able to retrieve a job by its name", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			job2 := types.Job{
-				ID:          "321",
-				Source:      "http://source2.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination2.mp4",
-				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			dbInstance.StoreJob(job1)
-			dbInstance.StoreJob(job2)
-
-			res, _ := dbInstance.RetrieveJob("123")
-			Expect(res).To(Equal(job1))
-		})
-
-		It("should be able to list jobs", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			job2 := types.Job{
-				ID:          "321",
-				Source:      "http://source2.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination2.mp4",
-				Preset:      types.Preset{Name: "presetHere2"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			jobs, _ := dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(0))
-
-			dbInstance.StoreJob(job1)
-			jobs, _ = dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(1))
-
-			dbInstance.StoreJob(job2)
-			jobs, _ = dbInstance.GetJobs()
-			Expect(len(jobs)).To(Equal(2))
-		})
-
-		It("should be able to update job", func() {
-			job1 := types.Job{
-				ID:          "123",
-				Source:      "http://source.here.mp4",
-				Destination: "s3://user@pass:/bucket/destination.mp4",
-				Preset:      types.Preset{Name: "presetHere"},
-				Status:      types.JobCreated,
-				Details:     "0%",
-			}
-
-			dbInstance.StoreJob(job1)
-
-			expectedStatus := types.JobDownloading
-			job1.Status = expectedStatus
-			dbInstance.UpdateJob("123", job1)
-			res, _ := dbInstance.GetJobs()
-
-			Expect(res[0].Status).To(Equal(expectedStatus))
-		})
+		runDatabaseSuite()
 	})
 })

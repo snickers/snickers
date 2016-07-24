@@ -18,7 +18,7 @@ run:
 
 test:
 	go vet ./...
-	ginkgo -p -race -cover -keepGoing -nodes=4 .
+	ginkgo -p -r -race -cover -keepGoing -nodes=4 .
 
 test_coverage:
 	@go get github.com/modocache/gover
