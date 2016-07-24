@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/flavioribeiro/gonfig"
-	"github.com/snickers/snickers/rest"
+	"github.com/snickers/snickers/server"
 )
 
 func main() {
@@ -15,5 +15,5 @@ func main() {
 	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
 	port, _ := cfg.GetString("PORT", "8080")
 	fmt.Println("Starting Snickers on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, rest.NewRouter()))
+	log.Fatal(http.ListenAndServe(":"+port, server.NewRouter()))
 }

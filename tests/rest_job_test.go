@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/rest"
+	"github.com/snickers/snickers/server"
 	"github.com/snickers/snickers/types"
 )
 
@@ -24,7 +24,7 @@ var _ = Describe("Rest API", func() {
 
 	BeforeEach(func() {
 		response = httptest.NewRecorder()
-		server = rest.NewRouter()
+		server = server.NewRouter()
 		dbInstance, _ = db.GetDatabase()
 		dbInstance.ClearDatabase()
 	})
