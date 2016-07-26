@@ -1,50 +1,34 @@
 package server
 
-import (
-	"net/http"
+import "net/http"
 
-	"github.com/apex/httplog"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/text"
-	"github.com/gorilla/mux"
+type Route int
 
-	"github.com/snickers/snickers/core"
+const (
+	Ping Route = iota
+	CreateJob
+	ListJobs
+	StartJob
+	CreatePreset
+	UpdatePreset
+	ListPresets
+	GetPresetDetails
+	DeletePreset
 )
 
-// Route maps methods to endpoints
-type Route struct {
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
-}
+var Routes = map[Route]RouterArguments{
+	Ping: RouterArguments{Path: "/ping", Method: http.MethodGet},
 
-// Routes stores all routes
-type Routes []Route
+	//Job routes
+	CreateJob:     RouterArguments{Path: "/jobs", Method: http.MethodPost},
+	ListJobs:      RouterArguments{Path: "/jobs", Method: http.MethodGet},
+	GetJobDetails: RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodGet},
+	StartJob:      RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodPost},
 
-// NewRouter creates a new router for HTTP requests
-func NewRouter() *mux.Router {
-	log.SetHandler(text.New(core.GetLogOutput()))
-
-	router := mux.NewRouter().StrictSlash(true)
-	for _, route := range routes {
-		handler := httplog.New(JSONHandler(route.HandlerFunc))
-		router.Methods(route.Method).Path(route.Pattern).Handler(handler)
-	}
-
-	return router
-}
-
-var routes = Routes{
-	// Preset routes
-	Route{"POST", "/presets", CreatePreset},
-	Route{"PUT", "/presets", UpdatePreset},
-	Route{"GET", "/presets", ListPresets},
-	Route{"GET", "/presets/{presetName}", GetPresetDetails},
-	Route{"DELETE", "/presets/{presetName}", DeletePreset},
-
-	// Job routes
-	Route{"POST", "/jobs", CreateJob},
-	Route{"GET", "/jobs", ListJobs},
-	Route{"GET", "/jobs/{jobID}", GetJobDetails},
-	Route{"POST", "/jobs/{jobID}/start", StartJob},
+	//Preset routes
+	CreatePreset:     RouterArguments{Path: "/presets", Method: http.MethodPost},
+	UpdatePreset:     RouterArguments{Path: "/presets", Method: http.MethodPut},
+	ListPresets:      RouterArguments{Path: "/presets", Method: http.MethodGet},
+	GetPresetDetails: RouterArguments{Path: "/presets/{presetName}", Method: http.MethodGet},
+	DeletePreset:     RouterArguments{Path: "/presets/{presetName}", Method: http.MethodDelete},
 }

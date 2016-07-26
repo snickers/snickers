@@ -11,7 +11,7 @@ import (
 )
 
 // CreatePreset creates a preset
-func CreatePreset(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) CreatePreset(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -35,7 +35,7 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdatePreset updates a preset
-func UpdatePreset(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) UpdatePreset(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -63,7 +63,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListPresets list all presets available
-func ListPresets(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) ListPresets(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -81,7 +81,7 @@ func ListPresets(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPresetDetails returns the details of a given preset
-func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -105,7 +105,7 @@ func GetPresetDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeletePreset creates a preset
-func DeletePreset(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) DeletePreset(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)

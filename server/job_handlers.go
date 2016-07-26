@@ -13,7 +13,7 @@ import (
 )
 
 // CreateJob creates a job
-func CreateJob(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -53,7 +53,7 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListJobs lists all jobs
-func ListJobs(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) ListJobs(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -71,7 +71,7 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetJobDetails returns the details of a given job
-func GetJobDetails(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) GetJobDetails(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
@@ -95,7 +95,7 @@ func GetJobDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 // StartJob triggers an encoding process
-func StartJob(w http.ResponseWriter, r *http.Request) {
+func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 	dbInstance, err := db.GetDatabase()
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "getting database", err)
