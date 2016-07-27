@@ -1,9 +1,8 @@
-package snickers_test
+package db_test
 
 import (
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
-	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
 
 	. "github.com/onsi/ginkgo"
@@ -207,15 +206,15 @@ var _ = Describe("Database", func() {
 		runDatabaseSuite()
 	})
 
-	Describe("when the storage is mongodb", func() {
-		BeforeEach(func() {
-			dbInstance, _ = mongo.GetDatabase()
-		})
+	// Describe("when the storage is mongodb", func() {
+	// 	BeforeEach(func() {
+	// 		dbInstance, _ = mongo.GetDatabase()
+	// 	})
 
-		AfterEach(func() {
-			dbInstance.ClearDatabase()
-		})
+	// 	AfterEach(func() {
+	// 		dbInstance.ClearDatabase()
+	// 	})
 
-		runDatabaseSuite()
-	})
+	// 	runDatabaseSuite()
+	// })
 })

@@ -1,4 +1,4 @@
-package snickers_test
+package core_test
 
 import (
 	"os"
