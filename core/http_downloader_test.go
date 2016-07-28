@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 var _ = Describe("HTTP Downloader", func() {
@@ -25,12 +25,12 @@ var _ = Describe("HTTP Downloader", func() {
 	})
 
 	It("should return an error if source couldn't be fetched", func() {
-		exampleJob := types.Job{
+		exampleJob := snickers.Job{
 			ID:          "123",
 			Source:      "http://source.here.mp4",
 			Destination: "s3://user@pass:/bucket/",
-			Preset:      types.Preset{Name: "presetHere", Container: "mp4"},
-			Status:      types.JobCreated,
+			Preset:      snickers.Preset{Name: "presetHere", Container: "mp4"},
+			Status:      snickers.JobCreated,
 			Details:     "",
 		}
 		dbInstance.StoreJob(exampleJob)
@@ -40,12 +40,12 @@ var _ = Describe("HTTP Downloader", func() {
 	})
 
 	It("Should set the local source and local destination on Job", func() {
-		exampleJob := types.Job{
+		exampleJob := snickers.Job{
 			ID:          "123",
 			Source:      "http://flv.io/source_here.mp4",
 			Destination: "s3://user@pass:/bucket/",
-			Preset:      types.Preset{Name: "240p", Container: "mp4"},
-			Status:      types.JobCreated,
+			Preset:      snickers.Preset{Name: "240p", Container: "mp4"},
+			Status:      snickers.JobCreated,
 			Details:     "",
 		}
 		dbInstance.StoreJob(exampleJob)

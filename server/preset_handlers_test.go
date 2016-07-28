@@ -14,7 +14,7 @@ import (
 	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -69,8 +69,8 @@ var _ = Describe("PresetHandlers", func() {
 		})
 
 		It("should return stored presets", func() {
-			examplePreset1 := types.Preset{Name: "a"}
-			examplePreset2 := types.Preset{Name: "b"}
+			examplePreset1 := snickers.Preset{Name: "a"}
+			examplePreset2 := snickers.Preset{Name: "b"}
 			dbInstance.StorePreset(examplePreset1)
 			dbInstance.StorePreset(examplePreset2)
 
@@ -94,12 +94,12 @@ var _ = Describe("PresetHandlers", func() {
 
 	Describe("GetPresetDetails", func() {
 		It("should return the preset with details", func() {
-			examplePreset := types.Preset{
+			examplePreset := snickers.Preset{
 				Name:        "examplePreset",
 				Description: "This is an example of preset",
 				Container:   "mp4",
 				RateControl: "vbr",
-				Video: types.VideoPreset{
+				Video: snickers.VideoPreset{
 					Width:        "720",
 					Height:       "1080",
 					Codec:        "h264",
@@ -111,7 +111,7 @@ var _ = Describe("PresetHandlers", func() {
 
 					InterlaceMode: "progressive",
 				},
-				Audio: types.AudioPreset{
+				Audio: snickers.AudioPreset{
 					Codec:   "aac",
 					Bitrate: "64000",
 				},
@@ -191,7 +191,7 @@ var _ = Describe("PresetHandlers", func() {
 
 	Describe("UpdatePreset", func() {
 		It("should update an existing preset", func() {
-			dbInstance.StorePreset(types.Preset{Name: "examplePreset"})
+			dbInstance.StorePreset(snickers.Preset{Name: "examplePreset"})
 			preset := `{"name":"examplePreset","Description": "new description","video": {},"audio": {}}`
 
 			request, _ := http.NewRequest(http.MethodPut,
@@ -209,7 +209,7 @@ var _ = Describe("PresetHandlers", func() {
 
 		Context("when the request is invalid", func() {
 			It("should return BadRequest if preset is malformed", func() {
-				dbInstance.StorePreset(types.Preset{Name: "examplePreset"})
+				dbInstance.StorePreset(snickers.Preset{Name: "examplePreset"})
 				preset := `{"name":"examplePreset","Description: "new description","video": {},"audio": {}}`
 
 				request, _ := http.NewRequest(http.MethodPut,
@@ -244,12 +244,12 @@ var _ = Describe("PresetHandlers", func() {
 
 	Describe("DeletePreset", func() {
 		It("should delete the preset", func() {
-			examplePreset := types.Preset{
+			examplePreset := snickers.Preset{
 				Name:        "examplePreset",
 				Description: "This is an example of preset",
 				Container:   "mp4",
 				RateControl: "vbr",
-				Video: types.VideoPreset{
+				Video: snickers.VideoPreset{
 					Width:        "720",
 					Height:       "1080",
 					Codec:        "h264",
@@ -261,7 +261,7 @@ var _ = Describe("PresetHandlers", func() {
 
 					InterlaceMode: "progressive",
 				},
-				Audio: types.AudioPreset{
+				Audio: snickers.AudioPreset{
 					Codec:   "aac",
 					Bitrate: "64000",
 				},

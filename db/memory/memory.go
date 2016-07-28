@@ -4,15 +4,15 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // Database struct that persists configurations
 type Database struct {
 	mtx sync.RWMutex
 
-	presets map[string]types.Preset
-	jobs    map[string]types.Job
+	presets map[string]snickers.Preset
+	jobs    map[string]snickers.Job
 }
 
 var instance *Database
@@ -23,8 +23,8 @@ func GetDatabase() (*Database, error) {
 		return instance, nil
 	}
 	instance = &Database{}
-	instance.presets = map[string]types.Preset{}
-	instance.jobs = map[string]types.Job{}
+	instance.presets = map[string]snickers.Preset{}
+	instance.jobs = map[string]snickers.Job{}
 	return instance, nil
 }
 
@@ -33,13 +33,13 @@ func (r *Database) ClearDatabase() error {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
-	instance.presets = map[string]types.Preset{}
-	instance.jobs = map[string]types.Job{}
+	instance.presets = map[string]snickers.Preset{}
+	instance.jobs = map[string]snickers.Job{}
 	return nil
 }
 
 // StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
+func (r *Database) StorePreset(preset snickers.Preset) (snickers.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -48,18 +48,18 @@ func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 }
 
 // RetrievePreset retrieves one preset from the database
-func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
+func (r *Database) RetrievePreset(presetName string) (snickers.Preset, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
 	if val, ok := r.presets[presetName]; ok {
 		return val, nil
 	}
-	return types.Preset{}, errors.New("preset not found")
+	return snickers.Preset{}, errors.New("preset not found")
 }
 
 // UpdatePreset updates a preset
-func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
+func (r *Database) UpdatePreset(presetName string, newPreset snickers.Preset) (snickers.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -68,11 +68,11 @@ func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (type
 }
 
 // GetPresets retrieves all presets of the database
-func (r *Database) GetPresets() ([]types.Preset, error) {
+func (r *Database) GetPresets() ([]snickers.Preset, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
-	res := make([]types.Preset, 0, len(r.presets))
+	res := make([]snickers.Preset, 0, len(r.presets))
 	for _, value := range r.presets {
 		res = append(res, value)
 	}
@@ -80,7 +80,7 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 }
 
 // DeletePreset deletes a preset from the database
-func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
+func (r *Database) DeletePreset(presetName string) (snickers.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -88,11 +88,11 @@ func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
 		delete(r.presets, presetName)
 		return val, nil
 	}
-	return types.Preset{}, errors.New("preset not found")
+	return snickers.Preset{}, errors.New("preset not found")
 }
 
 // StoreJob stores job information
-func (r *Database) StoreJob(job types.Job) (types.Job, error) {
+func (r *Database) StoreJob(job snickers.Job) (snickers.Job, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -101,18 +101,18 @@ func (r *Database) StoreJob(job types.Job) (types.Job, error) {
 }
 
 // RetrieveJob retrieves one job from the database
-func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
+func (r *Database) RetrieveJob(jobID string) (snickers.Job, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
 	if val, ok := r.jobs[jobID]; ok {
 		return val, nil
 	}
-	return types.Job{}, errors.New("job not found")
+	return snickers.Job{}, errors.New("job not found")
 }
 
 // UpdateJob updates a job
-func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) {
+func (r *Database) UpdateJob(jobID string, newJob snickers.Job) (snickers.Job, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -121,11 +121,11 @@ func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) 
 }
 
 //GetJobs retrieves all jobs of the database
-func (r *Database) GetJobs() ([]types.Job, error) {
+func (r *Database) GetJobs() ([]snickers.Job, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
-	res := make([]types.Job, 0, len(r.jobs))
+	res := make([]snickers.Job, 0, len(r.jobs))
 	for _, value := range r.jobs {
 		res = append(res, value)
 	}

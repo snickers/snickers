@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 var _ = Describe("FFmpeg Encoder", func() {
@@ -30,12 +30,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 		})
 
 		It("should return an error if input is not found", func() {
-			exampleJob := types.Job{
+			exampleJob := snickers.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
 				Destination:      "s3://user@pass:/bucket/",
-				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
-				Status:           types.JobCreated,
+				Preset:           snickers.Preset{Name: "presetHere", Container: "mp4"},
+				Status:           snickers.JobCreated,
 				Details:          "",
 				LocalSource:      "notfound.mp4",
 				LocalDestination: "anywhere",
@@ -48,12 +48,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 		It("should return error if output path doesn't exists", func() {
 			projectPath, _ := os.Getwd()
-			exampleJob := types.Job{
+			exampleJob := snickers.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
 				Destination:      "s3://user@pass:/bucket/",
-				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
-				Status:           types.JobCreated,
+				Preset:           snickers.Preset{Name: "presetHere", Container: "mp4"},
+				Status:           snickers.JobCreated,
 				Details:          "",
 				LocalSource:      projectPath + "/videos/comingsoon.mov",
 				LocalDestination: "/nowhere",
@@ -68,15 +68,15 @@ var _ = Describe("FFmpeg Encoder", func() {
 		It("Should change job status and details when encoding", func() {
 			projectPath, _ := os.Getwd()
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-			exampleJob := types.Job{
+			exampleJob := snickers.Job{
 				ID:          "123",
 				Source:      "http://source.here.mp4",
 				Destination: "s3://user@pass:/bucket/",
-				Preset: types.Preset{
+				Preset: snickers.Preset{
 					Name:        "presetHere",
 					Container:   "mp4",
 					RateControl: "vbr",
-					Video: types.VideoPreset{
+					Video: snickers.VideoPreset{
 						Height:        "240",
 						Width:         "426",
 						Codec:         "h264",
@@ -87,12 +87,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 						ProfileLevel:  "3.1",
 						InterlaceMode: "progressive",
 					},
-					Audio: types.AudioPreset{
+					Audio: snickers.AudioPreset{
 						Codec:   "aac",
 						Bitrate: "64000",
 					},
 				},
-				Status:           types.JobCreated,
+				Status:           snickers.JobCreated,
 				Details:          "",
 				LocalSource:      projectPath + "/videos/nyt.mp4",
 				LocalDestination: swapDir + "/output.mp4",
@@ -104,7 +104,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Details).To(Equal("100%"))
-			Expect(changedJob.Status).To(Equal(types.JobEncoding))
+			Expect(changedJob.Status).To(Equal(snickers.JobEncoding))
 		})
 	})
 
@@ -113,12 +113,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 			currentDir, _ := os.Getwd()
 			destinationFile := "/tmp/" + uniuri.New() + ".mp4"
 
-			job := types.Job{
+			job := snickers.Job{
 				ID: "123",
-				Preset: types.Preset{
+				Preset: snickers.Preset{
 					Container:   "mp4", // OK
 					RateControl: "vbr", // NOK
-					Video: types.VideoPreset{
+					Video: snickers.VideoPreset{
 						Height:       "240",    // OK
 						Width:        "426",    // OK
 						Codec:        "h264",   // OK
@@ -130,12 +130,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 						InterlaceMode: "progressive", // NOK
 					},
-					Audio: types.AudioPreset{
+					Audio: snickers.AudioPreset{
 						Codec:   "aac",   // OK
 						Bitrate: "64000", // OK
 					},
 				},
-				Status:           types.JobCreated,
+				Status:           snickers.JobCreated,
 				Details:          "0%",
 				LocalSource:      currentDir + "/videos/nyt.mp4",
 				LocalDestination: destinationFile,
@@ -187,12 +187,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 			currentDir, _ := os.Getwd()
 			destinationFile := "/tmp/" + uniuri.New() + ".webm"
 
-			job := types.Job{
+			job := snickers.Job{
 				ID: "123",
-				Preset: types.Preset{
+				Preset: snickers.Preset{
 					Container:   "webm",
 					RateControl: "vbr",
-					Video: types.VideoPreset{
+					Video: snickers.VideoPreset{
 						Height:  "360",
 						Width:   "640",
 						Codec:   "vp8",
@@ -200,12 +200,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 						GopSize: "90",
 						GopMode: "fixed",
 					},
-					Audio: types.AudioPreset{
+					Audio: snickers.AudioPreset{
 						Codec:   "vorbis",
 						Bitrate: "64000",
 					},
 				},
-				Status:           types.JobCreated,
+				Status:           snickers.JobCreated,
 				Details:          "0%",
 				LocalSource:      currentDir + "/videos/nyt.mp4",
 				LocalDestination: destinationFile,
@@ -245,12 +245,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 			currentDir, _ := os.Getwd()
 			destinationFile := "/tmp/" + uniuri.New() + ".webm"
 
-			job := types.Job{
+			job := snickers.Job{
 				ID: "123",
-				Preset: types.Preset{
+				Preset: snickers.Preset{
 					Container:   "webm",
 					RateControl: "vbr",
-					Video: types.VideoPreset{
+					Video: snickers.VideoPreset{
 						Height:  "360",
 						Width:   "640",
 						Codec:   "vp9",
@@ -258,12 +258,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 						GopSize: "90",
 						GopMode: "fixed",
 					},
-					Audio: types.AudioPreset{
+					Audio: snickers.AudioPreset{
 						Codec:   "vorbis",
 						Bitrate: "64000",
 					},
 				},
-				Status:           types.JobCreated,
+				Status:           snickers.JobCreated,
 				Details:          "0%",
 				LocalSource:      currentDir + "/videos/nyt.mp4",
 				LocalDestination: destinationFile,
@@ -303,12 +303,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 			currentDir, _ := os.Getwd()
 			destinationFile := "/tmp/" + uniuri.New() + ".ogg"
 
-			job := types.Job{
+			job := snickers.Job{
 				ID: "123",
-				Preset: types.Preset{
+				Preset: snickers.Preset{
 					Container:   "ogg",
 					RateControl: "vbr",
-					Video: types.VideoPreset{
+					Video: snickers.VideoPreset{
 						Height:  "360",
 						Width:   "640",
 						Codec:   "theora",
@@ -316,12 +316,12 @@ var _ = Describe("FFmpeg Encoder", func() {
 						GopSize: "90",
 						GopMode: "fixed",
 					},
-					Audio: types.AudioPreset{
+					Audio: snickers.AudioPreset{
 						Codec:   "vorbis",
 						Bitrate: "64000",
 					},
 				},
-				Status:           types.JobCreated,
+				Status:           snickers.JobCreated,
 				Details:          "0%",
 				LocalSource:      currentDir + "/videos/nyt.mp4",
 				LocalDestination: destinationFile,
@@ -359,13 +359,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 	})
 	Context("Regarding the definition of output resolution", func() {
 		It("should return width and height of job.Preset", func() {
-			job := types.Job{
-				Preset: types.Preset{
-					Video: types.VideoPreset{
+			job := snickers.Job{
+				Preset: snickers.Preset{
+					Video: snickers.VideoPreset{
 						Height: "360",
 						Width:  "1000",
 					},
-					Audio: types.AudioPreset{},
+					Audio: snickers.AudioPreset{},
 				},
 			}
 
@@ -375,39 +375,39 @@ var _ = Describe("FFmpeg Encoder", func() {
 		})
 
 		It("should maintain source's aspect ratio if one of the values on job.Preset is missing", func() {
-			job1 := types.Job{
-				Preset: types.Preset{
-					Video: types.VideoPreset{
+			job1 := snickers.Job{
+				Preset: snickers.Preset{
+					Video: snickers.VideoPreset{
 						Height: "360",
 						Width:  "",
 					},
-					Audio: types.AudioPreset{},
+					Audio: snickers.AudioPreset{},
 				},
 			}
 			resultWidth, resultHeight := core.GetResolution(job1, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
-			job2 := types.Job{
-				Preset: types.Preset{
-					Video: types.VideoPreset{
+			job2 := snickers.Job{
+				Preset: snickers.Preset{
+					Video: snickers.VideoPreset{
 						Height: "",
 						Width:  "640",
 					},
-					Audio: types.AudioPreset{},
+					Audio: snickers.AudioPreset{},
 				},
 			}
 			resultWidth, resultHeight = core.GetResolution(job2, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
-			job3 := types.Job{
-				Preset: types.Preset{
-					Video: types.VideoPreset{
+			job3 := snickers.Job{
+				Preset: snickers.Preset{
+					Video: snickers.VideoPreset{
 						Height: "",
 						Width:  "",
 					},
-					Audio: types.AudioPreset{},
+					Audio: snickers.AudioPreset{},
 				},
 			}
 			resultWidth, resultHeight = core.GetResolution(job3, 1280, 720)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/pivotal-golang/lager"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // DownloadFunc is a function type for the multiple
@@ -13,7 +13,7 @@ import (
 type DownloadFunc func(jobID string) error
 
 // StartJob starts the job
-func StartJob(job types.Job) {
+func StartJob(job snickers.Job) {
 	//TODO: replace this to use the one initialized on the server
 	log := lager.NewLogger("snickers")
 	log.Session("start-job", lager.Data{
@@ -31,7 +31,7 @@ func StartJob(job types.Job) {
 	downloadFunc := GetDownloadFunc(job.Source)
 	if err := downloadFunc(job.ID); err != nil {
 		log.Error("download failed", err)
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -40,7 +40,7 @@ func StartJob(job types.Job) {
 	log.Info("encoding")
 	if err := FFMPEGEncode(job.ID); err != nil {
 		log.Error("encode failed", err)
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -49,7 +49,7 @@ func StartJob(job types.Job) {
 	log.Info("uploading")
 	if err := S3Upload(job.ID); err != nil {
 		log.Error("upload failed", err)
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -60,7 +60,7 @@ func StartJob(job types.Job) {
 		log.Error("erasing temporary files failed", err)
 	}
 
-	job.Status = types.JobFinished
+	job.Status = snickers.JobFinished
 	dbInstance.UpdateJob(job.ID, job)
 }
 

@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-golang/lager"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // CreateJob creates a job
@@ -26,7 +26,7 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jobInput types.JobInput
+	var jobInput snickers.JobInput
 	if err := json.NewDecoder(r.Body).Decode(&jobInput); err != nil {
 		log.Error("failed-unpacking-job", err)
 		HTTPError(w, http.StatusBadRequest, "unpacking job", err)
@@ -40,12 +40,12 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var job types.Job
+	var job snickers.Job
 	job.ID = uniuri.New()
 	job.Source = jobInput.Source
 	job.Destination = jobInput.Destination
 	job.Preset = preset
-	job.Status = types.JobCreated
+	job.Status = snickers.JobCreated
 	_, err = dbInstance.StoreJob(job)
 	if err != nil {
 		log.Error("failed-storing-job", err)

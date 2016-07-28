@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pivotal-golang/lager"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // CreatePreset creates a preset
@@ -24,7 +24,7 @@ func (sn *SnickersServer) CreatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var preset types.Preset
+	var preset snickers.Preset
 	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		log.Error("failed-unpacking-preset", err)
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
@@ -56,7 +56,7 @@ func (sn *SnickersServer) UpdatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var preset types.Preset
+	var preset snickers.Preset
 	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		log.Error("failed-unpacking-preset", err)
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
