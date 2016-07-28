@@ -1,4 +1,4 @@
-package snickers_test
+package core_test
 
 import (
 	"io"
@@ -10,23 +10,6 @@ import (
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
-
-func cp(dst, src string) error {
-	s, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer s.Close()
-	d, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(d, s); err != nil {
-		d.Close()
-		return err
-	}
-	return d.Close()
-}
 
 var _ = Describe("Swap Cleaner", func() {
 	Context("when calling", func() {
@@ -47,8 +30,8 @@ var _ = Describe("Swap Cleaner", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			os.MkdirAll("/tmp/123/src/", 0777)
-			os.MkdirAll("/tmp/123/dst/", 0777)
+			Expect(os.MkdirAll("/tmp/123/src/", 0777)).To(Succeed())
+			Expect(os.MkdirAll("/tmp/123/dst/", 0777)).To(Succeed())
 
 			cp(exampleJob.LocalSource, "./videos/nyt.mp4")
 			cp(exampleJob.LocalDestination, "./videos/nyt.mp4")
@@ -63,3 +46,20 @@ var _ = Describe("Swap Cleaner", func() {
 		})
 	})
 })
+
+func cp(dst, src string) error {
+	s, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+	d, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(d, s); err != nil {
+		d.Close()
+		return err
+	}
+	return d.Close()
+}
