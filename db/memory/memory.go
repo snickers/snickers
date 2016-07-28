@@ -30,6 +30,9 @@ func GetDatabase() (*Database, error) {
 
 // ClearDatabase clears the database
 func (r *Database) ClearDatabase() error {
+	r.mtx.Lock()
+	defer r.mtx.Unlock()
+
 	instance.presets = map[string]types.Preset{}
 	instance.jobs = map[string]types.Job{}
 	return nil
