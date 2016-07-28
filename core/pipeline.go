@@ -54,6 +54,11 @@ func StartJob(job types.Job) {
 		return
 	}
 
+	ctx.Info("erasing temporary files")
+	if err := CleanSwap(job.ID); err != nil {
+		ctx.WithError(err).Error("erasing temporary files failed")
+	}
+
 	job.Status = types.JobFinished
 	dbInstance.UpdateJob(job.ID, job)
 }
