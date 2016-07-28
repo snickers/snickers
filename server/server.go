@@ -21,12 +21,13 @@ type SnickersServer struct {
 
 func New(log lager.Logger, listenNetwork, listenAddr string) *SnickersServer {
 	s := &SnickersServer{
-		logger:        log,
+		logger:        log.Session("snickers-server"),
 		listenAddr:    listenAddr,
 		listenNetwork: listenNetwork,
 		router:        NewRouter(),
 	}
 
+	s.logger.Debug("setting-up-routes")
 	// Set up routes
 	routes := map[Route]RouterArguments{
 		Ping:             RouterArguments{Path: Routes[Ping].Path, Method: Routes[Ping].Method, Handler: s.pingHandler},
@@ -54,9 +55,13 @@ func New(log lager.Logger, listenNetwork, listenAddr string) *SnickersServer {
 }
 
 func (sn *SnickersServer) Start() error {
-	var err error
+	log := sn.logger.Session("start-server", lager.Data{
+		"listenAddr": sn.listenAddr,
+	})
 
-	sn.logger.Info("snickers-start-server", lager.Data{"listenAddr": sn.listenAddr})
+	var err error
+	log.Info("starting")
+
 	sn.Listener, err = net.Listen(sn.listenNetwork, sn.listenAddr)
 	if err != nil {
 		fmt.Println(err)
@@ -66,6 +71,7 @@ func (sn *SnickersServer) Start() error {
 
 	go sn.server.Serve(sn.Listener)
 
+	log.Info("started")
 	return nil
 }
 
@@ -74,6 +80,9 @@ func (sn *SnickersServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sn *SnickersServer) Stop() error {
+	log := sn.logger.Session("stop-server")
+	defer log.Info("stop")
+
 	if sn.listenNetwork == "unix" {
 		if err := os.Remove(sn.listenAddr); err != nil {
 			sn.logger.Info("failed-to-stop-server", lager.Data{"listenAddr": sn.listenAddr})

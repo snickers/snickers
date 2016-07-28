@@ -236,7 +236,7 @@ var _ = Describe("PresetHandlers", func() {
 
 				Expect(response.StatusCode).To(Equal(http.StatusBadRequest))
 				Expect(response.Header.Get("Content-Type")).To(Equal("application/json; charset=UTF-8"))
-				expected := `{"error": "updating preset: preset not found"}`
+				expected := `{"error": "retrieving preset: preset not found"}`
 				Expect(responseBody).To(Equal(expected))
 			})
 		})
