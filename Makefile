@@ -23,6 +23,6 @@ test:
 test_coverage:
 	@go get github.com/modocache/gover
 	@go get github.com/mattn/goveralls
-	@ginkgo -cover -coverpkg=./... tests
+	@ginkgo -cover -coverpkg=./... -r
 	@gover
 	@mv gover.coverprofile coverage.txt
