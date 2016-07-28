@@ -6,10 +6,10 @@ import (
 
 	"github.com/3d0c/gmf"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
-func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
+func addStream(job snickers.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
 	var cc *gmf.CodecCtx
 	var ost *gmf.Stream
 
@@ -90,7 +90,7 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 }
 
 // GetResolution calculate the output resolution based on the preset and input source
-func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+func GetResolution(job snickers.Job, inputWidth int, inputHeight int) (int, int) {
 	var width, height int
 	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
 		return inputWidth, inputHeight
@@ -129,7 +129,7 @@ func FFMPEGEncode(jobID string) error {
 	}
 	defer outputCtx.CloseOutputAndRelease()
 
-	job.Status = types.JobEncoding
+	job.Status = snickers.JobEncoding
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 

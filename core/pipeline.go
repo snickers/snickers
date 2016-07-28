@@ -3,11 +3,9 @@ package core
 import (
 	"strings"
 
+	"github.com/pivotal-golang/lager"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
-
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/text"
+	"github.com/snickers/snickers"
 )
 
 // DownloadFunc is a function type for the multiple
@@ -15,51 +13,54 @@ import (
 type DownloadFunc func(jobID string) error
 
 // StartJob starts the job
-func StartJob(job types.Job) {
+func StartJob(job snickers.Job) {
+	//TODO: replace this to use the one initialized on the server
+	log := lager.NewLogger("snickers")
+	log.Session("start-job", lager.Data{
+		"id": job.ID,
+	})
 	dbInstance, _ := db.GetDatabase()
 
-	log.SetHandler(text.New(GetLogOutput()))
-	ctx := log.WithFields(log.Fields{
-		"id":          job.ID,
+	log.Info("starting", lager.Data{
 		"status":      job.Status,
 		"source":      job.Source,
 		"destination": job.Destination,
 	})
 
-	ctx.Info("downloading")
+	log.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)
 	if err := downloadFunc(job.ID); err != nil {
-		ctx.WithError(err).Error("download failed")
-		job.Status = types.JobError
+		log.Error("download failed", err)
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
-	ctx.Info("encoding")
+	log.Info("encoding")
 	if err := FFMPEGEncode(job.ID); err != nil {
-		ctx.WithError(err).Error("encode failed")
-		job.Status = types.JobError
+		log.Error("encode failed", err)
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
-	ctx.Info("uploading")
+	log.Info("uploading")
 	if err := S3Upload(job.ID); err != nil {
-		ctx.WithError(err).Error("upload failed")
-		job.Status = types.JobError
+		log.Error("upload failed", err)
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
 	}
 
-	ctx.Info("erasing temporary files")
+	log.Info("erasing temporary files")
 	if err := CleanSwap(job.ID); err != nil {
-		ctx.WithError(err).Error("erasing temporary files failed")
+		log.Error("erasing temporary files failed", err)
 	}
 
-	job.Status = types.JobFinished
+	job.Status = snickers.JobFinished
 	dbInstance.UpdateJob(job.ID, job)
 }
 

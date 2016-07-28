@@ -1,4 +1,4 @@
-package rest
+package server
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func HTTPError(w http.ResponseWriter, httpErr int, msg string, err error) {
 }
 
 // JSONHandler adds json headers
-func JSONHandler(actual http.Handler) http.Handler {
+func JSONHandler(actual http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		actual.ServeHTTP(w, r)
