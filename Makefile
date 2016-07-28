@@ -14,7 +14,7 @@ build:
 	go get github.com/onsi/gomega
 
 run:
-	go run main.go
+	cd examples; go run main.go
 
 test:
 	go vet ./...

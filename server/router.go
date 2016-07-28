@@ -46,5 +46,5 @@ func (router *Router) AddHandler(args RouterArguments) {
 		prefix = fmt.Sprintf("/%s", strings.Trim(args.PathPrefix, "/"))
 	}
 	path = fmt.Sprintf("/%s", strings.Trim(args.Path, "/"))
-	r.Methods(args.Method).Path(fmt.Sprintf("%s%s", prefix, path)).HandlerFunc(args.Handler)
+	r.Methods(args.Method).Path(fmt.Sprintf("%s%s", prefix, path)).HandlerFunc(JSONHandler(args.Handler))
 }

@@ -9,13 +9,11 @@ import (
 	"path"
 	"time"
 
-	"github.com/pivotal-golang/lager/lagertest"
-	"github.com/snickers/snickers/server"
-	"github.com/snickers/snickers/snickersfakes"
-
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-golang/lager/lagertest"
+	"github.com/snickers/snickers/server"
 )
 
 var _ = Describe("The Snickers Server", func() {
@@ -23,7 +21,6 @@ var _ = Describe("The Snickers Server", func() {
 		tmpDir         string
 		log            *lagertest.TestLogger
 		snickersServer *server.SnickersServer
-		fakeBackend    *snickersfakes.FakeBackend
 	)
 
 	BeforeEach(func() {
@@ -43,8 +40,7 @@ var _ = Describe("The Snickers Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "snickers-server-test")
 			socketPath = path.Join(tmpDir, "snickers.sock")
-			fakeBackend = new(snickersfakes.FakeBackend)
-			snickersServer = server.New(log, "unix", socketPath, fakeBackend)
+			snickersServer = server.New(log, "unix", socketPath)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = snickersServer.Start()
@@ -82,7 +78,7 @@ var _ = Describe("The Snickers Server", func() {
 		JustBeforeEach(func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
-			snickersServer = server.New(log, "tcp", port, fakeBackend)
+			snickersServer = server.New(log, "tcp", port)
 
 			err = snickersServer.Start()
 			Expect(err).NotTo(HaveOccurred())
@@ -106,5 +102,4 @@ var _ = Describe("The Snickers Server", func() {
 			Expect(response.StatusCode).To(Equal(http.StatusOK))
 		})
 	})
-
 })

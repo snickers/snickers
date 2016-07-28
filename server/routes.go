@@ -8,6 +8,7 @@ const (
 	Ping Route = iota
 	CreateJob
 	ListJobs
+	GetJobDetails
 	StartJob
 	CreatePreset
 	UpdatePreset
@@ -23,7 +24,7 @@ var Routes = map[Route]RouterArguments{
 	CreateJob:     RouterArguments{Path: "/jobs", Method: http.MethodPost},
 	ListJobs:      RouterArguments{Path: "/jobs", Method: http.MethodGet},
 	GetJobDetails: RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodGet},
-	StartJob:      RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodPost},
+	StartJob:      RouterArguments{Path: "/jobs/{jobID}/start", Method: http.MethodPost},
 
 	//Preset routes
 	CreatePreset:     RouterArguments{Path: "/presets", Method: http.MethodPost},
