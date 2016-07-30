@@ -1,4 +1,4 @@
-package snickers_test
+package db_test
 
 import (
 	"github.com/snickers/snickers/db"
@@ -50,6 +50,10 @@ var _ = Describe("Database", func() {
 			Status:      types.JobCreated,
 			Details:     "0%",
 		}
+	})
+
+	AfterEach(func() {
+		dbInstance.ClearDatabase()
 	})
 
 	runDatabaseSuite = func() {
@@ -210,10 +214,6 @@ var _ = Describe("Database", func() {
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
 			dbInstance, _ = mongo.GetDatabase()
-		})
-
-		AfterEach(func() {
-			dbInstance.ClearDatabase()
 		})
 
 		runDatabaseSuite()

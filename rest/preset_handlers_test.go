@@ -1,4 +1,4 @@
-package snickers_test
+package rest_test
 
 import (
 	"bytes"
@@ -25,6 +25,9 @@ var _ = Describe("Rest API", func() {
 		response = httptest.NewRecorder()
 		server = rest.NewRouter()
 		dbInstance, _ = db.GetDatabase()
+	})
+
+	AfterEach(func() {
 		dbInstance.ClearDatabase()
 	})
 

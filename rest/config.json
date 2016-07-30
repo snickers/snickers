@@ -1,0 +1,5 @@
+{
+  "SWAP_DIRECTORY": "/tmp/",
+  "LOGFILE": "/tmp/output.log",
+  "PORT": "8000"
+}
