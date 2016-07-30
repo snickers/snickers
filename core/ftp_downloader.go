@@ -15,10 +15,13 @@ import (
 // in format: ftp://login:password@host/path
 func FTPDownload(jobID string) error {
 	dbInstance, err := db.GetDatabase()
-	job, err := dbInstance.RetrieveJob(jobID)
-	if err != nil {
-		return err
-	}
+	job, _ := dbInstance.RetrieveJob(jobID)
+	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
+	job.LocalDestination = GetLocalDestination(jobID)
+	job.Destination = GetOutputFilename(jobID)
+	job.Status = types.JobDownloading
+	job.Details = "0%"
+	dbInstance.UpdateJob(job.ID, job)
 
 	u, err := url.Parse(job.Source)
 	if err != nil {
@@ -43,12 +46,12 @@ func FTPDownload(jobID string) error {
 		return err
 	}
 
-	outputFile, err := os.Create("/tmp/aeeez.jpg")
+	outputFile, err := os.Create(job.LocalSource)
 	if err != nil {
 		return err
 	}
 
-	err = client.Retrieve("/video/vows_640.jpg", outputFile)
+	err = client.Retrieve(u.Path, outputFile)
 	if err != nil {
 		return err
 	}
