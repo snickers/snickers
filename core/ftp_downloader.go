@@ -1,9 +1,9 @@
 package core
 
 import (
-	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"time"
 
 	"github.com/secsy/goftp"
