@@ -1,11 +1,14 @@
 package core
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
+	"os"
+	"time"
 
-	"github.com/smallfish/ftp"
+	"github.com/secsy/goftp"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // FTPDownload downloads the file from FTP. Job Source should be
@@ -22,21 +25,33 @@ func FTPDownload(jobID string) error {
 		return err
 	}
 
-	ftp := new(ftp.FTP)
-	ftp.Connect(u.Host, 21)
-
-	password, isSet := u.User.Password()
+	pw, isSet := u.User.Password()
 	if !isSet {
-		password = ""
+		pw = ""
 	}
 
-	ftp.Login(u.User.Username(), password)
-	if ftp.Code == 530 {
-		return errors.New("login failure")
+	config := goftp.Config{
+		User:               u.User.Username(),
+		Password:           pw,
+		ConnectionsPerHost: 10,
+		Timeout:            10 * time.Second,
+		Logger:             os.Stderr,
 	}
 
-	ftp.Pwd()
-	ftp.Quit()
+	client, err := goftp.DialConfig(config, u.Host+":21")
+	if err != nil {
+		return err
+	}
+
+	outputFile, err := os.Create("/tmp/aeeez.jpg")
+	if err != nil {
+		return err
+	}
+
+	err = client.Retrieve("/video/vows_640.jpg", outputFile)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
