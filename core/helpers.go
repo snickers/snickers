@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -9,7 +8,7 @@ import (
 )
 
 // GetLogOutput returns the output we want to use
-// for http requests log
+// for logging.
 func GetLogOutput() io.Writer {
 	var logOutput io.Writer
 	currentDir, _ := os.Getwd()
@@ -18,7 +17,6 @@ func GetLogOutput() io.Writer {
 	if logfile == "" {
 		logOutput = os.Stderr
 	} else {
-		fmt.Println("Logging requests on", logfile)
 		f, err := os.Create(logfile)
 		if err != nil {
 			panic(err)
