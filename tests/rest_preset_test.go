@@ -10,20 +10,20 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/rest"
+	"github.com/snickers/snickers/server"
 	"github.com/snickers/snickers/types"
 )
 
-var _ = Describe("Rest API", func() {
+var _ = Describe("Server API", func() {
 	var (
 		response   *httptest.ResponseRecorder
-		server     *mux.Router
+		s          *mux.Router
 		dbInstance db.DatabaseInterface
 	)
 
 	BeforeEach(func() {
 		response = httptest.NewRecorder()
-		server = rest.NewRouter()
+		s = server.NewRouter()
 		dbInstance, _ = db.GetDatabase()
 		dbInstance.ClearDatabase()
 	})
@@ -31,7 +31,7 @@ var _ = Describe("Rest API", func() {
 	Describe("GET /presets", func() {
 		It("should return application/json on its content type", func() {
 			request, _ := http.NewRequest("GET", "/presets", nil)
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
 		})
 
@@ -45,7 +45,7 @@ var _ = Describe("Rest API", func() {
 			expected2, _ := json.Marshal(`[{"name":"b","video":{},"audio":{}},{"name":"a","video":{},"audio":{}}]`)
 
 			request, _ := http.NewRequest("GET", "/presets", nil)
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 			responseBody, _ := json.Marshal(response.Body.String())
 
 			Expect(response.Code).To(Equal(http.StatusOK))
@@ -81,7 +81,7 @@ var _ = Describe("Rest API", func() {
 			expected, _ := json.Marshal(examplePreset)
 
 			request, _ := http.NewRequest("GET", "/presets/examplePreset", nil)
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 
 			Expect(response.Code).To(Equal(http.StatusOK))
 			Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
@@ -91,7 +91,7 @@ var _ = Describe("Rest API", func() {
 		Context("when getting the preset fails", func() {
 			It("should return BadRequest", func() {
 				request, _ := http.NewRequest("GET", "/presets/yoyoyo", nil)
-				server.ServeHTTP(response, request)
+				s.ServeHTTP(response, request)
 				expected, _ := json.Marshal(`{"error": "retrieving preset: preset not found"}`)
 				responseBody, _ := json.Marshal(response.Body.String())
 				Expect(responseBody).To(Equal(expected))
@@ -105,7 +105,7 @@ var _ = Describe("Rest API", func() {
 		It("should save a new preset", func() {
 			preset := []byte(`{"name": "storedPreset", "video": {},"audio": {}}`)
 			request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 
 			presets, _ := dbInstance.GetPresets()
 			responseBody, _ := json.Marshal(response.Body.String())
@@ -120,7 +120,7 @@ var _ = Describe("Rest API", func() {
 			It("should return BadRequest if preset is malformed", func() {
 				preset := []byte(`{"neime: "badPreset}}`)
 				request, _ := http.NewRequest("POST", "/presets", bytes.NewBuffer(preset))
-				server.ServeHTTP(response, request)
+				s.ServeHTTP(response, request)
 
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
@@ -134,7 +134,7 @@ var _ = Describe("Rest API", func() {
 			preset := []byte(`{"name":"examplePreset","Description": "new description","video": {},"audio": {}}`)
 
 			request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 
 			presets, _ := dbInstance.GetPresets()
 			newPreset := presets[0]
@@ -149,7 +149,7 @@ var _ = Describe("Rest API", func() {
 				preset := []byte(`{"name":"examplePreset","Description: "new description","video": {},"audio": {}}`)
 
 				request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
-				server.ServeHTTP(response, request)
+				s.ServeHTTP(response, request)
 
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
@@ -159,7 +159,7 @@ var _ = Describe("Rest API", func() {
 				preset := []byte(`{"name":"dont-exists","Description": "new description","video": {},"audio": {}}`)
 
 				request, _ := http.NewRequest("PUT", "/presets", bytes.NewBuffer(preset))
-				server.ServeHTTP(response, request)
+				s.ServeHTTP(response, request)
 
 				Expect(response.Code).To(Equal(http.StatusBadRequest))
 				Expect(response.HeaderMap["Content-Type"][0]).To(Equal("application/json; charset=UTF-8"))
@@ -197,7 +197,7 @@ var _ = Describe("Rest API", func() {
 			dbInstance.StorePreset(examplePreset)
 
 			request, _ := http.NewRequest("DELETE", "/presets/examplePreset", nil)
-			server.ServeHTTP(response, request)
+			s.ServeHTTP(response, request)
 
 			Expect(response.Code).To(Equal(http.StatusOK))
 		})
@@ -205,7 +205,7 @@ var _ = Describe("Rest API", func() {
 		Context("when deleting the preset fails", func() {
 			It("should return BadRequest", func() {
 				request, _ := http.NewRequest("DELETE", "/presets/yoyoyo", nil)
-				server.ServeHTTP(response, request)
+				s.ServeHTTP(response, request)
 				expected, _ := json.Marshal(`{"error": "deleting preset: preset not found"}`)
 				responseBody, _ := json.Marshal(response.Body.String())
 				Expect(responseBody).To(Equal(expected))
