@@ -1,10 +1,8 @@
 package core
 
 import (
-	"fmt"
-	"io/ioutil"
+	"errors"
 	"net/url"
-	"os"
 
 	"github.com/smallfish/ftp"
 	"github.com/snickers/snickers/db"
@@ -19,17 +17,22 @@ func FTPDownload(jobID string) error {
 		return err
 	}
 
-	u, err = url.Parse(job.Source)
+	u, err := url.Parse(job.Source)
 	if err != nil {
 		return err
 	}
 
 	ftp := new(ftp.FTP)
-	ftp.Connect(user.Host, 21)
+	ftp.Connect(u.Host, 21)
 
-	ftp.Login(u.User.Username(), u.User.Password())
+	password, isSet := u.User.Password()
+	if !isSet {
+		password = ""
+	}
+
+	ftp.Login(u.User.Username(), password)
 	if ftp.Code == 530 {
-		return Error("login failure")
+		return errors.New("login failure")
 	}
 
 	ftp.Pwd()
