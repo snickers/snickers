@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // CreateJob creates a job
@@ -20,7 +20,7 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jobInput types.JobInput
+	var jobInput snickers.JobInput
 	if err := json.NewDecoder(r.Body).Decode(&jobInput); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking job", err)
 		return
@@ -32,12 +32,12 @@ func CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var job types.Job
+	var job snickers.Job
 	job.ID = uniuri.New()
 	job.Source = jobInput.Source
 	job.Destination = jobInput.Destination
 	job.Preset = preset
-	job.Status = types.JobCreated
+	job.Status = snickers.JobCreated
 	_, err = dbInstance.StoreJob(job)
 	if err != nil {
 		HTTPError(w, http.StatusBadRequest, "storing job", err)

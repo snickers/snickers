@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
@@ -15,7 +15,7 @@ import (
 type DownloadFunc func(jobID string) error
 
 // StartJob starts the job
-func StartJob(job types.Job) {
+func StartJob(job snickers.Job) {
 	dbInstance, _ := db.GetDatabase()
 
 	log.SetHandler(text.New(GetLogOutput()))
@@ -30,7 +30,7 @@ func StartJob(job types.Job) {
 	downloadFunc := GetDownloadFunc(job.Source)
 	if err := downloadFunc(job.ID); err != nil {
 		ctx.WithError(err).Error("download failed")
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -39,7 +39,7 @@ func StartJob(job types.Job) {
 	ctx.Info("encoding")
 	if err := FFMPEGEncode(job.ID); err != nil {
 		ctx.WithError(err).Error("encode failed")
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -48,7 +48,7 @@ func StartJob(job types.Job) {
 	ctx.Info("uploading")
 	if err := S3Upload(job.ID); err != nil {
 		ctx.WithError(err).Error("upload failed")
-		job.Status = types.JobError
+		job.Status = snickers.JobError
 		job.Details = err.Error()
 		dbInstance.UpdateJob(job.ID, job)
 		return
@@ -59,7 +59,7 @@ func StartJob(job types.Job) {
 		ctx.WithError(err).Error("erasing temporary files failed")
 	}
 
-	job.Status = types.JobFinished
+	job.Status = snickers.JobFinished
 	dbInstance.UpdateJob(job.ID, job)
 }
 

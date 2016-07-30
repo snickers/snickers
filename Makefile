@@ -8,13 +8,13 @@ help:
 
 
 build:
-	go get
+	go get ./...
 	go get gopkg.in/mgo.v2
 	go get github.com/onsi/ginkgo/ginkgo
 	go get github.com/onsi/gomega
 
 run:
-	go run main.go
+	cd examples; go run main.go
 
 test:
 	go vet ./...

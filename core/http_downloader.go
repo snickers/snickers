@@ -9,7 +9,7 @@ import (
 	"github.com/cavaliercoder/grab"
 	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // HTTPDownload function downloads sources using
@@ -32,7 +32,7 @@ func HTTPDownload(jobID string) error {
 	outputFilename := strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
 	job.LocalDestination = outputDir + outputFilename
 	job.Destination = job.Destination + outputFilename
-	job.Status = types.JobDownloading
+	job.Status = snickers.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 

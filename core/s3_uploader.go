@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // S3Upload sends the file to S3 bucket. Job Destination should be
@@ -39,7 +39,7 @@ func S3Upload(jobID string) error {
 		return err
 	}
 
-	job.Status = types.JobUploading
+	job.Status = snickers.JobUploading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 

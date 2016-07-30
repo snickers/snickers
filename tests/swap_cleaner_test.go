@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 func cp(dst, src string) error {
@@ -34,12 +34,12 @@ var _ = Describe("Swap Cleaner", func() {
 			dbInstance, _ := db.GetDatabase()
 			dbInstance.ClearDatabase()
 
-			exampleJob := types.Job{
+			exampleJob := snickers.Job{
 				ID:               "123",
 				Source:           "http://source.here.mp4",
 				Destination:      "s3://user@pass:/bucket/",
-				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
-				Status:           types.JobCreated,
+				Preset:           snickers.Preset{Name: "presetHere", Container: "mp4"},
+				Status:           snickers.JobCreated,
 				Details:          "",
 				LocalSource:      "/tmp/123/src/KailuaBeach.mp4",
 				LocalDestination: "/tmp/123/dst/KailuaBeach.webm",

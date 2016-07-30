@@ -1,4 +1,4 @@
-package types
+package snickers
 
 // These constants are used on the status field of Job type
 const (

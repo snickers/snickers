@@ -1,4 +1,4 @@
-package types
+package snickers
 
 // Preset define the set of parameters of a given preset
 type Preset struct {
