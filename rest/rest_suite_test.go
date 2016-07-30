@@ -1,4 +1,4 @@
-package snickers_test
+package rest_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestSnickers(t *testing.T) {
+func TestRest(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Snickers Suite")
+	RunSpecs(t, "Rest Suite")
 }

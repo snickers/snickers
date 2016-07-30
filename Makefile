@@ -18,11 +18,11 @@ run:
 
 test:
 	go vet ./...
-	ginkgo -p -r -race -cover -keepGoing -nodes=4 .
+	ginkgo -r -cover -keepGoing .
 
 test_coverage:
 	@go get github.com/modocache/gover
 	@go get github.com/mattn/goveralls
-	@ginkgo -cover -coverpkg=./... tests
+	@ginkgo -cover -coverpkg=./... -r
 	@gover
 	@mv gover.coverprofile coverage.txt

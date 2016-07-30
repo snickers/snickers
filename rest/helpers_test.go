@@ -1,4 +1,4 @@
-package snickers_test
+package rest_test
 
 import (
 	"errors"

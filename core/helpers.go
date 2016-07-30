@@ -13,7 +13,10 @@ import (
 func GetLogOutput() io.Writer {
 	var logOutput io.Writer
 	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
+	cfg, err := gonfig.FromJsonFile(currentDir + "/config.json")
+	if err != nil {
+		panic(err)
+	}
 	logfile, _ := cfg.GetString("LOGFILE", "")
 	if logfile == "" {
 		logOutput = os.Stderr
