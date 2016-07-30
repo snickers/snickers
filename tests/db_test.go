@@ -4,7 +4,7 @@ import (
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/db/mongo"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,17 +15,17 @@ var _ = Describe("Database", func() {
 		dbInstance       db.DatabaseInterface
 		runDatabaseSuite func()
 
-		preset types.Preset
-		job    types.Job
+		preset snickers.Preset
+		job    snickers.Job
 	)
 
 	BeforeEach(func() {
-		preset = types.Preset{
+		preset = snickers.Preset{
 			Name:        "examplePreset",
 			Description: "This is an example of preset",
 			Container:   "mp4",
 			RateControl: "vbr",
-			Video: types.VideoPreset{
+			Video: snickers.VideoPreset{
 				Width:         "720",
 				Height:        "1080",
 				Codec:         "h264",
@@ -36,18 +36,18 @@ var _ = Describe("Database", func() {
 				ProfileLevel:  "3.1",
 				InterlaceMode: "progressive",
 			},
-			Audio: types.AudioPreset{
+			Audio: snickers.AudioPreset{
 				Codec:   "aac",
 				Bitrate: "64000",
 			},
 		}
 
-		job = types.Job{
+		job = snickers.Job{
 			ID:          "123",
 			Source:      "http://source.here.mp4",
 			Destination: "s3://user@pass:/bucket/destination.mp4",
-			Preset:      types.Preset{Name: "presetHere"},
-			Status:      types.JobCreated,
+			Preset:      snickers.Preset{Name: "presetHere"},
+			Status:      snickers.JobCreated,
 			Details:     "0%",
 		}
 	})
@@ -81,10 +81,10 @@ var _ = Describe("Database", func() {
 		})
 
 		Describe("GetPresets", func() {
-			var anotherPreset types.Preset
+			var anotherPreset snickers.Preset
 
 			BeforeEach(func() {
-				anotherPreset = types.Preset{
+				anotherPreset = snickers.Preset{
 					Name:        "anotherPreset",
 					Description: "This is another preset",
 				}
@@ -153,15 +153,15 @@ var _ = Describe("Database", func() {
 		})
 
 		Describe("GetJobs", func() {
-			var anotherJob types.Job
+			var anotherJob snickers.Job
 
 			BeforeEach(func() {
-				anotherJob = types.Job{
+				anotherJob = snickers.Job{
 					ID:          "321",
 					Source:      "http://source2.here.mp4",
 					Destination: "s3://user@pass:/bucket/destination2.mp4",
-					Preset:      types.Preset{Name: "presetHere2"},
-					Status:      types.JobCreated,
+					Preset:      snickers.Preset{Name: "presetHere2"},
+					Status:      snickers.JobCreated,
 					Details:     "0%",
 				}
 			})
@@ -184,7 +184,7 @@ var _ = Describe("Database", func() {
 			})
 
 			It("should be able to update job", func() {
-				expectedStatus := types.JobDownloading
+				expectedStatus := snickers.JobDownloading
 				job.Status = expectedStatus
 				dbInstance.UpdateJob(job.ID, job)
 

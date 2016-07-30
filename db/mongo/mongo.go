@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/flavioribeiro/gonfig"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // Database struct that persists configurations
@@ -38,87 +38,87 @@ func (r *Database) ClearDatabase() error {
 }
 
 // StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
+func (r *Database) StorePreset(preset snickers.Preset) (snickers.Preset, error) {
 	c := r.db.C("presets")
 	err := c.Insert(preset)
 	if err != nil {
-		return types.Preset{}, err
+		return snickers.Preset{}, err
 	}
 	return preset, nil
 }
 
 // UpdatePreset updates a preset
-func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
+func (r *Database) UpdatePreset(presetName string, newPreset snickers.Preset) (snickers.Preset, error) {
 	c := r.db.C("presets")
 	err := c.Update(bson.M{"name": presetName}, newPreset)
 	if err != nil {
-		return types.Preset{}, err
+		return snickers.Preset{}, err
 	}
 	return newPreset, nil
 }
 
 // RetrievePreset retrieves one preset from the database
-func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
+func (r *Database) RetrievePreset(presetName string) (snickers.Preset, error) {
 	c := r.db.C("presets")
-	result := types.Preset{}
+	result := snickers.Preset{}
 	err := c.Find(bson.M{"name": presetName}).One(&result)
 	return result, err
 }
 
 // GetPresets retrieves all presets of the database
-func (r *Database) GetPresets() ([]types.Preset, error) {
-	results := []types.Preset{}
+func (r *Database) GetPresets() ([]snickers.Preset, error) {
+	results := []snickers.Preset{}
 	c := r.db.C("presets")
 	err := c.Find(nil).All(&results)
 	return results, err
 }
 
 // DeletePreset deletes a preset from the database
-func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
+func (r *Database) DeletePreset(presetName string) (snickers.Preset, error) {
 	result, err := r.RetrievePreset(presetName)
 	if err != nil {
-		return types.Preset{}, err
+		return snickers.Preset{}, err
 	}
 
 	c := r.db.C("presets")
 	err = c.Remove(bson.M{"name": presetName})
 	if err != nil {
-		return types.Preset{}, err
+		return snickers.Preset{}, err
 	}
 	return result, nil
 }
 
 // StoreJob stores job information
-func (r *Database) StoreJob(job types.Job) (types.Job, error) {
+func (r *Database) StoreJob(job snickers.Job) (snickers.Job, error) {
 	c := r.db.C("jobs")
 	err := c.Insert(job)
 	if err != nil {
-		return types.Job{}, err
+		return snickers.Job{}, err
 	}
 	return job, nil
 }
 
 // RetrieveJob retrieves one job from the database
-func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
+func (r *Database) RetrieveJob(jobID string) (snickers.Job, error) {
 	c := r.db.C("jobs")
-	result := types.Job{}
+	result := snickers.Job{}
 	err := c.Find(bson.M{"id": jobID}).One(&result)
 	return result, err
 }
 
 // UpdateJob updates a job
-func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) {
+func (r *Database) UpdateJob(jobID string, newJob snickers.Job) (snickers.Job, error) {
 	c := r.db.C("jobs")
 	err := c.Update(bson.M{"id": jobID}, newJob)
 	if err != nil {
-		return types.Job{}, err
+		return snickers.Job{}, err
 	}
 	return newJob, nil
 }
 
 //GetJobs retrieves all jobs of the database
-func (r *Database) GetJobs() ([]types.Job, error) {
-	results := []types.Job{}
+func (r *Database) GetJobs() ([]snickers.Job, error) {
+	results := []snickers.Job{}
 	c := r.db.C("jobs")
 	err := c.Find(nil).All(&results)
 	return results, err

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers"
 )
 
 // CreatePreset creates a preset
@@ -18,7 +18,7 @@ func CreatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var preset types.Preset
+	var preset snickers.Preset
 	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return
@@ -42,7 +42,7 @@ func UpdatePreset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var preset types.Preset
+	var preset snickers.Preset
 	if err := json.NewDecoder(r.Body).Decode(&preset); err != nil {
 		HTTPError(w, http.StatusBadRequest, "unpacking preset", err)
 		return

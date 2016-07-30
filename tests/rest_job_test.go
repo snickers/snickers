@@ -10,9 +10,9 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
-	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("Server API", func() {
@@ -37,8 +37,8 @@ var _ = Describe("Server API", func() {
 		})
 
 		It("should return stored jobs", func() {
-			exampleJob1 := types.Job{ID: "123"}
-			exampleJob2 := types.Job{ID: "321"}
+			exampleJob1 := snickers.Job{ID: "123"}
+			exampleJob2 := snickers.Job{ID: "321"}
 			dbInstance.StoreJob(exampleJob1)
 			dbInstance.StoreJob(exampleJob2)
 
@@ -56,7 +56,7 @@ var _ = Describe("Server API", func() {
 
 	Describe("POST /jobs", func() {
 		It("should create a new job", func() {
-			dbInstance.StorePreset(types.Preset{Name: "presetName"})
+			dbInstance.StorePreset(snickers.Preset{Name: "presetName"})
 			jobJSON := []byte(`{"source": "http://flv.io/src.mp4", "destination": "s3://l@p:google.com", "preset": "presetName"}`)
 			request, _ := http.NewRequest("POST", "/jobs", bytes.NewBuffer(jobJSON))
 			s.ServeHTTP(response, request)
@@ -105,12 +105,12 @@ var _ = Describe("Server API", func() {
 
 	Describe("GET /job/:id", func() {
 		It("should return the job with details", func() {
-			job := types.Job{
+			job := snickers.Job{
 				ID:          "123-123-123",
 				Source:      "http://source.here.mp4",
 				Destination: "s3://ae@ae.com",
-				Preset:      types.Preset{},
-				Status:      types.JobCreated,
+				Preset:      snickers.Preset{},
+				Status:      snickers.JobCreated,
 				Details:     "0%",
 			}
 			dbInstance.StoreJob(job)
@@ -138,12 +138,12 @@ var _ = Describe("Server API", func() {
 
 	Describe("POST /jobs/:id/start", func() {
 		It("should return status OK", func() {
-			job := types.Job{
+			job := snickers.Job{
 				ID:          "123-123-123",
 				Source:      "http://source.here.mp4",
 				Destination: "s3://ae@ae.com",
-				Preset:      types.Preset{},
-				Status:      types.JobCreated,
+				Preset:      snickers.Preset{},
+				Status:      snickers.JobCreated,
 				Details:     "0%",
 			}
 			dbInstance.StoreJob(job)
