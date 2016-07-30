@@ -31,13 +31,13 @@ func GetLogOutput() io.Writer {
 	return logOutput
 }
 
-// GetLocalSource builds the path and filename for
+// GetLocalSourcePath builds the path and filename for
 // the local source file
-func GetLocalSource(jobID, jobSource string) string {
+func GetLocalSourcePath(jobID string) string {
 	sourceDir := getBaseDir(jobID) + "/src/"
 	os.MkdirAll(sourceDir, 0777)
 
-	return sourceDir + path.Base(jobSource)
+	return sourceDir
 }
 
 // GetLocalDestination builds the path and filename

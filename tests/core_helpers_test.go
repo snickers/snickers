@@ -19,7 +19,7 @@ var _ = Describe("Core", func() {
 			dbInstance.ClearDatabase()
 		})
 
-		It("GetLocalSource should return the correct local source path based on job", func() {
+		It("GetLocalSourcPath should return the correct local source path based on job", func() {
 			exampleJob := types.Job{
 				ID:          "123",
 				Source:      "http://www.flv.io/KailuaBeach.mp4",
@@ -30,7 +30,7 @@ var _ = Describe("Core", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(core.GetLocalSource(exampleJob.ID, exampleJob.Source)).To(Equal("/tmp/123/src/KailuaBeach.mp4"))
+			Expect(core.GetLocalSourcePath(exampleJob.ID)).To(Equal("/tmp/123/src/"))
 		})
 
 		It("GetLocalDestination should return the correct local destination path based on job", func() {
