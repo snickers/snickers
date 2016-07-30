@@ -1,13 +1,10 @@
 package core
 
 import (
-	"os"
 	"path"
 	"strconv"
-	"strings"
 
 	"github.com/cavaliercoder/grab"
-	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
@@ -15,28 +12,16 @@ import (
 // HTTPDownload function downloads sources using
 // http protocol.
 func HTTPDownload(jobID string) error {
-	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
-	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
-
-	basePath := swapDir + string(job.ID)
-
-	sourceDir := basePath + "/src/"
-	job.LocalSource = sourceDir + path.Base(job.Source)
-
-	outputDir := basePath + "/dst/"
-	os.MkdirAll(sourceDir, 0777)
-	os.MkdirAll(outputDir, 0777)
-	outputFilename := strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
-	job.LocalDestination = outputDir + outputFilename
-	job.Destination = job.Destination + outputFilename
+	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
+	job.LocalDestination = GetLocalDestination(jobID)
+	job.Destination = GetOutputFilename(jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(basePath+"/src/", job.Source)
+	respch, _ := grab.GetAsync(GetLocalSourcePath(job.ID), job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {

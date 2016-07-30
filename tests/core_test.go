@@ -47,7 +47,7 @@ var _ = Describe("Core", func() {
 		It("should return an error if source couldn't be fetched", func() {
 			exampleJob := types.Job{
 				ID:          "123",
-				Source:      "http://source.here.mp4",
+				Source:      "http://source_here.mp4",
 				Destination: "s3://user@pass:/bucket/",
 				Preset:      types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:      types.JobCreated,
