@@ -2,22 +2,27 @@ package core
 
 import (
 	"os"
+	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/types"
 )
 
 // S3Download downloads the file from S3 bucket. Job Source should be
 // in format: http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT
 func S3Download(jobID string) error {
-	dbInstance, err := db.GetDatabase()
-	job, err := dbInstance.RetrieveJob(jobID)
-	if err != nil {
-		return err
-	}
+	dbInstance, _ := db.GetDatabase()
+	job, _ := dbInstance.RetrieveJob(jobID)
+	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
+	job.LocalDestination = GetLocalDestination(jobID)
+	job.Destination = GetOutputFilename(jobID)
+	job.Status = types.JobDownloading
+	job.Details = "0%"
+	dbInstance.UpdateJob(job.ID, job)
 
 	file, err := os.Open(job.LocalDestination)
 	if err != nil {
