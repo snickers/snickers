@@ -9,10 +9,10 @@ import (
 	"path"
 	"time"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/snickers/snickers/server"
 )
 
@@ -43,7 +43,7 @@ var _ = Describe("Snickers Server", func() {
 			snickersServer = server.New(log, "unix", socketPath)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = snickersServer.Start()
+			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -80,7 +80,7 @@ var _ = Describe("Snickers Server", func() {
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
 			snickersServer = server.New(log, "tcp", port)
 
-			err = snickersServer.Start()
+			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())
 
 			httpClient = &http.Client{

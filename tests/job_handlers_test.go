@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pivotal-golang/lager/lagertest"
+	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
 	"github.com/snickers/snickers/types"
@@ -40,7 +40,7 @@ var _ = Describe("Job Handlers", func() {
 		snickersServer = server.New(log, "unix", socketPath)
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(snickersServer.Start()).NotTo(HaveOccurred())
+		Expect(snickersServer.Start(false)).NotTo(HaveOccurred())
 		httpClient = &http.Client{
 			Transport: &http.Transport{
 				Dial: func(network, addr string) (net.Conn, error) {

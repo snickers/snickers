@@ -7,7 +7,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"

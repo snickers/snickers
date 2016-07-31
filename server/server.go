@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 type SnickersServer struct {
@@ -54,7 +54,7 @@ func New(log lager.Logger, listenNetwork, listenAddr string) *SnickersServer {
 	return s
 }
 
-func (sn *SnickersServer) Start() error {
+func (sn *SnickersServer) Start(keep bool) error {
 	log := sn.logger.Session("start-server", lager.Data{
 		"listenAddr": sn.listenAddr,
 	})
@@ -69,8 +69,13 @@ func (sn *SnickersServer) Start() error {
 		return err
 	}
 
-	go sn.server.Serve(sn.Listener)
+	if keep {
+		log.Info("started")
+		sn.server.Serve(sn.Listener)
+		return nil
+	}
 
+	go sn.server.Serve(sn.Listener)
 	log.Info("started")
 	return nil
 }
