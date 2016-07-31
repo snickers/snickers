@@ -1,19 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 
-	"github.com/flavioribeiro/gonfig"
+	"github.com/pivotal-golang/lager"
 	"github.com/snickers/snickers/server"
 )
 
 func main() {
-	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
-	port, _ := cfg.GetString("PORT", "8080")
-	fmt.Println("Starting Snickers on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, server.NewRouter()))
+	log := lager.NewLogger("snickers")
+	// You can register a sink to foward the logs to anywhere.
+	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	snickersServer := server.New(log, "tcp", ":8080")
+	snickersServer.Start()
+	select {}
 }
