@@ -3,7 +3,6 @@ package core
 import (
 	"net/url"
 	"os"
-	"path"
 	"time"
 
 	"github.com/secsy/goftp"
@@ -17,7 +16,7 @@ func FTPUpload(jobID string) error {
 	dbInstance, err := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 
-	job.Status = types.jobUploading
+	job.Status = types.JobUploading
 	dbInstance.UpdateJob(job.ID, job)
 
 	u, err := url.Parse(job.Destination)
