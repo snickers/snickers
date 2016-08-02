@@ -1,4 +1,4 @@
-FROM flavioribeiro/snickers-docker:v2
+FROM flavioribeiro/snickers-docker:v3
 
 # Download snickers
 RUN go get -u github.com/snickers/snickers
