@@ -8,8 +8,7 @@ import (
 
 // CleanSwap removes LocalSource and LocalDestination
 // files/directories.
-func CleanSwap(jobID string) error {
-	dbInstance, _ := db.GetDatabase()
+func CleanSwap(dbInstance db.Storage, jobID string) error {
 	job, _ := dbInstance.RetrieveJob(jobID)
 
 	err := os.RemoveAll(job.LocalSource)

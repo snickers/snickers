@@ -3,6 +3,8 @@ package core
 import (
 	"os"
 
+	"code.cloudfoundry.org/lager"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -12,8 +14,11 @@ import (
 
 // S3Upload sends the file to S3 bucket. Job Destination should be
 // in format: http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT
-func S3Upload(jobID string) error {
-	dbInstance, err := db.GetDatabase()
+func S3Upload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+	log := logger.Session("s3-upload")
+	log.Info("start", lager.Data{"job": jobID})
+	defer log.Info("finished")
+
 	job, err := dbInstance.RetrieveJob(jobID)
 	if err != nil {
 		return err

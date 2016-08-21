@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
-	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
@@ -31,7 +31,7 @@ func cp(dst, src string) error {
 var _ = Describe("Swap Cleaner", func() {
 	Context("when calling", func() {
 		It("should remove local source and local destination", func() {
-			dbInstance, _ := db.GetDatabase()
+			dbInstance, _ := memory.GetDatabase()
 			dbInstance.ClearDatabase()
 
 			exampleJob := types.Job{
@@ -56,7 +56,7 @@ var _ = Describe("Swap Cleaner", func() {
 			Expect(exampleJob.LocalSource).To(BeAnExistingFile())
 			Expect(exampleJob.LocalDestination).To(BeAnExistingFile())
 
-			core.CleanSwap(exampleJob.ID)
+			core.CleanSwap(dbInstance, exampleJob.ID)
 
 			Expect(exampleJob.LocalSource).To(Not(BeAnExistingFile()))
 			Expect(exampleJob.LocalDestination).To(Not(BeAnExistingFile()))

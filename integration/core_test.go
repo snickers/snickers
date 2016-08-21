@@ -4,15 +4,26 @@ import (
 	"os"
 	"reflect"
 
+	"code.cloudfoundry.org/lager/lagertest"
+
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("Core", func() {
+	var (
+		logger *lagertest.TestLogger
+	)
+
+	BeforeEach(func() {
+		logger = lagertest.NewTestLogger("test")
+	})
+
 	Context("Pipeline", func() {
 		It("Should get the HTTPDownload function if source is HTTP", func() {
 			jobSource := "http://flv.io/KailuaBeach.mp4"
@@ -33,12 +44,12 @@ var _ = Describe("Core", func() {
 
 	Context("HTTP Downloader", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = db.GetDatabase()
+			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 			currentDir, _ := os.Getwd()
 			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
@@ -55,7 +66,7 @@ var _ = Describe("Core", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			err := core.HTTPDownload(exampleJob.ID)
+			err := core.HTTPDownload(logger, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 
@@ -70,7 +81,7 @@ var _ = Describe("Core", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			core.HTTPDownload(exampleJob.ID)
+			core.HTTPDownload(logger, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
@@ -83,11 +94,11 @@ var _ = Describe("Core", func() {
 	})
 	Context("AWS Helpers", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = db.GetDatabase()
+			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 		})
 

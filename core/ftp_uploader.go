@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"code.cloudfoundry.org/lager"
+
 	"github.com/secsy/goftp"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
@@ -12,9 +14,16 @@ import (
 
 // FTPUpload uploades the file using FTP. Job Destination should be
 // in format: ftp://login:password@host/path
-func FTPUpload(jobID string) error {
-	dbInstance, err := db.GetDatabase()
-	job, _ := dbInstance.RetrieveJob(jobID)
+func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+	log := logger.Session("ftp-upload")
+	log.Info("start", lager.Data{"job": jobID})
+	defer log.Info("finished")
+
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		log.Error("retrieving-job", err)
+		return err
+	}
 
 	job.Status = types.JobUploading
 	dbInstance.UpdateJob(job.ID, job)
@@ -39,16 +48,19 @@ func FTPUpload(jobID string) error {
 
 	client, err := goftp.DialConfig(config, u.Host+":21")
 	if err != nil {
+		log.Error("dial-config-failed", err)
 		return err
 	}
 
 	localFile, err := os.Open(job.LocalDestination)
 	if err != nil {
+		log.Error("opening-local-destination-failed", err)
 		return err
 	}
 
 	err = client.Store(u.Path, localFile)
 	if err != nil {
+		log.Error("storing-file-failed", err)
 		return err
 	}
 

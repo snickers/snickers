@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/snickers/snickers/db"
+
 	"code.cloudfoundry.org/lager"
 )
 
@@ -17,14 +19,16 @@ type SnickersServer struct {
 	listenNetwork string
 	router        *Router
 	server        *http.Server
+	db            db.Storage
 }
 
-func New(log lager.Logger, listenNetwork, listenAddr string) *SnickersServer {
+func New(log lager.Logger, listenNetwork, listenAddr string, db db.Storage) *SnickersServer {
 	s := &SnickersServer{
 		logger:        log.Session("snickers-server"),
 		listenAddr:    listenAddr,
 		listenNetwork: listenNetwork,
 		router:        NewRouter(),
+		db:            db,
 	}
 
 	s.logger.Debug("setting-up-routes")
@@ -52,6 +56,10 @@ func New(log lager.Logger, listenNetwork, listenAddr string) *SnickersServer {
 	}
 
 	return s
+}
+
+func (sn *SnickersServer) Handler() http.Handler {
+	return sn.router.Handler()
 }
 
 func (sn *SnickersServer) Start(keep bool) error {

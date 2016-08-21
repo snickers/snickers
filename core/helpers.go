@@ -20,17 +20,15 @@ func GetLocalSourcePath(jobID string) string {
 
 // GetLocalDestination builds the path and filename
 // of the local destination file
-func GetLocalDestination(jobID string) string {
+func GetLocalDestination(dbInstance db.Storage, jobID string) string {
 	destinationDir := getBaseDir(jobID) + "/dst/"
 	os.MkdirAll(destinationDir, 0777)
-	return destinationDir + GetOutputFilename(jobID)
-
+	return destinationDir + GetOutputFilename(dbInstance, jobID)
 }
 
 // GetOutputFilename build the destination path with
 // the output filename
-func GetOutputFilename(jobID string) string {
-	dbInstance, _ := db.GetDatabase()
+func GetOutputFilename(dbInstance db.Storage, jobID string) string {
 	job, _ := dbInstance.RetrieveJob(jobID)
 	return strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
 }

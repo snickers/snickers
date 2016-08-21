@@ -1,16 +1,11 @@
 package db
 
-import (
-	"os"
+import "github.com/snickers/snickers/types"
 
-	"github.com/flavioribeiro/gonfig"
-	"github.com/snickers/snickers/db/memory"
-	"github.com/snickers/snickers/db/mongo"
-	"github.com/snickers/snickers/types"
-)
+//go:generate counterfeiter . Storage
 
-// DatabaseInterface defines functions for accessing data
-type DatabaseInterface interface {
+// Storage defines functions for accessing data
+type Storage interface {
 	// Preset methods
 	StorePreset(types.Preset) (types.Preset, error)
 	RetrievePreset(string) (types.Preset, error)
@@ -25,16 +20,4 @@ type DatabaseInterface interface {
 	GetJobs() ([]types.Job, error)
 
 	ClearDatabase() error
-}
-
-// GetDatabase returns a handler for the database
-func GetDatabase() (DatabaseInterface, error) {
-	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
-	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
-
-	if mongoHost != "" {
-		return mongo.GetDatabase()
-	}
-	return memory.GetDatabase()
 }

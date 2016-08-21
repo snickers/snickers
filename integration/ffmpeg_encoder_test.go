@@ -6,24 +6,35 @@ import (
 	"strconv"
 	"strings"
 
+	"code.cloudfoundry.org/lager/lagertest"
+
 	"github.com/dchest/uniuri"
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("FFmpeg Encoder", func() {
+	var (
+		logger *lagertest.TestLogger
+	)
+
+	BeforeEach(func() {
+		logger = lagertest.NewTestLogger("ffmpeg-encoder")
+	})
+
 	Context("when calling", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = db.GetDatabase()
+			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 			currentDir, _ := os.Getwd()
 			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
@@ -42,7 +53,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			err := core.FFMPEGEncode(exampleJob.ID)
+			err := core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
 		})
 
@@ -61,7 +72,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			err := core.FFMPEGEncode(exampleJob.ID)
+			err := core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(Equal("output format is not initialized. Unable to allocate context"))
 		})
 
@@ -100,7 +111,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 
 			dbInstance.StoreJob(exampleJob)
 
-			core.FFMPEGEncode(exampleJob.ID)
+			core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Details).To(Equal("100%"))
@@ -141,9 +152,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := db.GetDatabase()
+			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -211,9 +222,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := db.GetDatabase()
+			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -269,9 +280,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := db.GetDatabase()
+			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -327,9 +338,9 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := db.GetDatabase()
+			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(job.ID)
+			core.FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
