@@ -27,7 +27,7 @@ var _ = Describe("Preset Handlers", func() {
 		err            error
 		log            *lagertest.TestLogger
 		tmpDir         string
-		dbInstance     db.DatabaseInterface
+		dbInstance     db.Storage
 	)
 
 	BeforeEach(func() {

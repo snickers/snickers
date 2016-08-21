@@ -18,7 +18,7 @@ import (
 var _ = Describe("FFmpeg Encoder", func() {
 	Context("when calling", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 			cfg        gonfig.Gonfig
 		)
 

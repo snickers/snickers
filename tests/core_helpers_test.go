@@ -11,7 +11,7 @@ import (
 var _ = Describe("Core", func() {
 	Context("Helpers", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 		)
 
 		BeforeEach(func() {

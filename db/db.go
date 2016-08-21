@@ -9,8 +9,8 @@ import (
 	"github.com/snickers/snickers/types"
 )
 
-// DatabaseInterface defines functions for accessing data
-type DatabaseInterface interface {
+// Storage defines functions for accessing data
+type Storage interface {
 	// Preset methods
 	StorePreset(types.Preset) (types.Preset, error)
 	RetrievePreset(string) (types.Preset, error)
@@ -28,7 +28,7 @@ type DatabaseInterface interface {
 }
 
 // GetDatabase returns a handler for the database
-func GetDatabase() (DatabaseInterface, error) {
+func GetDatabase() (Storage, error) {
 	currentDir, _ := os.Getwd()
 	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
 	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")

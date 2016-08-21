@@ -33,7 +33,7 @@ var _ = Describe("Core", func() {
 
 	Context("HTTP Downloader", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 			cfg        gonfig.Gonfig
 		)
 
@@ -83,7 +83,7 @@ var _ = Describe("Core", func() {
 	})
 	Context("AWS Helpers", func() {
 		var (
-			dbInstance db.DatabaseInterface
+			dbInstance db.Storage
 		)
 
 		BeforeEach(func() {

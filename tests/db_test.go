@@ -12,7 +12,7 @@ import (
 
 var _ = Describe("Database", func() {
 	var (
-		dbInstance       db.DatabaseInterface
+		dbInstance       db.Storage
 		runDatabaseSuite func()
 
 		preset types.Preset

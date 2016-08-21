@@ -27,7 +27,7 @@ var _ = Describe("Job Handlers", func() {
 		err            error
 		log            *lagertest.TestLogger
 		tmpDir         string
-		dbInstance     db.DatabaseInterface
+		dbInstance     db.Storage
 	)
 
 	BeforeEach(func() {
