@@ -32,8 +32,8 @@ func (sn *SnickersServer) CreatePreset(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	result, err := json.Marshal(preset)
-	fmt.Fprintf(w, "%s", result)
 	log.Info("preset-created", lager.Data{"preset-name": preset.Name})
+	fmt.Fprintf(w, "%s", result)
 }
 
 // UpdatePreset updates a preset
@@ -75,16 +75,20 @@ func (sn *SnickersServer) ListPresets(w http.ResponseWriter, r *http.Request) {
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	presets, _ := sn.db.GetPresets()
-	result, err := json.Marshal(presets)
+	presets, err := sn.db.GetPresets()
 	if err != nil {
 		log.Error("failed-getting-preset", err)
 		HTTPError(w, http.StatusBadRequest, "getting presets", err)
 		return
 	}
+	result, err := json.Marshal(presets)
+	if err != nil {
+		log.Error("failed-parsing-preset", err)
+		HTTPError(w, http.StatusBadRequest, "parsing presets", err)
+		return
+	}
 
 	fmt.Fprintf(w, string(result))
-	log.Info("go-presets")
 }
 
 // GetPresetDetails returns the details of a given preset
@@ -110,7 +114,6 @@ func (sn *SnickersServer) GetPresetDetails(w http.ResponseWriter, r *http.Reques
 	}
 
 	fmt.Fprintf(w, "%s", result)
-	log.Info("got-preset-details", lager.Data{"preset-name": presetName})
 }
 
 // DeletePreset creates a preset
@@ -129,5 +132,4 @@ func (sn *SnickersServer) DeletePreset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	log.Info("preset-deleted", lager.Data{"preset-name": presetName})
 }

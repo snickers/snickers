@@ -63,16 +63,21 @@ func (sn *SnickersServer) ListJobs(w http.ResponseWriter, r *http.Request) {
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	jobs, _ := sn.db.GetJobs()
-	result, err := json.Marshal(jobs)
+	jobs, err := sn.db.GetJobs()
 	if err != nil {
 		log.Error("failed-getting-jobs", err)
 		HTTPError(w, http.StatusBadRequest, "getting jobs", err)
 		return
 	}
 
+	result, err := json.Marshal(jobs)
+	if err != nil {
+		log.Error("failed-packaging-jobs", err)
+		HTTPError(w, http.StatusBadRequest, "packing jobs data", err)
+		return
+	}
+
 	fmt.Fprintf(w, "%s", string(result))
-	log.Info("got-jobs")
 }
 
 // GetJobDetails returns the details of a given job

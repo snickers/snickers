@@ -19,7 +19,6 @@ import (
 
 var _ = Describe("Snickers Server", func() {
 	var (
-		tmpDir         string
 		logger         *lagertest.TestLogger
 		snickersServer *server.SnickersServer
 		fakeStorage    *dbfakes.FakeStorage
@@ -30,14 +29,11 @@ var _ = Describe("Snickers Server", func() {
 		fakeStorage = new(dbfakes.FakeStorage)
 	})
 
-	AfterEach(func() {
-		if tmpDir != "" {
-			os.RemoveAll(tmpDir)
-		}
-	})
-
 	Context("when passed a socket", func() {
-		var socketPath string
+		var (
+			socketPath string
+			tmpDir     string
+		)
 
 		JustBeforeEach(func() {
 			var err error
@@ -48,6 +44,10 @@ var _ = Describe("Snickers Server", func() {
 
 			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			os.RemoveAll(tmpDir)
 		})
 
 		Describe("Start", func() {

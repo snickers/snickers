@@ -15,14 +15,12 @@ type DownloadFunc func(logger lager.Logger, dbInstance db.Storage, jobID string)
 // StartJob starts the job
 func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
 	log := logger.Session("start-job", lager.Data{
-		"id": job.ID,
-	})
-
-	log.Info("starting", lager.Data{
+		"id":          job.ID,
 		"status":      job.Status,
 		"source":      job.Source,
 		"destination": job.Destination,
 	})
+	defer log.Info("finished")
 
 	log.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)

@@ -58,6 +58,10 @@ func New(log lager.Logger, listenNetwork, listenAddr string, db db.Storage) *Sni
 	return s
 }
 
+func (sn *SnickersServer) Handler() http.Handler {
+	return sn.router.Handler()
+}
+
 func (sn *SnickersServer) Start(keep bool) error {
 	log := sn.logger.Session("start-server", lager.Data{
 		"listenAddr": sn.listenAddr,
