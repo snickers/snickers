@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
@@ -15,7 +16,7 @@ var _ = Describe("Core", func() {
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = db.GetDatabase()
+			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 		})
 
@@ -44,7 +45,7 @@ var _ = Describe("Core", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(core.GetLocalDestination(exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
+			Expect(core.GetLocalDestination(dbInstance, exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
 		})
 
 		It("GetOutputFilename should build output filename based on job and preset", func() {
@@ -58,7 +59,7 @@ var _ = Describe("Core", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(core.GetOutputFilename(exampleJob.ID)).To(Equal("KailuaBeach_640x360.webm"))
+			Expect(core.GetOutputFilename(dbInstance, exampleJob.ID)).To(Equal("KailuaBeach_640x360.webm"))
 		})
 	})
 })

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strconv"
 
+	"code.cloudfoundry.org/lager"
+
 	"github.com/3d0c/gmf"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
@@ -108,9 +110,12 @@ func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 }
 
 // FFMPEGEncode function is responsible for encoding the file
-func FFMPEGEncode(jobID string) error {
+func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+	log := logger.Session("ffmpeg-encode")
+	log.Info("started", lager.Data{"job": jobID})
+	defer log.Info("finished")
+
 	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
-	dbInstance, _ := db.GetDatabase()
 	job, _ := dbInstance.RetrieveJob(jobID)
 	srcFileName := job.LocalSource
 	dstFileName := job.LocalDestination
@@ -119,12 +124,14 @@ func FFMPEGEncode(jobID string) error {
 
 	inputCtx, err := gmf.NewInputCtx(srcFileName)
 	if err != nil {
+		log.Error("input-failed", err)
 		return err
 	}
 	defer inputCtx.CloseInputAndRelease()
 
 	outputCtx, err := gmf.NewOutputCtx(dstFileName)
 	if err != nil {
+		log.Error("output-failed", err)
 		return err
 	}
 	defer outputCtx.CloseOutputAndRelease()
@@ -147,10 +154,13 @@ func FFMPEGEncode(jobID string) error {
 		videoCodec = "libtheora"
 	}
 
+	log.Info("add-stream-start", lager.Data{"code": videoCodec})
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
 	if err != nil {
+		log.Error("add-stream-failed", err)
 		return err
 	}
+	log.Info("add-stream-finished")
 	stMap[i] = o
 
 	srcAudioStream, err := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)

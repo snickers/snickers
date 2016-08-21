@@ -13,6 +13,7 @@ import (
 
 	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/server"
 	"github.com/snickers/snickers/types"
 
@@ -35,9 +36,9 @@ var _ = Describe("Preset Handlers", func() {
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "snickers-server-test")
 		socketPath := path.Join(tmpDir, "snickers.sock")
 
-		dbInstance, _ = db.GetDatabase()
+		dbInstance, _ = memory.GetDatabase()
 
-		snickersServer = server.New(log, "unix", socketPath)
+		snickersServer = server.New(log, "unix", socketPath, dbInstance)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(snickersServer.Start(false)).NotTo(HaveOccurred())

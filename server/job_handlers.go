@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"code.cloudfoundry.org/lager"
 	"github.com/snickers/snickers/core"
-	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
 
@@ -19,13 +18,6 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		log.Error("failed-getting-database", err)
-		HTTPError(w, http.StatusBadRequest, "getting database", err)
-		return
-	}
-
 	var jobInput types.JobInput
 	if err := json.NewDecoder(r.Body).Decode(&jobInput); err != nil {
 		log.Error("failed-unpacking-job", err)
@@ -33,7 +25,7 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	preset, err := dbInstance.RetrievePreset(jobInput.PresetName)
+	preset, err := sn.db.RetrievePreset(jobInput.PresetName)
 	if err != nil {
 		log.Error("failed-retrieving-preset", err)
 		HTTPError(w, http.StatusBadRequest, "retrieving preset", err)
@@ -46,7 +38,7 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 	job.Destination = jobInput.Destination
 	job.Preset = preset
 	job.Status = types.JobCreated
-	_, err = dbInstance.StoreJob(job)
+	_, err = sn.db.StoreJob(job)
 	if err != nil {
 		log.Error("failed-storing-job", err)
 		HTTPError(w, http.StatusBadRequest, "storing job", err)
@@ -71,14 +63,7 @@ func (sn *SnickersServer) ListJobs(w http.ResponseWriter, r *http.Request) {
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		log.Error("failed-getting-database", err)
-		HTTPError(w, http.StatusBadRequest, "getting database", err)
-		return
-	}
-
-	jobs, _ := dbInstance.GetJobs()
+	jobs, _ := sn.db.GetJobs()
 	result, err := json.Marshal(jobs)
 	if err != nil {
 		log.Error("failed-getting-jobs", err)
@@ -96,16 +81,9 @@ func (sn *SnickersServer) GetJobDetails(w http.ResponseWriter, r *http.Request) 
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		log.Error("failed-getting-database", err)
-		HTTPError(w, http.StatusBadRequest, "getting database", err)
-		return
-	}
-
 	vars := mux.Vars(r)
 	jobID := vars["jobID"]
-	job, err := dbInstance.RetrieveJob(jobID)
+	job, err := sn.db.RetrieveJob(jobID)
 	if err != nil {
 		log.Error("failed-retrieving-job", err)
 		HTTPError(w, http.StatusBadRequest, "retrieving job", err)
@@ -129,16 +107,9 @@ func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 	log.Debug("started")
 	defer log.Debug("finished")
 
-	dbInstance, err := db.GetDatabase()
-	if err != nil {
-		log.Error("failed-getting-database", err)
-		HTTPError(w, http.StatusBadRequest, "getting database", err)
-		return
-	}
-
 	vars := mux.Vars(r)
 	jobID := vars["jobID"]
-	job, err := dbInstance.RetrieveJob(jobID)
+	job, err := sn.db.RetrieveJob(jobID)
 	if err != nil {
 		log.Error("failed-retrieving-job", err)
 		HTTPError(w, http.StatusBadRequest, "retrieving job", err)
@@ -147,5 +118,5 @@ func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug("starting-job", lager.Data{"id": job.ID})
 	w.WriteHeader(http.StatusOK)
-	go core.StartJob(job)
+	go core.StartJob(log, sn.db, job)
 }

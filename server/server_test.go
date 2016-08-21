@@ -13,18 +13,21 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
+	"github.com/snickers/snickers/db/dbfakes"
 	"github.com/snickers/snickers/server"
 )
 
 var _ = Describe("Snickers Server", func() {
 	var (
 		tmpDir         string
-		log            *lagertest.TestLogger
+		logger         *lagertest.TestLogger
 		snickersServer *server.SnickersServer
+		fakeStorage    *dbfakes.FakeStorage
 	)
 
 	BeforeEach(func() {
-		log = lagertest.NewTestLogger("snickers-test")
+		logger = lagertest.NewTestLogger("snickers-test")
+		fakeStorage = new(dbfakes.FakeStorage)
 	})
 
 	AfterEach(func() {
@@ -40,7 +43,7 @@ var _ = Describe("Snickers Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "snickers-server-test")
 			socketPath = path.Join(tmpDir, "snickers.sock")
-			snickersServer = server.New(log, "unix", socketPath)
+			snickersServer = server.New(logger, "unix", socketPath, fakeStorage)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = snickersServer.Start(false)
@@ -78,7 +81,7 @@ var _ = Describe("Snickers Server", func() {
 		JustBeforeEach(func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
-			snickersServer = server.New(log, "tcp", port)
+			snickersServer = server.New(logger, "tcp", port, fakeStorage)
 
 			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())

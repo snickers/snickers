@@ -1,7 +1,6 @@
 package core
 
 import (
-	"os"
 	"strings"
 
 	"code.cloudfoundry.org/lager"
@@ -11,17 +10,13 @@ import (
 
 // DownloadFunc is a function type for the multiple
 // possible ways to download the source file
-type DownloadFunc func(jobID string) error
+type DownloadFunc func(logger lager.Logger, dbInstance db.Storage, jobID string) error
 
 // StartJob starts the job
-func StartJob(job types.Job) {
-	//TODO: Configure log once when initializing the  server
-	log := lager.NewLogger("snickers")
-	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
-	log.Session("start-job", lager.Data{
+func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
+	log := logger.Session("start-job", lager.Data{
 		"id": job.ID,
 	})
-	dbInstance, _ := db.GetDatabase()
 
 	log.Info("starting", lager.Data{
 		"status":      job.Status,
@@ -31,7 +26,7 @@ func StartJob(job types.Job) {
 
 	log.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)
-	if err := downloadFunc(job.ID); err != nil {
+	if err := downloadFunc(log, dbInstance, job.ID); err != nil {
 		log.Error("download failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -40,7 +35,7 @@ func StartJob(job types.Job) {
 	}
 
 	log.Info("encoding")
-	if err := FFMPEGEncode(job.ID); err != nil {
+	if err := FFMPEGEncode(logger, dbInstance, job.ID); err != nil {
 		log.Error("encode failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -49,7 +44,7 @@ func StartJob(job types.Job) {
 	}
 
 	log.Info("uploading")
-	if err := S3Upload(job.ID); err != nil {
+	if err := S3Upload(logger, dbInstance, job.ID); err != nil {
 		log.Error("upload failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -58,7 +53,7 @@ func StartJob(job types.Job) {
 	}
 
 	log.Info("erasing temporary files")
-	if err := CleanSwap(job.ID); err != nil {
+	if err := CleanSwap(dbInstance, job.ID); err != nil {
 		log.Error("erasing temporary files failed", err)
 	}
 

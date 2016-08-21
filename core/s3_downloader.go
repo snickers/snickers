@@ -4,6 +4,8 @@ import (
 	"os"
 	"path"
 
+	"code.cloudfoundry.org/lager"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -14,12 +16,20 @@ import (
 
 // S3Download downloads the file from S3 bucket. Job Source should be
 // in format: http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT
-func S3Download(jobID string) error {
-	dbInstance, _ := db.GetDatabase()
-	job, _ := dbInstance.RetrieveJob(jobID)
+func S3Download(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+	log := logger.Session("s3-download")
+	log.Info("start", lager.Data{"job": jobID})
+	defer log.Info("finished")
+
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		log.Error("retrieving-job", err)
+		return err
+	}
+
 	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = GetLocalDestination(jobID)
-	job.Destination = GetOutputFilename(jobID)
+	job.LocalDestination = GetLocalDestination(dbInstance, jobID)
+	job.Destination = GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
