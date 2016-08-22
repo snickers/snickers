@@ -66,11 +66,21 @@ var _ = Describe("Snickers Server", func() {
 			})
 
 			It("removes the existing socket", func() {
-				Expect(snickersServer.Stop()).NotTo(HaveOccurred())
+				Expect(snickersServer.Stop()).To(Succeed())
 
 				info, err := os.Stat(socketPath)
 				Expect(err).To(HaveOccurred())
 				Expect(info).To(BeNil())
+			})
+
+			Context("when fails to stop the server because it's already stopped", func() {
+				JustBeforeEach(func() {
+					Expect(snickersServer.Stop()).NotTo(HaveOccurred())
+				})
+
+				It("returns an error", func() {
+					Expect(snickersServer.Stop()).To(HaveOccurred())
+				})
 			})
 		})
 	})
