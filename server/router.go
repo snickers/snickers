@@ -15,10 +15,9 @@ type Router struct {
 }
 
 type RouterArguments struct {
-	Handler    http.HandlerFunc
-	Path       string
-	PathPrefix string
-	Method     string
+	Handler http.HandlerFunc
+	Path    string
+	Method  string
 }
 
 func NewRouter() *Router {
@@ -33,18 +32,6 @@ func (router *Router) Handler() http.Handler {
 }
 
 func (router *Router) AddHandler(args RouterArguments) {
-	var r *mux.Router
-
-	if sub, ok := router.sub[args.PathPrefix]; ok {
-		r = sub
-	} else {
-		r = router.r
-	}
-
-	var prefix, path string
-	if args.PathPrefix != "" {
-		prefix = fmt.Sprintf("/%s", strings.Trim(args.PathPrefix, "/"))
-	}
-	path = fmt.Sprintf("/%s", strings.Trim(args.Path, "/"))
-	r.Methods(args.Method).Path(fmt.Sprintf("%s%s", prefix, path)).HandlerFunc(JSONHandler(args.Handler))
+	path := fmt.Sprintf("/%s", strings.Trim(args.Path, "/"))
+	router.r.Methods(args.Method).Path(fmt.Sprintf("%s", path)).HandlerFunc(JSONHandler(args.Handler))
 }
