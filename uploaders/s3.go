@@ -1,4 +1,4 @@
-package core
+package uploaders
 
 import (
 	"os"
@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
 )
 
@@ -29,17 +30,17 @@ func S3Upload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		return err
 	}
 
-	err = SetAWSCredentials(job.Destination)
+	err = helpers.SetAWSCredentials(job.Destination)
 	if err != nil {
 		return err
 	}
 
-	bucket, err := GetAWSBucket(job.Destination)
+	bucket, err := helpers.GetAWSBucket(job.Destination)
 	if err != nil {
 		return err
 	}
 
-	key, err := GetAWSKey(job.Destination)
+	key, err := helpers.GetAWSKey(job.Destination)
 	if err != nil {
 		return err
 	}
