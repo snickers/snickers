@@ -1,11 +1,15 @@
-package core
+package pipeline
 
 import (
+	"os"
 	"strings"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/downloaders"
+	"github.com/snickers/snickers/encoders"
 	"github.com/snickers/snickers/types"
+	"github.com/snickers/snickers/uploaders"
 )
 
 // DownloadFunc is a function type for the multiple
@@ -33,7 +37,7 @@ func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
 	}
 
 	log.Info("encoding")
-	if err := FFMPEGEncode(logger, dbInstance, job.ID); err != nil {
+	if err := encoders.FFMPEGEncode(logger, dbInstance, job.ID); err != nil {
 		log.Error("encode failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -42,7 +46,7 @@ func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
 	}
 
 	log.Info("uploading")
-	if err := S3Upload(logger, dbInstance, job.ID); err != nil {
+	if err := uploaders.S3Upload(logger, dbInstance, job.ID); err != nil {
 		log.Error("upload failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
@@ -63,8 +67,26 @@ func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
 // based on the job source.
 func GetDownloadFunc(jobSource string) DownloadFunc {
 	if strings.Contains(jobSource, "amazonaws") {
-		return S3Download
+		return downloaders.S3Download
 	}
 
-	return HTTPDownload
+	return downloaders.HTTPDownload
+}
+
+// CleanSwap removes LocalSource and LocalDestination
+// files/directories.
+func CleanSwap(dbInstance db.Storage, jobID string) error {
+	job, _ := dbInstance.RetrieveJob(jobID)
+
+	err := os.RemoveAll(job.LocalSource)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(job.LocalDestination)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
