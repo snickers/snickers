@@ -1,7 +1,6 @@
-package snickers_test
+package db
 
 import (
-	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
@@ -12,7 +11,7 @@ import (
 
 var _ = Describe("Database", func() {
 	var (
-		dbInstance       db.Storage
+		dbInstance       Storage
 		runDatabaseSuite func()
 
 		preset types.Preset
