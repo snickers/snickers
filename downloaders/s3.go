@@ -1,4 +1,4 @@
-package core
+package downloaders
 
 import (
 	"os"
@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
 )
 
@@ -27,9 +28,9 @@ func S3Download(logger lager.Logger, dbInstance db.Storage, jobID string) error 
 		return err
 	}
 
-	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = GetLocalDestination(dbInstance, jobID)
-	job.Destination = GetOutputFilename(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(dbInstance, jobID)
+	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
@@ -39,17 +40,17 @@ func S3Download(logger lager.Logger, dbInstance db.Storage, jobID string) error 
 		return err
 	}
 
-	err = SetAWSCredentials(job.Source)
+	err = helpers.SetAWSCredentials(job.Source)
 	if err != nil {
 		return err
 	}
 
-	bucket, err := GetAWSBucket(job.Source)
+	bucket, err := helpers.GetAWSBucket(job.Source)
 	if err != nil {
 		return err
 	}
 
-	key, err := GetAWSKey(job.Source)
+	key, err := helpers.GetAWSKey(job.Source)
 	if err != nil {
 		return err
 	}

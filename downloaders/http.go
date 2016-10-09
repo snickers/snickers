@@ -1,4 +1,4 @@
-package core
+package downloaders
 
 import (
 	"path"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/cavaliercoder/grab"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
 )
 
@@ -24,14 +25,14 @@ func HTTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = GetLocalDestination(dbInstance, jobID)
-	job.Destination = GetOutputFilename(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(dbInstance, jobID)
+	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(GetLocalSourcePath(job.ID), job.Source)
+	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(job.ID), job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {
