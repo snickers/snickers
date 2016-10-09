@@ -1,4 +1,4 @@
-package snickers_test
+package encoders
 
 import (
 	"os"
@@ -12,7 +12,6 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
@@ -37,7 +36,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 			dbInstance, _ = memory.GetDatabase()
 			dbInstance.ClearDatabase()
 			currentDir, _ := os.Getwd()
-			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
+			cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
 		})
 
 		It("should return an error if input is not found", func() {
@@ -53,7 +52,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			err := core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
+			err := FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
 		})
 
@@ -66,13 +65,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
 				Status:           types.JobCreated,
 				Details:          "",
-				LocalSource:      projectPath + "/videos/comingsoon.mov",
+				LocalSource:      projectPath + "/../fixtures/videos/comingsoon.mov",
 				LocalDestination: "/nowhere",
 			}
 
 			dbInstance.StoreJob(exampleJob)
 
-			err := core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
+			err := FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(Equal("output format is not initialized. Unable to allocate context"))
 		})
 
@@ -105,13 +104,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 				Status:           types.JobCreated,
 				Details:          "",
-				LocalSource:      projectPath + "/videos/nyt.mp4",
+				LocalSource:      projectPath + "/../fixtures/videos/nyt.mp4",
 				LocalDestination: swapDir + "/output.mp4",
 			}
 
 			dbInstance.StoreJob(exampleJob)
 
-			core.FFMPEGEncode(logger, dbInstance, exampleJob.ID)
+			FFMPEGEncode(logger, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			Expect(changedJob.Details).To(Equal("100%"))
@@ -148,13 +147,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 				Status:           types.JobCreated,
 				Details:          "0%",
-				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalSource:      currentDir + "/../fixtures/videos/nyt.mp4",
 				LocalDestination: destinationFile,
 			}
 
 			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(logger, dbInstance, job.ID)
+			FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -218,13 +217,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 				Status:           types.JobCreated,
 				Details:          "0%",
-				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalSource:      currentDir + "/../fixtures/videos/nyt.mp4",
 				LocalDestination: destinationFile,
 			}
 
 			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(logger, dbInstance, job.ID)
+			FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -276,13 +275,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 				Status:           types.JobCreated,
 				Details:          "0%",
-				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalSource:      currentDir + "/../fixtures/videos/nyt.mp4",
 				LocalDestination: destinationFile,
 			}
 
 			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(logger, dbInstance, job.ID)
+			FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -334,13 +333,13 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 				Status:           types.JobCreated,
 				Details:          "0%",
-				LocalSource:      currentDir + "/videos/nyt.mp4",
+				LocalSource:      currentDir + "/../fixtures/videos/nyt.mp4",
 				LocalDestination: destinationFile,
 			}
 
 			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
-			core.FFMPEGEncode(logger, dbInstance, job.ID)
+			FFMPEGEncode(logger, dbInstance, job.ID)
 
 			out, _ := exec.Command("mediainfo", "--Inform=General;%Format%;", destinationFile).Output()
 			result := strings.Replace(strings.ToLower(string(out[:])), "\n", "", -1)
@@ -380,7 +379,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 			}
 
-			resultWidth, resultHeight := core.GetResolution(job, 1280, 720)
+			resultWidth, resultHeight := GetResolution(job, 1280, 720)
 			Expect(resultWidth).To(Equal(1000))
 			Expect(resultHeight).To(Equal(360))
 		})
@@ -395,7 +394,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight := core.GetResolution(job1, 1280, 720)
+			resultWidth, resultHeight := GetResolution(job1, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -408,7 +407,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = core.GetResolution(job2, 1280, 720)
+			resultWidth, resultHeight = GetResolution(job2, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -421,7 +420,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = core.GetResolution(job3, 1280, 720)
+			resultWidth, resultHeight = GetResolution(job3, 1280, 720)
 			Expect(resultWidth).To(Equal(1280))
 			Expect(resultHeight).To(Equal(720))
 		})

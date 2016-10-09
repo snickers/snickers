@@ -16,6 +16,9 @@ var _ = Describe("Helpers", func() {
 
 		BeforeEach(func() {
 			dbInstance, _ = memory.GetDatabase()
+		})
+
+		AfterEach(func() {
 			dbInstance.ClearDatabase()
 		})
 
