@@ -126,6 +126,19 @@ var _ = Describe("Database", func() {
 			})
 		})
 
+		Describe("DeletePreset", func() {
+			JustBeforeEach(func() {
+				dbInstance.StorePreset(preset)
+			})
+
+			It("should be able to delete a preset", func() {
+				dbInstance.DeletePreset("examplePreset")
+				presets, err := dbInstance.GetPresets()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(presets).Should(BeEmpty())
+			})
+		})
+
 		Describe("StoreJob", func() {
 			It("should be able to store a job", func() {
 				res, err := dbInstance.StoreJob(job)
