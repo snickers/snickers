@@ -1,4 +1,4 @@
-package core
+package downloaders
 
 import (
 	"net/url"
@@ -10,12 +10,13 @@ import (
 
 	"github.com/secsy/goftp"
 	"github.com/snickers/snickers/db"
+	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
 )
 
 // FTPDownload downloads the file from FTP. Job Source should be
 // in format: ftp://login:password@host/path
-func FTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ftp-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -26,9 +27,9 @@ func FTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) error
 		return err
 	}
 
-	job.LocalSource = GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = GetLocalDestination(dbInstance, jobID)
-	job.Destination = GetOutputFilename(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
+	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)

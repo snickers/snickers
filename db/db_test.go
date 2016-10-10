@@ -1,7 +1,8 @@
-package snickers_test
+package db
 
 import (
-	"github.com/snickers/snickers/db"
+	"os"
+
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
@@ -12,7 +13,7 @@ import (
 
 var _ = Describe("Database", func() {
 	var (
-		dbInstance       db.Storage
+		dbInstance       Storage
 		runDatabaseSuite func()
 
 		preset types.Preset
@@ -209,7 +210,8 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
-			dbInstance, _ = mongo.GetDatabase()
+			currentDir, _ := os.Getwd()
+			dbInstance, _ = mongo.GetDatabase(currentDir + "/../fixtures/config.json")
 		})
 
 		AfterEach(func() {

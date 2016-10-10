@@ -1,4 +1,4 @@
-package snickers_test
+package db
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestSnickers(t *testing.T) {
+func TestEncoders(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Integration Suite")
+	RunSpecs(t, "DB Suite")
 }

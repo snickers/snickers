@@ -1,4 +1,4 @@
-package core
+package uploaders
 
 import (
 	"net/url"

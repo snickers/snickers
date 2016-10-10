@@ -34,11 +34,13 @@ var _ = Describe("Job Handlers", func() {
 	)
 
 	BeforeEach(func() {
+		currentDir, _ := os.Getwd()
+		configPath := currentDir + "/../fixtures/config.json"
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "job-handlers")
 		socketPath = path.Join(tmpDir, "snickers.sock")
 		logger = lagertest.NewTestLogger("snickers-test")
 		fakeStorage = new(dbfakes.FakeStorage)
-		snickersServer := server.New(logger, "unix", socketPath, fakeStorage)
+		snickersServer := server.New(logger, configPath, "unix", socketPath, fakeStorage)
 		testServer = httptest.NewServer(snickersServer.Handler())
 
 		client = &http.Client{

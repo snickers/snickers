@@ -1,13 +1,12 @@
 package mongo
 
 import (
-	"os"
-
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"fmt"
 
 	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/types"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Database struct that persists configurations
@@ -18,10 +17,13 @@ type Database struct {
 var instance *Database
 
 // GetDatabase returns database singleton
-func GetDatabase() (*Database, error) {
+func GetDatabase(configPath string) (*Database, error) {
 	instance = &Database{}
-	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
+	cfg, err := gonfig.FromJsonFile(configPath)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
 	session, err := mgo.Dial(mongoHost)
 	if err != nil {

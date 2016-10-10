@@ -1,6 +1,7 @@
-package core
+package helpers
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -11,8 +12,8 @@ import (
 
 // GetLocalSourcePath builds the path and filename for
 // the local source file
-func GetLocalSourcePath(jobID string) string {
-	sourceDir := getBaseDir(jobID) + "/src/"
+func GetLocalSourcePath(configPath string, jobID string) string {
+	sourceDir := getBaseDir(configPath, jobID) + "/src/"
 	os.MkdirAll(sourceDir, 0777)
 
 	return sourceDir
@@ -20,8 +21,8 @@ func GetLocalSourcePath(jobID string) string {
 
 // GetLocalDestination builds the path and filename
 // of the local destination file
-func GetLocalDestination(dbInstance db.Storage, jobID string) string {
-	destinationDir := getBaseDir(jobID) + "/dst/"
+func GetLocalDestination(configPath string, dbInstance db.Storage, jobID string) string {
+	destinationDir := getBaseDir(configPath, jobID) + "/dst/"
 	os.MkdirAll(destinationDir, 0777)
 	return destinationDir + GetOutputFilename(dbInstance, jobID)
 }
@@ -33,9 +34,12 @@ func GetOutputFilename(dbInstance db.Storage, jobID string) string {
 	return strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
 }
 
-func getBaseDir(jobID string) string {
-	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
+func getBaseDir(configPath string, jobID string) string {
+	cfg, err := gonfig.FromJsonFile(configPath)
+	if err != nil {
+		fmt.Println(err)
+		return "Error loading configuration File"
+	}
 	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 
 	return swapDir + jobID

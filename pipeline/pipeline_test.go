@@ -1,6 +1,7 @@
-package snickers_test
+package pipeline
 
 import (
+	"io"
 	"os"
 	"reflect"
 
@@ -9,13 +10,30 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/core"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
+	"github.com/snickers/snickers/downloaders"
 	"github.com/snickers/snickers/types"
 )
 
-var _ = Describe("Core", func() {
+func cp(dst, src string) error {
+	s, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+	d, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(d, s); err != nil {
+		d.Close()
+		return err
+	}
+	return d.Close()
+}
+
+var _ = Describe("Pipeline", func() {
 	var (
 		logger *lagertest.TestLogger
 	)
@@ -27,18 +45,52 @@ var _ = Describe("Core", func() {
 	Context("Pipeline", func() {
 		It("Should get the HTTPDownload function if source is HTTP", func() {
 			jobSource := "http://flv.io/KailuaBeach.mp4"
-			downloadFunc := core.GetDownloadFunc(jobSource)
+			downloadFunc := GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
-			expected := reflect.ValueOf(core.HTTPDownload).Pointer()
+			expected := reflect.ValueOf(downloaders.HTTPDownload).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))
 		})
 
 		It("Should get the S3Download function if source is S3", func() {
 			jobSource := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			downloadFunc := core.GetDownloadFunc(jobSource)
+			downloadFunc := GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
-			expected := reflect.ValueOf(core.S3Download).Pointer()
+			expected := reflect.ValueOf(downloaders.S3Download).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))
+		})
+	})
+
+	Context("when calling Swap Cleaner", func() {
+		It("should remove local source and local destination", func() {
+			dbInstance, _ := memory.GetDatabase()
+			dbInstance.ClearDatabase()
+
+			exampleJob := types.Job{
+				ID:               "123",
+				Source:           "http://source.here.mp4",
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "presetHere", Container: "mp4"},
+				Status:           types.JobCreated,
+				Details:          "",
+				LocalSource:      "/tmp/123/src/KailuaBeach.mp4",
+				LocalDestination: "/tmp/123/dst/KailuaBeach.webm",
+			}
+
+			dbInstance.StoreJob(exampleJob)
+
+			os.MkdirAll("/tmp/123/src/", 0777)
+			os.MkdirAll("/tmp/123/dst/", 0777)
+
+			cp(exampleJob.LocalSource, "./videos/nyt.mp4")
+			cp(exampleJob.LocalDestination, "./videos/nyt.mp4")
+
+			Expect(exampleJob.LocalSource).To(BeAnExistingFile())
+			Expect(exampleJob.LocalDestination).To(BeAnExistingFile())
+
+			CleanSwap(dbInstance, exampleJob.ID)
+
+			Expect(exampleJob.LocalSource).To(Not(BeAnExistingFile()))
+			Expect(exampleJob.LocalDestination).To(Not(BeAnExistingFile()))
 		})
 	})
 
@@ -65,8 +117,9 @@ var _ = Describe("Core", func() {
 				Details:     "",
 			}
 			dbInstance.StoreJob(exampleJob)
-
-			err := core.HTTPDownload(logger, dbInstance, exampleJob.ID)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/../fixtures/config.json"
+			err := downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 
@@ -80,8 +133,9 @@ var _ = Describe("Core", func() {
 				Details:     "",
 			}
 			dbInstance.StoreJob(exampleJob)
-
-			core.HTTPDownload(logger, dbInstance, exampleJob.ID)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/../fixtures/config.json"
+			downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
@@ -92,33 +146,5 @@ var _ = Describe("Core", func() {
 			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
 		})
 	})
-	Context("AWS Helpers", func() {
-		var (
-			dbInstance db.Storage
-		)
 
-		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
-			dbInstance.ClearDatabase()
-		})
-
-		It("Should get bucket from URL Destination", func() {
-			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			bucket, _ := core.GetAWSBucket(destination)
-			Expect(bucket).To(Equal("BUCKET"))
-		})
-
-		It("Should set credentials from URL Destination", func() {
-			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			core.SetAWSCredentials(destination)
-			Expect(os.Getenv("AWS_ACCESS_KEY_ID")).To(Equal("AWSKEY"))
-			Expect(os.Getenv("AWS_SECRET_ACCESS_KEY")).To(Equal("AWSSECRET"))
-		})
-
-		It("Should get path and filename from URL Destination", func() {
-			destination := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT/HERE.mp4"
-			key, _ := core.GetAWSKey(destination)
-			Expect(key).To(Equal("/OBJECT/HERE.mp4"))
-		})
-	})
 })

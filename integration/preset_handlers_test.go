@@ -37,8 +37,9 @@ var _ = Describe("Preset Handlers", func() {
 		socketPath := path.Join(tmpDir, "snickers.sock")
 
 		dbInstance, _ = memory.GetDatabase()
-
-		snickersServer = server.New(log, "unix", socketPath, dbInstance)
+		currentDir, _ := os.Getwd()
+		configPath := currentDir + "/../fixtures/config.json"
+		snickersServer = server.New(log, configPath, "unix", socketPath, dbInstance)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(snickersServer.Start(false)).NotTo(HaveOccurred())

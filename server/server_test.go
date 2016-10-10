@@ -39,7 +39,9 @@ var _ = Describe("Snickers Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "snickers-server-test")
 			socketPath = path.Join(tmpDir, "snickers.sock")
-			snickersServer = server.New(logger, "unix", socketPath, fakeStorage)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/config.json"
+			snickersServer = server.New(logger, configPath, "unix", socketPath, fakeStorage)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = snickersServer.Start(false)
@@ -91,7 +93,9 @@ var _ = Describe("Snickers Server", func() {
 		JustBeforeEach(func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
-			snickersServer = server.New(logger, "tcp", port, fakeStorage)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/../fixtures/config.json"
+			snickersServer = server.New(logger, configPath, "tcp", port, fakeStorage)
 
 			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())

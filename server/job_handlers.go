@@ -8,7 +8,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"github.com/snickers/snickers/core"
+	"github.com/snickers/snickers/pipeline"
 	"github.com/snickers/snickers/types"
 )
 
@@ -123,5 +123,5 @@ func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug("starting-job", lager.Data{"id": job.ID})
 	w.WriteHeader(http.StatusOK)
-	go core.StartJob(log, sn.db, job)
+	go pipeline.StartJob(log, sn.configPath, sn.db, job)
 }
