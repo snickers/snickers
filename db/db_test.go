@@ -1,6 +1,8 @@
 package db
 
 import (
+	"os"
+
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/db/mongo"
 	"github.com/snickers/snickers/types"
@@ -208,7 +210,8 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
-			dbInstance, _ = mongo.GetDatabase()
+			currentDir, _ := os.Getwd()
+			dbInstance, _ = mongo.GetDatabase(currentDir + "/../fixtures/config.json")
 		})
 
 		AfterEach(func() {
