@@ -14,10 +14,10 @@ import (
 
 // DownloadFunc is a function type for the multiple
 // possible ways to download the source file
-type DownloadFunc func(logger lager.Logger, dbInstance db.Storage, jobID string) error
+type DownloadFunc func(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error
 
 // StartJob starts the job
-func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
+func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job types.Job) {
 	log := logger.Session("start-job", lager.Data{
 		"id":          job.ID,
 		"status":      job.Status,
@@ -28,7 +28,7 @@ func StartJob(logger lager.Logger, dbInstance db.Storage, job types.Job) {
 
 	log.Info("downloading")
 	downloadFunc := GetDownloadFunc(job.Source)
-	if err := downloadFunc(log, dbInstance, job.ID); err != nil {
+	if err := downloadFunc(log, configPath, dbInstance, job.ID); err != nil {
 		log.Error("download failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()

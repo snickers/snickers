@@ -117,8 +117,9 @@ var _ = Describe("Pipeline", func() {
 				Details:     "",
 			}
 			dbInstance.StoreJob(exampleJob)
-
-			err := downloaders.HTTPDownload(logger, dbInstance, exampleJob.ID)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/../fixtures/config.json"
+			err := downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
 
@@ -132,8 +133,9 @@ var _ = Describe("Pipeline", func() {
 				Details:     "",
 			}
 			dbInstance.StoreJob(exampleJob)
-
-			downloaders.HTTPDownload(logger, dbInstance, exampleJob.ID)
+			currentDir, _ := os.Getwd()
+			configPath := currentDir + "/../fixtures/config.json"
+			downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
 
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
