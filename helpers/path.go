@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -37,7 +36,6 @@ func GetOutputFilename(dbInstance db.Storage, jobID string) string {
 func getBaseDir(configPath string, jobID string) string {
 	cfg, err := gonfig.FromJsonFile(configPath)
 	if err != nil {
-		fmt.Println(err)
 		return "Error loading configuration File"
 	}
 	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")

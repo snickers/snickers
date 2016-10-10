@@ -1,8 +1,6 @@
 package mongo
 
 import (
-	"fmt"
-
 	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/types"
 	"gopkg.in/mgo.v2"
@@ -21,7 +19,6 @@ func GetDatabase(configPath string) (*Database, error) {
 	instance = &Database{}
 	cfg, err := gonfig.FromJsonFile(configPath)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
