@@ -10,6 +10,9 @@ import (
 
 func main() {
 	log := lager.NewLogger("snickers")
+	currentDir, _ := os.Getwd()
+	configPath := currentDir + "/config.json"
+
 	// You can register a sink to foward the logs to anywhere.
 	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 	m, err := memory.GetDatabase()

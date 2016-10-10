@@ -123,5 +123,5 @@ func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug("starting-job", lager.Data{"id": job.ID})
 	w.WriteHeader(http.StatusOK)
-	go pipeline.StartJob(log, sn.db, job)
+	go pipeline.StartJob(log, sn.configPath, sn.db, job)
 }
