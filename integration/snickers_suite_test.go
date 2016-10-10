@@ -9,5 +9,5 @@ import (
 
 func TestSnickers(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Snickers Suite")
+	RunSpecs(t, "Integration Suite")
 }

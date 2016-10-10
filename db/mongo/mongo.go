@@ -21,8 +21,11 @@ var instance *Database
 func GetDatabase() (*Database, error) {
 	instance = &Database{}
 	currentDir, _ := os.Getwd()
-	cfg, _ := gonfig.FromJsonFile(currentDir + "/config.json")
-	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
+	cfg, err := gonfig.FromJsonFile(currentDir + "/config.json")
+	mongoHost := ""
+	if err == nil {
+		mongoHost, _ = cfg.GetString("MONGODB_HOST", "")
+	}
 	session, err := mgo.Dial(mongoHost)
 	if err != nil {
 		return &Database{}, err
