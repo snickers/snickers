@@ -18,11 +18,10 @@ run:
 
 test:
 	go vet ./...
-	ginkgo -r --slowSpecThreshold=20 --keepGoing .
+	ginkgo -r --slowSpecThreshold=20 --keepGoing --succinct .
 
 test_coverage:
 	@go get github.com/modocache/gover
-	@go get github.com/mattn/goveralls
-	@ginkgo -cover -r .
+	ginkgo -r --slowSpecThreshold=20 --cover --succinct .
 	@gover
 	@mv gover.coverprofile coverage.txt
