@@ -16,7 +16,7 @@ import (
 
 // FTPDownload downloads the file from FTP. Job Source should be
 // in format: ftp://login:password@host/path
-func FTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ftp-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -27,8 +27,8 @@ func FTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) error
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"

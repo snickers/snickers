@@ -14,7 +14,7 @@ import (
 
 // HTTPDownload function downloads sources using
 // http protocol.
-func HTTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+func HTTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("http-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -25,14 +25,14 @@ func HTTPDownload(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(job.ID), job.Source)
+	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(configPath, job.ID), job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {

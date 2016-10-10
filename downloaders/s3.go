@@ -17,7 +17,7 @@ import (
 
 // S3Download downloads the file from S3 bucket. Job Source should be
 // in format: http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT
-func S3Download(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+func S3Download(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("s3-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -28,8 +28,8 @@ func S3Download(logger lager.Logger, dbInstance db.Storage, jobID string) error 
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"

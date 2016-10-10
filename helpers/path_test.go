@@ -1,8 +1,11 @@
 package helpers
 
 import (
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
@@ -12,10 +15,13 @@ var _ = Describe("Helpers", func() {
 	Context("Path", func() {
 		var (
 			dbInstance db.Storage
+			configPath string
 		)
 
 		BeforeEach(func() {
 			dbInstance, _ = memory.GetDatabase()
+			currentDir, _ := os.Getwd()
+			configPath = currentDir + "/../fixtures/config.json"
 		})
 
 		AfterEach(func() {
@@ -33,7 +39,7 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetLocalSourcePath(exampleJob.ID)).To(Equal("/tmp/123/src/"))
+			Expect(GetLocalSourcePath(configPath, exampleJob.ID)).To(Equal("/tmp/123/src/"))
 		})
 
 		It("GetLocalDestination should return the correct local destination path based on job", func() {
@@ -47,7 +53,7 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetLocalDestination(dbInstance, exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
+			Expect(GetLocalDestination(configPath, dbInstance, exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
 		})
 
 		It("GetOutputFilename should build output filename based on job and preset", func() {
