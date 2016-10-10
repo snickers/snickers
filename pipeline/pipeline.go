@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"os"
-	"strings"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/snickers/snickers/db"
@@ -11,10 +10,6 @@ import (
 	"github.com/snickers/snickers/types"
 	"github.com/snickers/snickers/uploaders"
 )
-
-// DownloadFunc is a function type for the multiple
-// possible ways to download the source file
-type DownloadFunc func(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error
 
 // StartJob starts the job
 func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job types.Job) {
@@ -27,7 +22,7 @@ func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job
 	defer log.Info("finished")
 
 	log.Info("downloading")
-	downloadFunc := GetDownloadFunc(job.Source)
+	downloadFunc := downloaders.GetDownloadFunc(job.Source)
 	if err := downloadFunc(log, configPath, dbInstance, job.ID); err != nil {
 		log.Error("download failed", err)
 		job.Status = types.JobError
@@ -61,16 +56,6 @@ func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job
 
 	job.Status = types.JobFinished
 	dbInstance.UpdateJob(job.ID, job)
-}
-
-// GetDownloadFunc returns the download function
-// based on the job source.
-func GetDownloadFunc(jobSource string) DownloadFunc {
-	if strings.Contains(jobSource, "amazonaws") {
-		return downloaders.S3Download
-	}
-
-	return downloaders.HTTPDownload
 }
 
 // CleanSwap removes LocalSource and LocalDestination
