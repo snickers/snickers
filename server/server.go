@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -73,7 +72,6 @@ func (sn *SnickersServer) Start(keep bool) error {
 
 	sn.Listener, err = net.Listen(sn.listenNetwork, sn.listenAddr)
 	if err != nil {
-		fmt.Println(err)
 		sn.logger.Error("snickers-failed-starting-server", err)
 		return err
 	}
