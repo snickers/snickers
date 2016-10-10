@@ -19,6 +19,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	snickersServer := server.New(log, "tcp", ":8000", m)
+	snickersServer := server.New(log, configPath, "tcp", ":8000", m)
 	snickersServer.Start(true)
 }
