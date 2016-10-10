@@ -1,4 +1,6 @@
 {
   "SWAP_DIRECTORY": "/tmp/",
-  "LOGFILE": "/dev/null"
+  "LOGFILE": "/dev/null",
+  "PORT": "8000",
+  "MONGODB_HOST": "localhost"
 }
