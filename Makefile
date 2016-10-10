@@ -17,11 +17,12 @@ run:
 	go run main.go
 
 test:
-	go vet ./...
-	ginkgo -r --slowSpecThreshold=20 --keepGoing --succinct .
+	@go vet ./...
+	@ginkgo -r --slowSpecThreshold=20 --keepGoing --succinct .
 
 test_coverage:
 	@go get github.com/modocache/gover
-	ginkgo -r --slowSpecThreshold=20 --cover --succinct .
+	@ginkgo -r --slowSpecThreshold=20 --cover --succinct --skipPackage=db .
+	@ginkgo -r --slowSpecThreshold=20 --cover --succinct -coverpkg=./db/mongo,./db/memory db
 	@gover
 	@mv gover.coverprofile coverage.txt
