@@ -18,7 +18,7 @@ run:
 
 test:
 	go vet ./...
-	ginkgo -r --slowSpecThreshold=20 .
+	ginkgo -r --slowSpecThreshold=20 --keepGoing .
 
 test_coverage:
 	@go get github.com/modocache/gover

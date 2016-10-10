@@ -7,10 +7,8 @@ import (
 
 	"code.cloudfoundry.org/lager/lagertest"
 
-	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/downloaders"
 	"github.com/snickers/snickers/types"
@@ -64,6 +62,7 @@ var _ = Describe("Pipeline", func() {
 		It("should remove local source and local destination", func() {
 			dbInstance, _ := memory.GetDatabase()
 			dbInstance.ClearDatabase()
+			currentDir, _ := os.Getwd()
 
 			exampleJob := types.Job{
 				ID:               "123",
@@ -81,8 +80,8 @@ var _ = Describe("Pipeline", func() {
 			os.MkdirAll("/tmp/123/src/", 0777)
 			os.MkdirAll("/tmp/123/dst/", 0777)
 
-			cp(exampleJob.LocalSource, "./videos/nyt.mp4")
-			cp(exampleJob.LocalDestination, "./videos/nyt.mp4")
+			cp(exampleJob.LocalSource, currentDir+"/../fixtures/videos/nyt.mp4")
+			cp(exampleJob.LocalDestination, currentDir+"/../fixtures/videos/nyt.mp4")
 
 			Expect(exampleJob.LocalSource).To(BeAnExistingFile())
 			Expect(exampleJob.LocalDestination).To(BeAnExistingFile())
@@ -93,58 +92,4 @@ var _ = Describe("Pipeline", func() {
 			Expect(exampleJob.LocalDestination).To(Not(BeAnExistingFile()))
 		})
 	})
-
-	Context("HTTP Downloader", func() {
-		var (
-			dbInstance db.Storage
-			cfg        gonfig.Gonfig
-		)
-
-		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
-			dbInstance.ClearDatabase()
-			currentDir, _ := os.Getwd()
-			cfg, _ = gonfig.FromJsonFile(currentDir + "/config.json")
-		})
-
-		It("should return an error if source couldn't be fetched", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://source_here.mp4",
-				Destination: "s3://user@pass:/bucket/",
-				Preset:      types.Preset{Name: "presetHere", Container: "mp4"},
-				Status:      types.JobCreated,
-				Details:     "",
-			}
-			dbInstance.StoreJob(exampleJob)
-			currentDir, _ := os.Getwd()
-			configPath := currentDir + "/../fixtures/config.json"
-			err := downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
-			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
-		})
-
-		It("Should set the local source and local destination on Job", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://flv.io/source_here.mp4",
-				Destination: "s3://user@pass:/bucket/",
-				Preset:      types.Preset{Name: "240p", Container: "mp4"},
-				Status:      types.JobCreated,
-				Details:     "",
-			}
-			dbInstance.StoreJob(exampleJob)
-			currentDir, _ := os.Getwd()
-			configPath := currentDir + "/../fixtures/config.json"
-			downloaders.HTTPDownload(logger, configPath, dbInstance, exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-			sourceExpected := swapDir + "123/src/source_here.mp4"
-			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
-
-			destinationExpected := swapDir + "123/dst/source_here_240p.mp4"
-			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
-		})
-	})
-
 })
