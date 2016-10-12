@@ -43,7 +43,7 @@ var _ = Describe("Pipeline", func() {
 	Context("Pipeline", func() {
 		It("Should get the HTTPDownload function if source is HTTP", func() {
 			jobSource := "http://flv.io/KailuaBeach.mp4"
-			downloadFunc := GetDownloadFunc(jobSource)
+			downloadFunc := downloaders.GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
 			expected := reflect.ValueOf(downloaders.HTTPDownload).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))
@@ -51,7 +51,7 @@ var _ = Describe("Pipeline", func() {
 
 		It("Should get the S3Download function if source is S3", func() {
 			jobSource := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT"
-			downloadFunc := GetDownloadFunc(jobSource)
+			downloadFunc := downloaders.GetDownloadFunc(jobSource)
 			funcPointer := reflect.ValueOf(downloadFunc).Pointer()
 			expected := reflect.ValueOf(downloaders.S3Download).Pointer()
 			Expect(funcPointer).To(BeIdenticalTo(expected))

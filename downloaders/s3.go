@@ -35,7 +35,7 @@ func S3Download(logger lager.Logger, configPath string, dbInstance db.Storage, j
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	file, err := os.Open(job.LocalDestination)
+	file, err := os.Create(job.LocalDestination)
 	if err != nil {
 		return err
 	}
@@ -56,13 +56,12 @@ func S3Download(logger lager.Logger, configPath string, dbInstance db.Storage, j
 	}
 
 	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	_, err = downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(key),
-		})
+	objInput := s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
+
+	_, err = downloader.Download(file, &objInput)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
