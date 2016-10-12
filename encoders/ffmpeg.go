@@ -30,6 +30,7 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 	defer gmf.Release(cc)
 
+	// https://ffmpeg.org/pipermail/ffmpeg-devel/2008-January/046900.html
 	if oc.IsGlobalHeader() {
 		cc.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
 	}
@@ -43,14 +44,14 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		if err != nil {
 			return 0, 0, err
 		}
-		cc.SetBitRate(bitrate)
 
 		gop, err := strconv.Atoi(job.Preset.Video.GopSize)
 		if err != nil {
 			return 0, 0, err
 		}
-		cc.SetGopSize(gop)
 
+		cc.SetBitRate(bitrate)
+		cc.SetGopSize(gop)
 		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
 		cc.SetSampleRate(ist.CodecCtx().SampleRate())
 		cc.SetChannels(ist.CodecCtx().Channels())
@@ -59,7 +60,7 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
+		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
 
 		if job.Preset.Video.Codec == "h264" {
 			profile := GetProfile(job)
@@ -67,13 +68,13 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		}
 
 		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
-		cc.SetDimension(width, height)
 
 		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
 		if err != nil {
 			return 0, 0, err
 		}
 
+		cc.SetDimension(width, height)
 		cc.SetBitRate(bitrate)
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
@@ -117,6 +118,21 @@ func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 	return width, height
 }
 
+// GetCodec returns the right codec
+func GetCodec(job types.Job) string {
+	if job.Preset.Video.Codec == "h264" {
+		return "libx264"
+	} else if job.Preset.Video.Codec == "vp8" {
+		return "libvpx"
+	} else if job.Preset.Video.Codec == "vp9" {
+		return "libvpx-vp9"
+	} else if job.Preset.Video.Codec == "theora" {
+		return "libtheora"
+	}
+
+	return "mpeg4" // default codec
+}
+
 // FFMPEGEncode function is responsible for encoding the file
 func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ffmpeg-encode")
@@ -125,19 +141,17 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
 	job, _ := dbInstance.RetrieveJob(jobID)
-	srcFileName := job.LocalSource
-	dstFileName := job.LocalDestination
 	stMap := make(map[int]int, 0)
 	var lastDelta int64
 
-	inputCtx, err := gmf.NewInputCtx(srcFileName)
+	inputCtx, err := gmf.NewInputCtx(job.LocalSource)
 	if err != nil {
 		log.Error("input-failed", err)
 		return err
 	}
 	defer inputCtx.CloseInputAndRelease()
 
-	outputCtx, err := gmf.NewOutputCtx(dstFileName)
+	outputCtx, err := gmf.NewOutputCtx(job.LocalDestination)
 	if err != nil {
 		log.Error("output-failed", err)
 		return err
@@ -150,17 +164,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
 
-	videoCodec := "mpeg4" // default codec
-
-	if job.Preset.Video.Codec == "h264" {
-		videoCodec = "libx264"
-	} else if job.Preset.Video.Codec == "vp8" {
-		videoCodec = "libvpx"
-	} else if job.Preset.Video.Codec == "vp9" {
-		videoCodec = "libvpx-vp9"
-	} else if job.Preset.Video.Codec == "theora" {
-		videoCodec = "libtheora"
-	}
+	videoCodec := GetCodec(job)
 
 	log.Info("add-stream-start", lager.Data{"code": videoCodec})
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
