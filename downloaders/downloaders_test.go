@@ -33,7 +33,10 @@ var _ = Describe("Downloaders", func() {
 		It("should return an error if source couldn't be fetched", func() {
 			dbInstance.StoreJob(exampleJob)
 			err := downloader(logger, configPath, dbInstance, exampleJob.ID)
-			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
+			Expect(err.Error()).To(SatisfyAny(
+				ContainSubstring("no such host"),
+				ContainSubstring("No filename could be determined"),
+				ContainSubstring("The AWS Access Key Id you provided does not exist in our records")))
 		})
 
 		It("Should set the local source and local destination on Job", func() {
@@ -84,4 +87,19 @@ var _ = Describe("Downloaders", func() {
 		runDatabaseSuite()
 	})
 
+	Context("S3 Downloader", func() {
+		BeforeEach(func() {
+			downloader = S3Download
+			exampleJob = types.Job{
+				ID:          "123",
+				Source:      "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4",
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "240p", Container: "mp4"},
+				Status:      types.JobCreated,
+				Details:     "",
+			}
+		})
+
+		runDatabaseSuite()
+	})
 })
