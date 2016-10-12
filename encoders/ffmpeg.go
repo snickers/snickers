@@ -60,17 +60,14 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 
 	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
 		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
+
 		if job.Preset.Video.Codec == "h264" {
-			if job.Preset.Video.Profile == "baseline" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_BASELINE)
-			} else if job.Preset.Video.Profile == "main" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_MAIN)
-			} else if job.Preset.Video.Profile == "high" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
-			}
+			profile := GetProfile(job)
+			cc.SetProfile(profile)
 		}
 
 		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
+		cc.SetDimension(width, height)
 
 		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
 		if err != nil {
@@ -78,7 +75,6 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		}
 
 		cc.SetBitRate(bitrate)
-		cc.SetDimension(width, height)
 		cc.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
 
@@ -89,6 +85,18 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	ost.SetCodecCtx(cc)
 
 	return ist.Index(), ost.Index(), nil
+}
+
+// GetProfile returns the GMF profile number based on job profile string
+func GetProfile(job types.Job) int {
+	if job.Preset.Video.Profile == "baseline" {
+		return gmf.FF_PROFILE_H264_BASELINE
+	} else if job.Preset.Video.Profile == "main" {
+		return gmf.FF_PROFILE_H264_MAIN
+	} else if job.Preset.Video.Profile == "high" {
+		return gmf.FF_PROFILE_H264_HIGH
+	}
+	return gmf.FF_PROFILE_H264_BASELINE
 }
 
 // GetResolution calculate the output resolution based on the preset and input source
