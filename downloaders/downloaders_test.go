@@ -67,4 +67,21 @@ var _ = Describe("Downloaders", func() {
 
 		runDatabaseSuite()
 	})
+
+	Context("FTP Downloader", func() {
+		BeforeEach(func() {
+			downloader = FTPDownload
+			exampleJob = types.Job{
+				ID:          "123",
+				Source:      "ftp://login:password@host/source_here.mp4",
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "240p", Container: "mp4"},
+				Status:      types.JobCreated,
+				Details:     "",
+			}
+		})
+
+		runDatabaseSuite()
+	})
+
 })
