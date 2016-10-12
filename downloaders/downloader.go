@@ -16,6 +16,8 @@ type DownloadFunc func(logger lager.Logger, configPath string, dbInstance db.Sto
 func GetDownloadFunc(jobSource string) DownloadFunc {
 	if strings.Contains(jobSource, "amazonaws") {
 		return S3Download
+	} else if strings.Contains(jobSource, "ftp://") {
+		return FTPDownload
 	}
 
 	return HTTPDownload

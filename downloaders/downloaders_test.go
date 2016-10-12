@@ -29,7 +29,7 @@ var _ = Describe("Downloaders", func() {
 		configPath = currentDir + "/../fixtures/config.json"
 	})
 
-	runDatabaseSuite := func() {
+	runDownloadersSuite := func() {
 		It("should return an error if source couldn't be fetched", func() {
 			dbInstance.StoreJob(exampleJob)
 			err := downloader(logger, configPath, dbInstance, exampleJob.ID)
@@ -68,7 +68,7 @@ var _ = Describe("Downloaders", func() {
 			}
 		})
 
-		runDatabaseSuite()
+		runDownloadersSuite()
 	})
 
 	Context("FTP Downloader", func() {
@@ -84,7 +84,7 @@ var _ = Describe("Downloaders", func() {
 			}
 		})
 
-		runDatabaseSuite()
+		runDownloadersSuite()
 	})
 
 	Context("S3 Downloader", func() {
@@ -100,6 +100,6 @@ var _ = Describe("Downloaders", func() {
 			}
 		})
 
-		runDatabaseSuite()
+		runDownloadersSuite()
 	})
 })
