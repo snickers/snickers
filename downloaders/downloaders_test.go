@@ -2,6 +2,8 @@ package downloaders
 
 import (
 	"os"
+	"reflect"
+	"runtime"
 
 	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/flavioribeiro/gonfig"
@@ -27,6 +29,29 @@ var _ = Describe("Downloaders", func() {
 		dbInstance.ClearDatabase()
 		currentDir, _ := os.Getwd()
 		configPath = currentDir + "/../fixtures/config.json"
+	})
+
+	Context("GetDownloadFunc", func() {
+		It("should return S3Download if source has amazonaws", func() {
+			jobSource := "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4"
+			downloadFunc := GetDownloadFunc(jobSource)
+			funcName := runtime.FuncForPC(reflect.ValueOf(downloadFunc).Pointer()).Name()
+			Expect(funcName).To(Equal("github.com/snickers/snickers/downloaders.S3Download"))
+		})
+
+		It("should return FTPDownload if source starts with ftp://", func() {
+			jobSource := "ftp://login:password@host/source_here.mp4"
+			downloadFunc := GetDownloadFunc(jobSource)
+			funcName := runtime.FuncForPC(reflect.ValueOf(downloadFunc).Pointer()).Name()
+			Expect(funcName).To(Equal("github.com/snickers/snickers/downloaders.FTPDownload"))
+		})
+
+		It("should return HTTPDownload if source starts with http://", func() {
+			jobSource := "http://source_here.mp4"
+			downloadFunc := GetDownloadFunc(jobSource)
+			funcName := runtime.FuncForPC(reflect.ValueOf(downloadFunc).Pointer()).Name()
+			Expect(funcName).To(Equal("github.com/snickers/snickers/downloaders.HTTPDownload"))
+		})
 	})
 
 	runDownloadersSuite := func() {
