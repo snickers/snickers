@@ -40,43 +40,17 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 
 	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
-		bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
+		err := setAudioCtxParams(codecContext, ist, job)
 		if err != nil {
 			return 0, 0, err
 		}
-
-		gop, err := strconv.Atoi(job.Preset.Video.GopSize)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		codecContext.SetBitRate(bitrate)
-		codecContext.SetGopSize(gop)
-		codecContext.SetSampleFmt(ist.CodecCtx().SampleFmt())
-		codecContext.SetSampleRate(ist.CodecCtx().SampleRate())
-		codecContext.SetChannels(ist.CodecCtx().Channels())
-		codecContext.SelectChannelLayout()
-		codecContext.SelectSampleRate()
 	}
 
 	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		codecContext.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
-
-		if job.Preset.Video.Codec == "h264" {
-			profile := GetProfile(job)
-			codecContext.SetProfile(profile)
-		}
-
-		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
-
-		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
+		err := setVideoCtxParams(codecContext, ist, job)
 		if err != nil {
 			return 0, 0, err
 		}
-
-		codecContext.SetDimension(width, height)
-		codecContext.SetBitRate(bitrate)
-		codecContext.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
 
 	if err := codecContext.Open(nil); err != nil {
@@ -119,7 +93,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
 
-	videoCodec := GetCodec(job)
+	videoCodec := getCodec(job)
 
 	log.Info("add-stream-start", lager.Data{"code": videoCodec})
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
@@ -254,8 +228,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	return nil
 }
 
-// GetProfile returns the GMF profile number based on job profile string
-func GetProfile(job types.Job) int {
+func getProfile(job types.Job) int {
 	profiles := map[string]int{
 		"baseline": gmf.FF_PROFILE_H264_BASELINE,
 		"main":     gmf.FF_PROFILE_H264_MAIN,
@@ -268,8 +241,7 @@ func GetProfile(job types.Job) int {
 	return gmf.FF_PROFILE_H264_MAIN
 }
 
-// GetCodec returns the right codec
-func GetCodec(job types.Job) string {
+func getCodec(job types.Job) string {
 	codecs := map[string]string{
 		"h264":   "libx264",
 		"vp8":    "libvpx",
@@ -283,8 +255,7 @@ func GetCodec(job types.Job) string {
 	return "libx264"
 }
 
-// GetResolution calculate the output resolution based on the preset and input source
-func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+func getResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 	var width, height int
 	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
 		return inputWidth, inputHeight
@@ -299,4 +270,47 @@ func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 		height, _ = strconv.Atoi(job.Preset.Video.Height)
 	}
 	return width, height
+}
+
+func setAudiooCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
+	bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
+	if err != nil {
+		return err
+	}
+
+	codecContext.SetBitRate(bitrate)
+	codecContext.SetSampleFmt(ist.CodecCtx().SampleFmt())
+	codecContext.SetSampleRate(ist.CodecCtx().SampleRate())
+	codecContext.SetChannels(ist.CodecCtx().Channels())
+	codecContext.SelectChannelLayout()
+	codecContext.SelectSampleRate()
+	return nil
+}
+
+func setVideoCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
+	codecContext.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
+
+	if job.Preset.Video.Codec == "h264" {
+		profile := getProfile(job)
+		codecContext.SetProfile(profile)
+	}
+
+	gop, err := strconv.Atoi(job.Preset.Video.GopSize)
+	if err != nil {
+		return err
+	}
+
+	width, height := getResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
+
+	bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
+	if err != nil {
+		return err
+	}
+
+	codecContext.SetDimension(width, height)
+	codecContext.SetGopSize(gop)
+	codecContext.SetBitRate(bitrate)
+	codecContext.SetPixFmt(ist.CodecCtx().PixFmt())
+
+	return nil
 }
