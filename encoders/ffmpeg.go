@@ -255,7 +255,7 @@ func getCodec(job types.Job) string {
 	return "libx264"
 }
 
-func getResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 	var width, height int
 	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
 		return inputWidth, inputHeight
@@ -272,7 +272,7 @@ func getResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
 	return width, height
 }
 
-func setAudiooCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
+func setAudioCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
 	bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
 	if err != nil {
 		return err
@@ -300,7 +300,7 @@ func setVideoCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Jo
 		return err
 	}
 
-	width, height := getResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
+	width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
 
 	bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
 	if err != nil {
