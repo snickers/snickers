@@ -88,51 +88,6 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	return ist.Index(), ost.Index(), nil
 }
 
-// GetProfile returns the GMF profile number based on job profile string
-func GetProfile(job types.Job) int {
-	if job.Preset.Video.Profile == "baseline" {
-		return gmf.FF_PROFILE_H264_BASELINE
-	} else if job.Preset.Video.Profile == "main" {
-		return gmf.FF_PROFILE_H264_MAIN
-	} else if job.Preset.Video.Profile == "high" {
-		return gmf.FF_PROFILE_H264_HIGH
-	}
-	return gmf.FF_PROFILE_H264_BASELINE
-}
-
-// GetResolution calculate the output resolution based on the preset and input source
-func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
-	var width, height int
-	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
-		return inputWidth, inputHeight
-	} else if job.Preset.Video.Width == "" {
-		height, _ = strconv.Atoi(job.Preset.Video.Height)
-		width = (inputWidth * height) / inputHeight
-	} else if job.Preset.Video.Height == "" {
-		width, _ = strconv.Atoi(job.Preset.Video.Width)
-		height = (inputHeight * width) / inputWidth
-	} else {
-		width, _ = strconv.Atoi(job.Preset.Video.Width)
-		height, _ = strconv.Atoi(job.Preset.Video.Height)
-	}
-	return width, height
-}
-
-// GetCodec returns the right codec
-func GetCodec(job types.Job) string {
-	if job.Preset.Video.Codec == "h264" {
-		return "libx264"
-	} else if job.Preset.Video.Codec == "vp8" {
-		return "libvpx"
-	} else if job.Preset.Video.Codec == "vp9" {
-		return "libvpx-vp9"
-	} else if job.Preset.Video.Codec == "theora" {
-		return "libtheora"
-	}
-
-	return "mpeg4" // default codec
-}
-
 // FFMPEGEncode function is responsible for encoding the file
 func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ffmpeg-encode")
@@ -297,4 +252,51 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	}
 
 	return nil
+}
+
+// GetProfile returns the GMF profile number based on job profile string
+func GetProfile(job types.Job) int {
+	profiles := map[string]int{
+		"baseline": gmf.FF_PROFILE_H264_BASELINE,
+		"main":     gmf.FF_PROFILE_H264_MAIN,
+		"high":     gmf.FF_PROFILE_H264_HIGH,
+	}
+
+	if job.Preset.Video.Profile {
+		return profiles[job.Preset.Video.Profile]
+	}
+	return gmf.FF_PROFILE_H264_MAIN
+}
+
+// GetCodec returns the right codec
+func GetCodec(job types.Job) string {
+	codecs := map[string]int{
+		"h264":   "libx264",
+		"vp8":    "libvpx",
+		"vp9":    "libvpx-vp9",
+		"theora": "libtheora",
+	}
+
+	if job.Preset.Video.Codec {
+		return codecs[job.Preset.Video.Codec]
+	}
+	return "libx264"
+}
+
+// GetResolution calculate the output resolution based on the preset and input source
+func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+	var width, height int
+	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
+		return inputWidth, inputHeight
+	} else if job.Preset.Video.Width == "" {
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+		width = (inputWidth * height) / inputHeight
+	} else if job.Preset.Video.Height == "" {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height = (inputHeight * width) / inputWidth
+	} else {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+	}
+	return width, height
 }
