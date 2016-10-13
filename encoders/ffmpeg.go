@@ -12,7 +12,7 @@ import (
 )
 
 func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
-	var cc *gmf.CodecCtx
+	var codecContext *gmf.CodecCtx
 	var ost *gmf.Stream
 
 	codec, err := gmf.FindEncoder(codecName)
@@ -25,21 +25,21 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 	defer gmf.Release(ost)
 
-	if cc = gmf.NewCodecCtx(codec); cc == nil {
+	if codecContext = gmf.NewCodecCtx(codec); codecContext == nil {
 		return 0, 0, errors.New("unable to create codec context")
 	}
-	defer gmf.Release(cc)
+	defer gmf.Release(codecContext)
 
 	// https://ffmpeg.org/pipermail/ffmpeg-devel/2008-January/046900.html
 	if oc.IsGlobalHeader() {
-		cc.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
+		codecContext.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
 	}
 
 	if codec.IsExperimental() {
-		cc.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
+		codecContext.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
 	}
 
-	if cc.Type() == gmf.AVMEDIA_TYPE_AUDIO {
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
 		bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
 		if err != nil {
 			return 0, 0, err
@@ -50,21 +50,21 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 			return 0, 0, err
 		}
 
-		cc.SetBitRate(bitrate)
-		cc.SetGopSize(gop)
-		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
-		cc.SetSampleRate(ist.CodecCtx().SampleRate())
-		cc.SetChannels(ist.CodecCtx().Channels())
-		cc.SelectChannelLayout()
-		cc.SelectSampleRate()
+		codecContext.SetBitRate(bitrate)
+		codecContext.SetGopSize(gop)
+		codecContext.SetSampleFmt(ist.CodecCtx().SampleFmt())
+		codecContext.SetSampleRate(ist.CodecCtx().SampleRate())
+		codecContext.SetChannels(ist.CodecCtx().Channels())
+		codecContext.SelectChannelLayout()
+		codecContext.SelectSampleRate()
 	}
 
-	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
+		codecContext.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
 
 		if job.Preset.Video.Codec == "h264" {
 			profile := GetProfile(job)
-			cc.SetProfile(profile)
+			codecContext.SetProfile(profile)
 		}
 
 		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
@@ -74,16 +74,16 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 			return 0, 0, err
 		}
 
-		cc.SetDimension(width, height)
-		cc.SetBitRate(bitrate)
-		cc.SetPixFmt(ist.CodecCtx().PixFmt())
+		codecContext.SetDimension(width, height)
+		codecContext.SetBitRate(bitrate)
+		codecContext.SetPixFmt(ist.CodecCtx().PixFmt())
 	}
 
-	if err := cc.Open(nil); err != nil {
+	if err := codecContext.Open(nil); err != nil {
 		return 0, 0, err
 	}
 
-	ost.SetCodecCtx(cc)
+	ost.SetCodecCtx(codecContext)
 
 	return ist.Index(), ost.Index(), nil
 }
@@ -135,7 +135,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	audioCodec := "aac" // default codec
+	audioCodec := "aac"
 	if job.Preset.Audio.Codec != "aac" {
 		audioCodec = job.Preset.Audio.Codec
 	}
