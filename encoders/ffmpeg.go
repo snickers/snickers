@@ -262,7 +262,7 @@ func GetProfile(job types.Job) int {
 		"high":     gmf.FF_PROFILE_H264_HIGH,
 	}
 
-	if job.Preset.Video.Profile {
+	if job.Preset.Video.Profile != "" {
 		return profiles[job.Preset.Video.Profile]
 	}
 	return gmf.FF_PROFILE_H264_MAIN
@@ -270,14 +270,14 @@ func GetProfile(job types.Job) int {
 
 // GetCodec returns the right codec
 func GetCodec(job types.Job) string {
-	codecs := map[string]int{
+	codecs := map[string]string{
 		"h264":   "libx264",
 		"vp8":    "libvpx",
 		"vp9":    "libvpx-vp9",
 		"theora": "libtheora",
 	}
 
-	if job.Preset.Video.Codec {
+	if job.Preset.Video.Codec != "" {
 		return codecs[job.Preset.Video.Codec]
 	}
 	return "libx264"
