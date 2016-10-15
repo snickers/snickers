@@ -12,7 +12,7 @@ import (
 )
 
 func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
-	var cc *gmf.CodecCtx
+	var codecContext *gmf.CodecCtx
 	var ost *gmf.Stream
 
 	codec, err := gmf.FindEncoder(codecName)
@@ -25,88 +25,41 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 	defer gmf.Release(ost)
 
-	if cc = gmf.NewCodecCtx(codec); cc == nil {
+	if codecContext = gmf.NewCodecCtx(codec); codecContext == nil {
 		return 0, 0, errors.New("unable to create codec context")
 	}
-	defer gmf.Release(cc)
+	defer gmf.Release(codecContext)
 
+	// https://ffmpeg.org/pipermail/ffmpeg-devel/2008-January/046900.html
 	if oc.IsGlobalHeader() {
-		cc.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
+		codecContext.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
 	}
 
 	if codec.IsExperimental() {
-		cc.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
+		codecContext.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
 	}
 
-	if cc.Type() == gmf.AVMEDIA_TYPE_AUDIO {
-		bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
+		err := setAudioCtxParams(codecContext, ist, job)
 		if err != nil {
 			return 0, 0, err
 		}
-		cc.SetBitRate(bitrate)
+	}
 
-		gop, err := strconv.Atoi(job.Preset.Video.GopSize)
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
+		err := setVideoCtxParams(codecContext, ist, job)
 		if err != nil {
 			return 0, 0, err
 		}
-		cc.SetGopSize(gop)
-
-		cc.SetSampleFmt(ist.CodecCtx().SampleFmt())
-		cc.SetSampleRate(ist.CodecCtx().SampleRate())
-		cc.SetChannels(ist.CodecCtx().Channels())
-		cc.SelectChannelLayout()
-		cc.SelectSampleRate()
 	}
 
-	if cc.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		cc.SetTimeBase(gmf.AVR{Num: 1, Den: 25})
-		if job.Preset.Video.Codec == "h264" {
-			if job.Preset.Video.Profile == "baseline" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_BASELINE)
-			} else if job.Preset.Video.Profile == "main" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_MAIN)
-			} else if job.Preset.Video.Profile == "high" {
-				cc.SetProfile(gmf.FF_PROFILE_H264_HIGH)
-			}
-		}
-
-		width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
-
-		bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		cc.SetBitRate(bitrate)
-		cc.SetDimension(width, height)
-		cc.SetPixFmt(ist.CodecCtx().PixFmt())
-	}
-
-	if err := cc.Open(nil); err != nil {
+	if err := codecContext.Open(nil); err != nil {
 		return 0, 0, err
 	}
 
-	ost.SetCodecCtx(cc)
+	ost.SetCodecCtx(codecContext)
 
 	return ist.Index(), ost.Index(), nil
-}
-
-// GetResolution calculate the output resolution based on the preset and input source
-func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
-	var width, height int
-	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
-		return inputWidth, inputHeight
-	} else if job.Preset.Video.Width == "" {
-		height, _ = strconv.Atoi(job.Preset.Video.Height)
-		width = (inputWidth * height) / inputHeight
-	} else if job.Preset.Video.Height == "" {
-		width, _ = strconv.Atoi(job.Preset.Video.Width)
-		height = (inputHeight * width) / inputWidth
-	} else {
-		width, _ = strconv.Atoi(job.Preset.Video.Width)
-		height, _ = strconv.Atoi(job.Preset.Video.Height)
-	}
-	return width, height
 }
 
 // FFMPEGEncode function is responsible for encoding the file
@@ -117,19 +70,17 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
 	job, _ := dbInstance.RetrieveJob(jobID)
-	srcFileName := job.LocalSource
-	dstFileName := job.LocalDestination
 	stMap := make(map[int]int, 0)
 	var lastDelta int64
 
-	inputCtx, err := gmf.NewInputCtx(srcFileName)
+	inputCtx, err := gmf.NewInputCtx(job.LocalSource)
 	if err != nil {
 		log.Error("input-failed", err)
 		return err
 	}
 	defer inputCtx.CloseInputAndRelease()
 
-	outputCtx, err := gmf.NewOutputCtx(dstFileName)
+	outputCtx, err := gmf.NewOutputCtx(job.LocalDestination)
 	if err != nil {
 		log.Error("output-failed", err)
 		return err
@@ -142,17 +93,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
 
-	videoCodec := "mpeg4" // default codec
-
-	if job.Preset.Video.Codec == "h264" {
-		videoCodec = "libx264"
-	} else if job.Preset.Video.Codec == "vp8" {
-		videoCodec = "libvpx"
-	} else if job.Preset.Video.Codec == "vp9" {
-		videoCodec = "libvpx-vp9"
-	} else if job.Preset.Video.Codec == "theora" {
-		videoCodec = "libtheora"
-	}
+	videoCodec := getCodec(job)
 
 	log.Info("add-stream-start", lager.Data{"code": videoCodec})
 	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
@@ -168,7 +109,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	audioCodec := "aac" // default codec
+	audioCodec := "aac"
 	if job.Preset.Audio.Codec != "aac" {
 		audioCodec = job.Preset.Audio.Codec
 	}
@@ -283,6 +224,93 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		job.Details = "100%"
 		dbInstance.UpdateJob(job.ID, job)
 	}
+
+	return nil
+}
+
+func getProfile(job types.Job) int {
+	profiles := map[string]int{
+		"baseline": gmf.FF_PROFILE_H264_BASELINE,
+		"main":     gmf.FF_PROFILE_H264_MAIN,
+		"high":     gmf.FF_PROFILE_H264_HIGH,
+	}
+
+	if job.Preset.Video.Profile != "" {
+		return profiles[job.Preset.Video.Profile]
+	}
+	return gmf.FF_PROFILE_H264_MAIN
+}
+
+func getCodec(job types.Job) string {
+	codecs := map[string]string{
+		"h264":   "libx264",
+		"vp8":    "libvpx",
+		"vp9":    "libvpx-vp9",
+		"theora": "libtheora",
+	}
+
+	if job.Preset.Video.Codec != "" {
+		return codecs[job.Preset.Video.Codec]
+	}
+	return "libx264"
+}
+
+func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
+	var width, height int
+	if job.Preset.Video.Width == "" && job.Preset.Video.Height == "" {
+		return inputWidth, inputHeight
+	} else if job.Preset.Video.Width == "" {
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+		width = (inputWidth * height) / inputHeight
+	} else if job.Preset.Video.Height == "" {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height = (inputHeight * width) / inputWidth
+	} else {
+		width, _ = strconv.Atoi(job.Preset.Video.Width)
+		height, _ = strconv.Atoi(job.Preset.Video.Height)
+	}
+	return width, height
+}
+
+func setAudioCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
+	bitrate, err := strconv.Atoi(job.Preset.Audio.Bitrate)
+	if err != nil {
+		return err
+	}
+
+	codecContext.SetBitRate(bitrate)
+	codecContext.SetSampleFmt(ist.CodecCtx().SampleFmt())
+	codecContext.SetSampleRate(ist.CodecCtx().SampleRate())
+	codecContext.SetChannels(ist.CodecCtx().Channels())
+	codecContext.SelectChannelLayout()
+	codecContext.SelectSampleRate()
+	return nil
+}
+
+func setVideoCtxParams(codecContext *gmf.CodecCtx, ist *gmf.Stream, job types.Job) error {
+	codecContext.SetTimeBase(gmf.AVR{Num: 1, Den: 25}) // what is this
+
+	if job.Preset.Video.Codec == "h264" {
+		profile := getProfile(job)
+		codecContext.SetProfile(profile)
+	}
+
+	gop, err := strconv.Atoi(job.Preset.Video.GopSize)
+	if err != nil {
+		return err
+	}
+
+	width, height := GetResolution(job, ist.CodecCtx().Width(), ist.CodecCtx().Height())
+
+	bitrate, err := strconv.Atoi(job.Preset.Video.Bitrate)
+	if err != nil {
+		return err
+	}
+
+	codecContext.SetDimension(width, height)
+	codecContext.SetGopSize(gop)
+	codecContext.SetBitRate(bitrate)
+	codecContext.SetPixFmt(ist.CodecCtx().PixFmt())
 
 	return nil
 }
