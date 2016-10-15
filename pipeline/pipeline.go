@@ -41,7 +41,8 @@ func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job
 	}
 
 	log.Info("uploading")
-	if err := uploaders.S3Upload(logger, dbInstance, job.ID); err != nil {
+	uploadFunc := uploaders.GetUploadFunc(job.Destination)
+	if err := uploadFunc(logger, dbInstance, job.ID); err != nil {
 		log.Error("upload failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()
