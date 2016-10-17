@@ -145,11 +145,10 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 				pts := gmf.RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
 
-				frame.
-					SetNbSamples(ost.CodecCtx().FrameSize()).
-					SetFormat(ost.CodecCtx().SampleFmt()).
-					SetChannelLayout(ost.CodecCtx().ChannelLayout()).
-					SetPts(pts)
+				frame.SetNbSamples(ost.CodecCtx().FrameSize())
+				frame.SetFormat(ost.CodecCtx().SampleFmt())
+				frame.SetChannelLayout(ost.CodecCtx().ChannelLayout())
+				frame.SetPts(pts)
 			} else {
 				frame.SetPts(ost.Pts)
 			}
