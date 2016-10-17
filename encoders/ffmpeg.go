@@ -11,57 +11,6 @@ import (
 	"github.com/snickers/snickers/types"
 )
 
-func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
-	var codecContext *gmf.CodecCtx
-	var ost *gmf.Stream
-
-	codec, err := gmf.FindEncoder(codecName)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if ost = oc.NewStream(codec); ost == nil {
-		return 0, 0, errors.New("unable to create stream in output context")
-	}
-	defer gmf.Release(ost)
-
-	if codecContext = gmf.NewCodecCtx(codec); codecContext == nil {
-		return 0, 0, errors.New("unable to create codec context")
-	}
-	defer gmf.Release(codecContext)
-
-	// https://ffmpeg.org/pipermail/ffmpeg-devel/2008-January/046900.html
-	if oc.IsGlobalHeader() {
-		codecContext.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
-	}
-
-	if codec.IsExperimental() {
-		codecContext.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
-	}
-
-	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
-		err := setAudioCtxParams(codecContext, ist, job)
-		if err != nil {
-			return 0, 0, err
-		}
-	}
-
-	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		err := setVideoCtxParams(codecContext, ist, job)
-		if err != nil {
-			return 0, 0, err
-		}
-	}
-
-	if err := codecContext.Open(nil); err != nil {
-		return 0, 0, err
-	}
-
-	ost.SetCodecCtx(codecContext)
-
-	return ist.Index(), ost.Index(), nil
-}
-
 // FFMPEGEncode function is responsible for encoding the file
 func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ffmpeg-encode")
@@ -124,7 +73,6 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	}
 
 	totalFrames := float64(srcVideoStream.NbFrames() + srcAudioStream.NbFrames())
-	framesCount := float64(0)
 
 	for packet := range inputCtx.GetNewPackets() {
 		ist, err := inputCtx.GetStream(packet.StreamIndex())
@@ -136,6 +84,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 			return err
 		}
 
+		framesCount := float64(0)
 		for frame := range packet.Frames(ist.CodecCtx()) {
 			if ost.IsAudio() {
 				fsTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
@@ -178,6 +127,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 				dbInstance.UpdateJob(job.ID, job)
 			}
 		}
+
 		gmf.Release(packet)
 	}
 
@@ -225,6 +175,57 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	}
 
 	return nil
+}
+
+func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
+	var codecContext *gmf.CodecCtx
+	var ost *gmf.Stream
+
+	codec, err := gmf.FindEncoder(codecName)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if ost = oc.NewStream(codec); ost == nil {
+		return 0, 0, errors.New("unable to create stream in output context")
+	}
+	defer gmf.Release(ost)
+
+	if codecContext = gmf.NewCodecCtx(codec); codecContext == nil {
+		return 0, 0, errors.New("unable to create codec context")
+	}
+	defer gmf.Release(codecContext)
+
+	// https://ffmpeg.org/pipermail/ffmpeg-devel/2008-January/046900.html
+	if oc.IsGlobalHeader() {
+		codecContext.SetFlag(gmf.CODEC_FLAG_GLOBAL_HEADER)
+	}
+
+	if codec.IsExperimental() {
+		codecContext.SetStrictCompliance(gmf.FF_COMPLIANCE_EXPERIMENTAL)
+	}
+
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
+		err := setAudioCtxParams(codecContext, ist, job)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
+		err := setVideoCtxParams(codecContext, ist, job)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	if err := codecContext.Open(nil); err != nil {
+		return 0, 0, err
+	}
+
+	ost.SetCodecCtx(codecContext)
+
+	return ist.Index(), ost.Index(), nil
 }
 
 func getProfile(job types.Job) int {
