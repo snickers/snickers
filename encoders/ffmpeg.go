@@ -11,6 +11,172 @@ import (
 	"github.com/snickers/snickers/types"
 )
 
+// FFMPEGEncode function is responsible for encoding the file
+func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
+	log := logger.Session("ffmpeg-encode")
+	log.Info("started", lager.Data{"job": jobID})
+	defer log.Info("finished")
+
+	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
+	job, _ := dbInstance.RetrieveJob(jobID)
+	streamMap := make(map[int]int, 0)
+	var lastDelta int64
+
+	// create input context
+	inputCtx, err := gmf.NewInputCtx(job.LocalSource)
+	if err != nil {
+		log.Error("input-failed", err)
+		return err
+	}
+	defer inputCtx.CloseInputAndRelease()
+
+	// create output context
+	outputCtx, err := gmf.NewOutputCtx(job.LocalDestination)
+	if err != nil {
+		log.Error("output-failed", err)
+		return err
+	}
+	defer outputCtx.CloseOutputAndRelease()
+
+	job.Status = types.JobEncoding
+	job.Details = "0%"
+	dbInstance.UpdateJob(job.ID, job)
+
+	// add video stream to streamMap
+	srcVideoStream, err := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
+	if err != nil {
+		return err
+	}
+	videoCodec := getVideoCodec(job)
+
+	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
+	if err != nil {
+		return err
+	}
+	streamMap[i] = o
+
+	// add audio stream to streamMap
+	srcAudioStream, err := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)
+	if err != nil {
+		return err
+	}
+	audioCodec := getAudioCodec(job)
+
+	i, o, err = addStream(job, audioCodec, outputCtx, srcAudioStream)
+	if err != nil {
+		return err
+	}
+	streamMap[i] = o
+
+	if err := outputCtx.WriteHeader(); err != nil {
+		return err
+	}
+
+	totalFrames := float64(srcVideoStream.NbFrames() + srcAudioStream.NbFrames())
+
+	for packet := range inputCtx.GetNewPackets() {
+		ist, err := inputCtx.GetStream(packet.StreamIndex())
+		if err != nil {
+			return err
+		}
+		ost, err := outputCtx.GetStream(streamMap[ist.Index()])
+		if err != nil {
+			return err
+		}
+
+		framesCount := float64(0)
+		for frame := range packet.Frames(ist.CodecCtx()) {
+			if ost.IsAudio() {
+				fsTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
+				outTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
+
+				frame.SetPts(packet.Pts())
+
+				pts := gmf.RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
+
+				frame.SetNbSamples(ost.CodecCtx().FrameSize())
+				frame.SetFormat(ost.CodecCtx().SampleFmt())
+				frame.SetChannelLayout(ost.CodecCtx().ChannelLayout())
+				frame.SetPts(pts)
+			} else {
+				frame.SetPts(ost.Pts)
+			}
+
+			if p, ready, _ := frame.EncodeNewPacket(ost.CodecCtx()); ready {
+				if p.Pts() != gmf.AV_NOPTS_VALUE {
+					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				}
+
+				if p.Dts() != gmf.AV_NOPTS_VALUE {
+					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				}
+
+				p.SetStreamIndex(ost.Index())
+
+				if err := outputCtx.WritePacket(p); err != nil {
+					return err
+				}
+				gmf.Release(p)
+			}
+
+			ost.Pts++
+			framesCount++
+			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
+			if percentage != job.Details {
+				job.Details = percentage
+				dbInstance.UpdateJob(job.ID, job)
+			}
+		}
+
+		gmf.Release(packet)
+	}
+
+	for i := 0; i < outputCtx.StreamsCnt(); i++ {
+		ist, err := inputCtx.GetStream(0)
+		if err != nil {
+			return err
+		}
+		ost, err := outputCtx.GetStream(streamMap[ist.Index()])
+		if err != nil {
+			return err
+		}
+
+		frame := gmf.NewFrame()
+
+		for {
+			if p, ready, _ := frame.FlushNewPacket(ost.CodecCtx()); ready {
+				if p.Pts() != gmf.AV_NOPTS_VALUE {
+					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				}
+
+				if p.Dts() != gmf.AV_NOPTS_VALUE {
+					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
+				}
+
+				p.SetStreamIndex(ost.Index())
+
+				if err := outputCtx.WritePacket(p); err != nil {
+					return err
+				}
+				gmf.Release(p)
+			} else {
+				gmf.Release(p)
+				break
+			}
+
+			ost.Pts++
+		}
+
+		gmf.Release(frame)
+	}
+	if job.Details != "100%" {
+		job.Details = "100%"
+		dbInstance.UpdateJob(job.ID, job)
+	}
+
+	return nil
+}
+
 func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
 	var codecContext *gmf.CodecCtx
 	var ost *gmf.Stream
@@ -62,171 +228,6 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	return ist.Index(), ost.Index(), nil
 }
 
-// FFMPEGEncode function is responsible for encoding the file
-func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
-	log := logger.Session("ffmpeg-encode")
-	log.Info("started", lager.Data{"job": jobID})
-	defer log.Info("finished")
-
-	gmf.LogSetLevel(gmf.AV_LOG_FATAL)
-	job, _ := dbInstance.RetrieveJob(jobID)
-	stMap := make(map[int]int, 0)
-	var lastDelta int64
-
-	inputCtx, err := gmf.NewInputCtx(job.LocalSource)
-	if err != nil {
-		log.Error("input-failed", err)
-		return err
-	}
-	defer inputCtx.CloseInputAndRelease()
-
-	outputCtx, err := gmf.NewOutputCtx(job.LocalDestination)
-	if err != nil {
-		log.Error("output-failed", err)
-		return err
-	}
-	defer outputCtx.CloseOutputAndRelease()
-
-	job.Status = types.JobEncoding
-	job.Details = "0%"
-	dbInstance.UpdateJob(job.ID, job)
-
-	srcVideoStream, _ := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_VIDEO)
-
-	videoCodec := getCodec(job)
-
-	log.Info("add-stream-start", lager.Data{"code": videoCodec})
-	i, o, err := addStream(job, videoCodec, outputCtx, srcVideoStream)
-	if err != nil {
-		log.Error("add-stream-failed", err)
-		return err
-	}
-	log.Info("add-stream-finished")
-	stMap[i] = o
-
-	srcAudioStream, err := inputCtx.GetBestStream(gmf.AVMEDIA_TYPE_AUDIO)
-	if err != nil {
-		return err
-	}
-
-	audioCodec := "aac"
-	if job.Preset.Audio.Codec != "aac" {
-		audioCodec = job.Preset.Audio.Codec
-	}
-
-	i, o, err = addStream(job, audioCodec, outputCtx, srcAudioStream)
-	if err != nil {
-		return err
-	}
-	stMap[i] = o
-
-	if err := outputCtx.WriteHeader(); err != nil {
-		return err
-	}
-	totalFrames := float64(srcVideoStream.NbFrames() + srcAudioStream.NbFrames())
-	framesCount := float64(0)
-
-	for packet := range inputCtx.GetNewPackets() {
-		ist, err := inputCtx.GetStream(packet.StreamIndex())
-		if err != nil {
-			return err
-		}
-		ost, err := outputCtx.GetStream(stMap[ist.Index()])
-		if err != nil {
-			return err
-		}
-
-		for frame := range packet.Frames(ist.CodecCtx()) {
-			if ost.IsAudio() {
-				fsTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
-				outTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
-
-				frame.SetPts(packet.Pts())
-
-				pts := gmf.RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
-
-				frame.SetNbSamples(ost.CodecCtx().FrameSize())
-				frame.SetFormat(ost.CodecCtx().SampleFmt())
-				frame.SetChannelLayout(ost.CodecCtx().ChannelLayout())
-				frame.SetPts(pts)
-			} else {
-				frame.SetPts(ost.Pts)
-			}
-
-			if p, ready, _ := frame.EncodeNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != gmf.AV_NOPTS_VALUE {
-					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				if p.Dts() != gmf.AV_NOPTS_VALUE {
-					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				p.SetStreamIndex(ost.Index())
-
-				if err := outputCtx.WritePacket(p); err != nil {
-					return err
-				}
-				gmf.Release(p)
-			}
-
-			ost.Pts++
-			framesCount++
-			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
-			if percentage != job.Details {
-				job.Details = percentage
-				dbInstance.UpdateJob(job.ID, job)
-			}
-		}
-		gmf.Release(packet)
-	}
-
-	for i := 0; i < outputCtx.StreamsCnt(); i++ {
-		ist, err := inputCtx.GetStream(0)
-		if err != nil {
-			return err
-		}
-		ost, err := outputCtx.GetStream(stMap[ist.Index()])
-		if err != nil {
-			return err
-		}
-
-		frame := gmf.NewFrame()
-
-		for {
-			if p, ready, _ := frame.FlushNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != gmf.AV_NOPTS_VALUE {
-					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				if p.Dts() != gmf.AV_NOPTS_VALUE {
-					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				p.SetStreamIndex(ost.Index())
-
-				if err := outputCtx.WritePacket(p); err != nil {
-					return err
-				}
-				gmf.Release(p)
-			} else {
-				gmf.Release(p)
-				break
-			}
-
-			ost.Pts++
-		}
-
-		gmf.Release(frame)
-	}
-	if job.Details != "100%" {
-		job.Details = "100%"
-		dbInstance.UpdateJob(job.ID, job)
-	}
-
-	return nil
-}
-
 func getProfile(job types.Job) int {
 	profiles := map[string]int{
 		"baseline": gmf.FF_PROFILE_H264_BASELINE,
@@ -240,18 +241,30 @@ func getProfile(job types.Job) int {
 	return gmf.FF_PROFILE_H264_MAIN
 }
 
-func getCodec(job types.Job) string {
+func getVideoCodec(job types.Job) string {
 	codecs := map[string]string{
 		"h264":   "libx264",
 		"vp8":    "libvpx",
 		"vp9":    "libvpx-vp9",
 		"theora": "libtheora",
+		"aac":    "aac",
 	}
 
-	if job.Preset.Video.Codec != "" {
-		return codecs[job.Preset.Video.Codec]
+	if codec, ok := codecs[job.Preset.Video.Codec]; ok {
+		return codec
 	}
 	return "libx264"
+}
+
+func getAudioCodec(job types.Job) string {
+	codecs := map[string]string{
+		"aac":    "aac",
+		"vorbis": "vorbis",
+	}
+	if codec, ok := codecs[job.Preset.Audio.Codec]; ok {
+		return codec
+	}
+	return "aac"
 }
 
 func GetResolution(job types.Job, inputWidth int, inputHeight int) (int, int) {
