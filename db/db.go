@@ -1,6 +1,9 @@
 package db
 
-import "github.com/snickers/snickers/types"
+import (
+	"github.com/flavioribeiro/gonfig"
+	"github.com/snickers/snickers/types"
+)
 
 //go:generate counterfeiter . Storage
 
@@ -20,4 +23,12 @@ type Storage interface {
 	GetJobs() ([]types.Job, error)
 
 	ClearDatabase() error
+}
+
+func GetDatabase(config gonfig.Gonfig) (Storage, error) {
+	driver, _ := config.GetString("DBDRIVER", "memory")
+	if driver == "mongo" {
+		return getMongoDatabase(config)
+	}
+	return getMemoryDatabase()
 }

@@ -2,9 +2,9 @@ package db
 
 import (
 	"os"
+	"strings"
 
-	"github.com/snickers/snickers/db/memory"
-	"github.com/snickers/snickers/db/mongo"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/types"
 
 	. "github.com/onsi/ginkgo"
@@ -211,7 +211,8 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is in memory", func() {
 		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
+			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DBDRIVER":"memory"}`))
+			dbInstance, _ = GetDatabase(cfg)
 		})
 
 		AfterEach(func() {
@@ -224,7 +225,9 @@ var _ = Describe("Database", func() {
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
 			currentDir, _ := os.Getwd()
-			dbInstance, _ = mongo.GetDatabase(currentDir + "/../fixtures/config.json")
+			cfg, _ := gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+			dbInstance, _ = GetDatabase(cfg)
+
 		})
 
 		AfterEach(func() {
