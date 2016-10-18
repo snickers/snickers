@@ -210,7 +210,7 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is in memory", func() {
 		BeforeEach(func() {
-			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DBDRIVER":"memory"}`))
+			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"memory"}`))
 			dbInstance, _ = GetDatabase(cfg)
 		})
 
@@ -223,7 +223,7 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
-			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DBDRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
+			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
 			dbInstance, _ = GetDatabase(cfg)
 		})
 
