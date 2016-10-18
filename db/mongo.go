@@ -22,14 +22,19 @@ func getMongoDatabase(cfg gonfig.Gonfig) (Storage, error) {
 	var initErr error
 	databaseMongoInit.Do(func() {
 		mongoInstance = &mongoDatabase{}
-		mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
-		session, err := mgo.Dial(mongoHost)
-		if err != nil {
-			initErr = err
-		}
+	})
+
+	mongoHost, _ := cfg.GetString("MONGODB_HOST", "")
+	session, err := mgo.Dial(mongoHost)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if mongoInstance.db == nil {
 		session.SetMode(mgo.Monotonic, true)
 		mongoInstance.db = session.DB("snickers")
-	})
+	}
 
 	return mongoInstance, initErr
 }

@@ -222,15 +222,25 @@ var _ = Describe("Database", func() {
 	})
 
 	Describe("when the storage is mongodb", func() {
-		BeforeEach(func() {
-			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
-			dbInstance, _ = GetDatabase(cfg)
+		Describe("When it connects", func() {
+			BeforeEach(func() {
+				cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
+				dbInstance, _ = GetDatabase(cfg)
+			})
+
+			AfterEach(func() {
+				dbInstance.ClearDatabase()
+			})
+
+			runDatabaseSuite()
 		})
 
-		AfterEach(func() {
-			dbInstance.ClearDatabase()
+		Describe("When it fail to connect", func() {
+			It("should not connect on mongo", func() {
+				failedCfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"invalid.ip.address"}`))
+				_, err := GetDatabase(failedCfg)
+				Expect(err).To(HaveOccurred())
+			})
 		})
-
-		runDatabaseSuite()
 	})
 })
