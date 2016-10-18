@@ -11,7 +11,7 @@ import (
 type EncodeFunc func(logger lager.Logger, dbInstance db.Storage, jobID string) error
 
 // GetEncodeFunc returns the encode function
-// based on the job source.
+// based on the job.
 func GetEncodeFunc(job types.Job) EncodeFunc {
 	if job.ABR {
 		return HLSEncode
