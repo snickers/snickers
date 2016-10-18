@@ -1,7 +1,6 @@
 package db
 
 import (
-	"os"
 	"strings"
 
 	"github.com/flavioribeiro/gonfig"
@@ -224,10 +223,8 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is mongodb", func() {
 		BeforeEach(func() {
-			currentDir, _ := os.Getwd()
-			cfg, _ := gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DBDRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
 			dbInstance, _ = GetDatabase(cfg)
-
 		})
 
 		AfterEach(func() {
