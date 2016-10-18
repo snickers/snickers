@@ -4,21 +4,25 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/snickers/snickers/db/memory"
+	"github.com/flavioribeiro/gonfig"
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
 )
 
 func main() {
 	log := lager.NewLogger("snickers")
 	currentDir, _ := os.Getwd()
-	configPath := currentDir + "/config.json"
-
-	// You can register a sink to forward the logs to anywhere.
-	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
-	m, err := memory.GetDatabase()
+	config, err := gonfig.FromJsonFile(currentDir + "/config.json")
 	if err != nil {
 		panic(err)
 	}
-	snickersServer := server.New(log, configPath, "tcp", ":8000", m)
+
+	// You can register a sink to forward the logs to anywhere.
+	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	db, err := db.GetDatabase(config)
+	if err != nil {
+		panic(err)
+	}
+	snickersServer := server.New(log, config, "tcp", ":8000", db)
 	snickersServer.Start(true)
 }
