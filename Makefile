@@ -22,7 +22,6 @@ test:
 
 test_coverage:
 	@go get github.com/modocache/gover
-	@ginkgo -r --slowSpecThreshold=20 --cover --succinct --skipPackage=db .
-	@ginkgo -r --slowSpecThreshold=20 --cover --succinct -coverpkg=./db/mongo,./db/memory db
+	@ginkgo -r --slowSpecThreshold=20 --cover --succinct .
 	@gover
 	@mv gover.coverprofile coverage.txt
