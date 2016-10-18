@@ -1,211 +1,104 @@
-package server_test
+package server
 
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path"
 
 	"code.cloudfoundry.org/lager/lagertest"
-
+	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/db/dbfakes"
-	"github.com/snickers/snickers/server"
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
 
-var _ = Describe("Job Handlers", func() {
-
+var _ = Describe("Job handler", func() {
 	var (
-		client      *http.Client
-		fakeStorage *dbfakes.FakeStorage
-		logger      *lagertest.TestLogger
-		testServer  *httptest.Server
-		err         error
-
-		socketPath string
-		tmpDir     string
+		dbInstance       db.Storage
+		cfg              gonfig.Gonfig
+		sn               *SnickersServer
+		input            types.JobInput
+		jobRecorder      *httptest.ResponseRecorder
+		respJobInputBody map[string]interface{}
 	)
 
 	BeforeEach(func() {
 		currentDir, _ := os.Getwd()
-		configPath := currentDir + "/../fixtures/config.json"
-		tmpDir, err = ioutil.TempDir(os.TempDir(), "job-handlers")
-		socketPath = path.Join(tmpDir, "snickers.sock")
-		logger = lagertest.NewTestLogger("job-handlers")
-		fakeStorage = new(dbfakes.FakeStorage)
-		snickersServer := server.New(logger, configPath, "unix", socketPath, fakeStorage)
-		testServer = httptest.NewServer(snickersServer.Handler())
+		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+		dbInstance, _ = db.GetDatabase(cfg)
+		dbInstance.ClearDatabase()
+		sn = New(lagertest.NewTestLogger("job-handler"), cfg, "tcp", ":8000", dbInstance)
 
-		client = &http.Client{
-			Transport: &http.Transport{},
+		preset := types.Preset{
+			Name: "mp4_1080p",
 		}
+		presetRecorder := httptest.NewRecorder()
+		presetData, _ := json.Marshal(preset)
+		reqPreset, _ := http.NewRequest(http.MethodPost, "/presets", bytes.NewReader(presetData))
+		sn.Handler().ServeHTTP(presetRecorder, reqPreset)
+
+		input = types.JobInput{
+			Source:      "http://s3.example.com/videos/video1.mov",
+			Destination: "s3://example-bucket/future/video1.mp4",
+			PresetName:  "mp4_1080p",
+		}
+
+		jobRecorder = httptest.NewRecorder()
+		payloadData, _ := json.Marshal(input)
+		req, _ := http.NewRequest(http.MethodPost, "/jobs", bytes.NewReader(payloadData))
+
+		sn.Handler().ServeHTTP(jobRecorder, req)
+		json.Unmarshal(jobRecorder.Body.Bytes(), &respJobInputBody)
 	})
 
-	AfterEach(func() {
-		testServer.Close()
-		os.RemoveAll(tmpDir)
-	})
-
-	createJob := func(body io.Reader) *http.Response {
-		req, err := http.NewRequest(http.MethodPost, testServer.URL+"/jobs", body)
-		Expect(err).NotTo(HaveOccurred())
-
-		resp, err := client.Do(req)
-		Expect(err).NotTo(HaveOccurred())
-
-		return resp
-	}
-
-	listJobs := func() *http.Response {
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/jobs", nil)
-		Expect(err).NotTo(HaveOccurred())
-
-		resp, err := client.Do(req)
-		Expect(err).NotTo(HaveOccurred())
-
-		return resp
-	}
-
-	jobDetails := func(id string) *http.Response {
-		req, err := http.NewRequest(http.MethodGet, testServer.URL+"/jobs/"+id, nil)
-		Expect(err).NotTo(HaveOccurred())
-
-		resp, err := client.Do(req)
-		Expect(err).NotTo(HaveOccurred())
-
-		return resp
-	}
-
-	Describe("CreateJob", func() {
-		var createJobResp *http.Response
-
-		JustBeforeEach(func() {
-			createJobResp = createJob(bytes.NewBufferString(`{}`))
+	Context("Create job", func() {
+		It("should create a job in the db instance", func() {
+			Expect(jobRecorder.Code).To(BeIdenticalTo(http.StatusCreated))
+			jobID, ok := respJobInputBody["id"].(string)
+			Expect(ok).To(BeIdenticalTo(true))
+			job, err := dbInstance.RetrieveJob(jobID)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(job.Destination).To(BeIdenticalTo(input.Destination))
 		})
 
-		It("creates a new job", func() {
-			Expect(fakeStorage.StoreJobCallCount()).To(Equal(1))
-			Expect(createJobResp.StatusCode).To(Equal(http.StatusCreated))
+		It("should get a given job details", func() {
+			var jobBody map[string]interface{}
+
+			recorder := httptest.NewRecorder()
+			reqJobDetail, _ := http.NewRequest(http.MethodGet, "/jobs/"+respJobInputBody["id"].(string), nil)
+			sn.Handler().ServeHTTP(recorder, reqJobDetail)
+			json.Unmarshal(recorder.Body.Bytes(), &jobBody)
+			Expect(recorder.Code).To(BeIdenticalTo(http.StatusOK))
+			Expect(jobBody["id"]).To(BeIdenticalTo(respJobInputBody["id"]))
+			Expect(jobBody["status"]).To(BeIdenticalTo(respJobInputBody["status"]))
 		})
 
-		Context("when fails to retrieve the preset", func() {
-			BeforeEach(func() {
-				fakeStorage.RetrievePresetReturns(types.Preset{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(createJobResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(createJobResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "retrieving preset: Boom!"}`))
-			})
-		})
-
-		Context("when fails to store the job", func() {
-			BeforeEach(func() {
-				fakeStorage.StoreJobReturns(types.Job{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(createJobResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(createJobResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "storing job: Boom!"}`))
-			})
-		})
-	})
-
-	Describe("ListJobs", func() {
-		var listJobsResp *http.Response
-
-		JustBeforeEach(func() {
-			listJobsResp = listJobs()
-		})
-
-		It("returns a list of jobs", func() {
-			Expect(fakeStorage.GetJobsCallCount()).To(Equal(1))
-			Expect(listJobsResp.StatusCode).To(Equal(http.StatusOK))
-		})
-
-		Context("when fails to get the jobs", func() {
-			BeforeEach(func() {
-				fakeStorage.GetJobsReturns(nil, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(listJobsResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(listJobsResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "getting jobs: Boom!"}`))
-			})
-		})
-	})
-
-	Describe("GetJobDetails", func() {
-		var (
-			job            types.Job
-			jobDetailsResp *http.Response
-		)
-
-		BeforeEach(func() {
-			job = types.Job{
-				ID:               "id",
-				Source:           "source",
-				Destination:      "destination",
-				Preset:           types.Preset{},
-				Status:           types.JobCreated,
-				Details:          "details",
-				LocalSource:      "source",
-				LocalDestination: "destionation",
+		It("should list all jobs", func() {
+			secondInput := types.JobInput{
+				Source:      "http://s3.example.com/videos/video2.mov",
+				Destination: "s3://example-bucket/future/video2.mp4",
+				PresetName:  "mp4_1080p",
 			}
-		})
 
-		BeforeEach(func() {
-			fakeStorage.RetrieveJobReturns(job, nil)
-		})
+			recorder := httptest.NewRecorder()
+			data, _ := json.Marshal(secondInput)
+			req, _ := http.NewRequest(http.MethodPost, "/jobs", bytes.NewReader(data))
+			sn.Handler().ServeHTTP(recorder, req)
 
-		JustBeforeEach(func() {
-			jobDetailsResp = jobDetails(job.ID)
-		})
+			listRecorder := httptest.NewRecorder()
+			var jobListBody []map[string]interface{}
 
-		It("returns job details", func() {
-			body, err := ioutil.ReadAll(jobDetailsResp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(jobDetailsResp.StatusCode).To(Equal(http.StatusOK))
+			listJobsRequest, _ := http.NewRequest(http.MethodGet, "/jobs", nil)
+			sn.Handler().ServeHTTP(listRecorder, listJobsRequest)
+			json.Unmarshal(listRecorder.Body.Bytes(), &jobListBody)
+			Expect(listRecorder.Code).To(BeIdenticalTo(http.StatusOK))
+			Expect(len(jobListBody)).To(Equal(2))
+			Expect(jobListBody[0]["source"]).To(BeIdenticalTo("http://s3.example.com/videos/video1.mov"))
+			Expect(jobListBody[1]["source"]).To(BeIdenticalTo(secondInput.Source))
 
-			jsonJob, err := json.Marshal(job)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(body).To(MatchJSON(jsonJob))
-		})
-
-		Context("when fails to get the job", func() {
-			BeforeEach(func() {
-				fakeStorage.RetrieveJobReturns(types.Job{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(jobDetailsResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(jobDetailsResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(string(body)).To(Equal(`{"error": "retrieving job: Boom!"}`))
-			})
-		})
-	})
-
-	Describe("StartJob", func() {
-		PIt("starts a job", func() {
-			//TODO: Need to create an abstraction for this.
 		})
 	})
 })

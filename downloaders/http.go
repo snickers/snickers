@@ -7,6 +7,7 @@ import (
 	"code.cloudfoundry.org/lager"
 
 	"github.com/cavaliercoder/grab"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
@@ -14,7 +15,7 @@ import (
 
 // HTTPDownload function downloads sources using
 // http protocol.
-func HTTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
+func HTTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("http-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -25,14 +26,14 @@ func HTTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage,
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(configPath, job.ID), job.Source)
+	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(config, job.ID), job.Source)
 
 	resp := <-respch
 	for !resp.IsComplete() {

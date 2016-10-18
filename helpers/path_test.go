@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
@@ -15,13 +15,13 @@ var _ = Describe("Helpers", func() {
 	Context("Path", func() {
 		var (
 			dbInstance db.Storage
-			configPath string
+			cfg        gonfig.Gonfig
 		)
 
 		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
 			currentDir, _ := os.Getwd()
-			configPath = currentDir + "/../fixtures/config.json"
+			cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+			dbInstance, _ = db.GetDatabase(cfg)
 		})
 
 		AfterEach(func() {
@@ -39,7 +39,7 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetLocalSourcePath(configPath, exampleJob.ID)).To(Equal("/tmp/123/src/"))
+			Expect(GetLocalSourcePath(cfg, exampleJob.ID)).To(Equal("/tmp/123/src/"))
 		})
 
 		It("GetLocalDestination should return the correct local destination path based on job", func() {
@@ -53,7 +53,7 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetLocalDestination(configPath, dbInstance, exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
+			Expect(GetLocalDestination(cfg, dbInstance, exampleJob.ID)).To(Equal("/tmp/123/dst/KailuaBeach_640x360.webm"))
 		})
 
 		It("GetOutputFilename should build output filename based on job and preset", func() {

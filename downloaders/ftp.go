@@ -8,6 +8,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 
+	"github.com/flavioribeiro/gonfig"
 	"github.com/secsy/goftp"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/helpers"
@@ -16,7 +17,7 @@ import (
 
 // FTPDownload downloads the file from FTP. Job Source should be
 // in format: ftp://login:password@host/path
-func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
+func FTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("ftp-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -27,8 +28,8 @@ func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, 
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"
@@ -44,7 +45,7 @@ func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, 
 		pw = ""
 	}
 
-	config := goftp.Config{
+	ftpConfig := goftp.Config{
 		User:               u.User.Username(),
 		Password:           pw,
 		ConnectionsPerHost: 10,
@@ -52,7 +53,7 @@ func FTPDownload(logger lager.Logger, configPath string, dbInstance db.Storage, 
 		Logger:             os.Stderr,
 	}
 
-	client, err := goftp.DialConfig(config, u.Host+":21")
+	client, err := goftp.DialConfig(ftpConfig, u.Host+":21")
 	if err != nil {
 		log.Error("dial-config-failed", err)
 		return err

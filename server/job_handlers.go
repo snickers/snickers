@@ -33,6 +33,7 @@ func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var job types.Job
+
 	job.ID = uniuri.New()
 	job.Source = jobInput.Source
 	job.Destination = jobInput.Destination
@@ -123,5 +124,5 @@ func (sn *SnickersServer) StartJob(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug("starting-job", lager.Data{"id": job.ID})
 	w.WriteHeader(http.StatusOK)
-	go pipeline.StartJob(log, sn.configPath, sn.db, job)
+	go pipeline.StartJob(log, sn.config, sn.db, job)
 }

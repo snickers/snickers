@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/downloaders"
 	"github.com/snickers/snickers/encoders"
@@ -12,7 +13,7 @@ import (
 )
 
 // StartJob starts the job
-func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job types.Job) {
+func StartJob(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, job types.Job) {
 	log := logger.Session("start-job", lager.Data{
 		"id":          job.ID,
 		"status":      job.Status,
@@ -23,7 +24,7 @@ func StartJob(logger lager.Logger, configPath string, dbInstance db.Storage, job
 
 	log.Info("downloading")
 	downloadFunc := downloaders.GetDownloadFunc(job.Source)
-	if err := downloadFunc(log, configPath, dbInstance, job.ID); err != nil {
+	if err := downloadFunc(log, config, dbInstance, job.ID); err != nil {
 		log.Error("download failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()

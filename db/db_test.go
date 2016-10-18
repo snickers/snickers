@@ -1,10 +1,9 @@
 package db
 
 import (
-	"os"
+	"strings"
 
-	"github.com/snickers/snickers/db/memory"
-	"github.com/snickers/snickers/db/mongo"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/types"
 
 	. "github.com/onsi/ginkgo"
@@ -211,7 +210,8 @@ var _ = Describe("Database", func() {
 
 	Describe("when the storage is in memory", func() {
 		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
+			cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"memory"}`))
+			dbInstance, _ = GetDatabase(cfg)
 		})
 
 		AfterEach(func() {
@@ -222,15 +222,25 @@ var _ = Describe("Database", func() {
 	})
 
 	Describe("when the storage is mongodb", func() {
-		BeforeEach(func() {
-			currentDir, _ := os.Getwd()
-			dbInstance, _ = mongo.GetDatabase(currentDir + "/../fixtures/config.json")
+		Describe("When it connects", func() {
+			BeforeEach(func() {
+				cfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"localhost"}`))
+				dbInstance, _ = GetDatabase(cfg)
+			})
+
+			AfterEach(func() {
+				dbInstance.ClearDatabase()
+			})
+
+			runDatabaseSuite()
 		})
 
-		AfterEach(func() {
-			dbInstance.ClearDatabase()
+		Describe("When it fail to connect", func() {
+			It("should not connect on mongo", func() {
+				failedCfg, _ := gonfig.FromJson(strings.NewReader(`{"DATABASE_DRIVER":"mongo", "MONGODB_HOST":"invalid.ip.address"}`))
+				_, err := GetDatabase(failedCfg)
+				Expect(err).To(HaveOccurred())
+			})
 		})
-
-		runDatabaseSuite()
 	})
 })

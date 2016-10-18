@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/helpers"
 	"github.com/snickers/snickers/types"
@@ -17,7 +18,7 @@ import (
 
 // S3Download downloads the file from S3 bucket. Job Source should be
 // in format: http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/OBJECT
-func S3Download(logger lager.Logger, configPath string, dbInstance db.Storage, jobID string) error {
+func S3Download(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, jobID string) error {
 	log := logger.Session("s3-download")
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
@@ -28,8 +29,8 @@ func S3Download(logger lager.Logger, configPath string, dbInstance db.Storage, j
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(configPath, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(configPath, dbInstance, jobID)
+	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
+	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
 	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
 	job.Status = types.JobDownloading
 	job.Details = "0%"

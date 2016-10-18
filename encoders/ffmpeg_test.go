@@ -13,31 +13,25 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
 var _ = Describe("FFmpeg Encoder", func() {
 	var (
-		logger *lagertest.TestLogger
+		logger     *lagertest.TestLogger
+		dbInstance db.Storage
+		cfg        gonfig.Gonfig
 	)
 
 	BeforeEach(func() {
+		currentDir, _ := os.Getwd()
+		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+		dbInstance, _ = db.GetDatabase(cfg)
+		dbInstance.ClearDatabase()
 		logger = lagertest.NewTestLogger("ffmpeg-encoder")
 	})
 
 	Context("when calling", func() {
-		var (
-			dbInstance db.Storage
-			cfg        gonfig.Gonfig
-		)
-
-		BeforeEach(func() {
-			dbInstance, _ = memory.GetDatabase()
-			dbInstance.ClearDatabase()
-			currentDir, _ := os.Getwd()
-			cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
-		})
 
 		It("should return an error if input is not found", func() {
 			exampleJob := types.Job{
@@ -151,7 +145,6 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
 			FFMPEGEncode(logger, dbInstance, job.ID)
 
@@ -221,7 +214,6 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
 			FFMPEGEncode(logger, dbInstance, job.ID)
 
@@ -279,7 +271,6 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
 			FFMPEGEncode(logger, dbInstance, job.ID)
 
@@ -337,7 +328,6 @@ var _ = Describe("FFmpeg Encoder", func() {
 				LocalDestination: destinationFile,
 			}
 
-			dbInstance, _ := memory.GetDatabase()
 			dbInstance.StoreJob(job)
 			FFMPEGEncode(logger, dbInstance, job.ID)
 

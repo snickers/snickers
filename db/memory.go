@@ -1,45 +1,45 @@
-package memory
+package db
 
 import (
 	"errors"
-	"sync"
-
 	"github.com/snickers/snickers/types"
+	"sync"
 )
 
 // Database struct that persists configurations
-type Database struct {
+type memoryDatabase struct {
 	mtx sync.RWMutex
 
 	presets map[string]types.Preset
 	jobs    map[string]types.Job
 }
 
-var instance *Database
+var databaseInit sync.Once
+var memoryInstance *memoryDatabase
 
 // GetDatabase returns database singleton
-func GetDatabase() (*Database, error) {
-	if instance != nil {
-		return instance, nil
-	}
-	instance = &Database{}
-	instance.presets = map[string]types.Preset{}
-	instance.jobs = map[string]types.Job{}
-	return instance, nil
+func getMemoryDatabase() (Storage, error) {
+	databaseInit.Do(func() {
+		memoryInstance = &memoryDatabase{}
+		memoryInstance.presets = map[string]types.Preset{}
+		memoryInstance.jobs = map[string]types.Job{}
+	})
+
+	return memoryInstance, nil
 }
 
 // ClearDatabase clears the database
-func (r *Database) ClearDatabase() error {
+func (r *memoryDatabase) ClearDatabase() error {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
-	instance.presets = map[string]types.Preset{}
-	instance.jobs = map[string]types.Job{}
+	memoryInstance.presets = map[string]types.Preset{}
+	memoryInstance.jobs = map[string]types.Job{}
 	return nil
 }
 
 // StorePreset stores preset information
-func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
+func (r *memoryDatabase) StorePreset(preset types.Preset) (types.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -48,7 +48,7 @@ func (r *Database) StorePreset(preset types.Preset) (types.Preset, error) {
 }
 
 // RetrievePreset retrieves one preset from the database
-func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
+func (r *memoryDatabase) RetrievePreset(presetName string) (types.Preset, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
@@ -59,7 +59,7 @@ func (r *Database) RetrievePreset(presetName string) (types.Preset, error) {
 }
 
 // UpdatePreset updates a preset
-func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
+func (r *memoryDatabase) UpdatePreset(presetName string, newPreset types.Preset) (types.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -68,7 +68,7 @@ func (r *Database) UpdatePreset(presetName string, newPreset types.Preset) (type
 }
 
 // GetPresets retrieves all presets of the database
-func (r *Database) GetPresets() ([]types.Preset, error) {
+func (r *memoryDatabase) GetPresets() ([]types.Preset, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
@@ -80,7 +80,7 @@ func (r *Database) GetPresets() ([]types.Preset, error) {
 }
 
 // DeletePreset deletes a preset from the database
-func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
+func (r *memoryDatabase) DeletePreset(presetName string) (types.Preset, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -92,7 +92,7 @@ func (r *Database) DeletePreset(presetName string) (types.Preset, error) {
 }
 
 // StoreJob stores job information
-func (r *Database) StoreJob(job types.Job) (types.Job, error) {
+func (r *memoryDatabase) StoreJob(job types.Job) (types.Job, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -101,7 +101,7 @@ func (r *Database) StoreJob(job types.Job) (types.Job, error) {
 }
 
 // RetrieveJob retrieves one job from the database
-func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
+func (r *memoryDatabase) RetrieveJob(jobID string) (types.Job, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 
@@ -112,7 +112,7 @@ func (r *Database) RetrieveJob(jobID string) (types.Job, error) {
 }
 
 // UpdateJob updates a job
-func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) {
+func (r *memoryDatabase) UpdateJob(jobID string, newJob types.Job) (types.Job, error) {
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
@@ -121,7 +121,7 @@ func (r *Database) UpdateJob(jobID string, newJob types.Job) (types.Job, error) 
 }
 
 //GetJobs retrieves all jobs of the database
-func (r *Database) GetJobs() ([]types.Job, error) {
+func (r *memoryDatabase) GetJobs() ([]types.Job, error) {
 	r.mtx.RLock()
 	defer r.mtx.RUnlock()
 

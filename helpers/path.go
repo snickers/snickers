@@ -11,8 +11,8 @@ import (
 
 // GetLocalSourcePath builds the path and filename for
 // the local source file
-func GetLocalSourcePath(configPath string, jobID string) string {
-	sourceDir := getBaseDir(configPath, jobID) + "/src/"
+func GetLocalSourcePath(config gonfig.Gonfig, jobID string) string {
+	sourceDir := getBaseDir(config, jobID) + "/src/"
 	os.MkdirAll(sourceDir, 0777)
 
 	return sourceDir
@@ -20,8 +20,8 @@ func GetLocalSourcePath(configPath string, jobID string) string {
 
 // GetLocalDestination builds the path and filename
 // of the local destination file
-func GetLocalDestination(configPath string, dbInstance db.Storage, jobID string) string {
-	destinationDir := getBaseDir(configPath, jobID) + "/dst/"
+func GetLocalDestination(config gonfig.Gonfig, dbInstance db.Storage, jobID string) string {
+	destinationDir := getBaseDir(config, jobID) + "/dst/"
 	os.MkdirAll(destinationDir, 0777)
 	return destinationDir + GetOutputFilename(dbInstance, jobID)
 }
@@ -33,12 +33,7 @@ func GetOutputFilename(dbInstance db.Storage, jobID string) string {
 	return strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container
 }
 
-func getBaseDir(configPath string, jobID string) string {
-	cfg, err := gonfig.FromJsonFile(configPath)
-	if err != nil {
-		return "Error loading configuration File"
-	}
-	swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-
+func getBaseDir(config gonfig.Gonfig, jobID string) string {
+	swapDir, _ := config.GetString("SWAP_DIRECTORY", "")
 	return swapDir + jobID
 }

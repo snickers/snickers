@@ -3,7 +3,6 @@ package server_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,7 +14,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/db/dbfakes"
+
+	"github.com/flavioribeiro/gonfig"
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
 	"github.com/snickers/snickers/types"
 )
@@ -23,11 +24,11 @@ import (
 var _ = Describe("Preset Handlers", func() {
 
 	var (
-		client      *http.Client
-		fakeStorage *dbfakes.FakeStorage
-		logger      *lagertest.TestLogger
-		testServer  *httptest.Server
-		err         error
+		client     *http.Client
+		dbInstance db.Storage
+		logger     *lagertest.TestLogger
+		testServer *httptest.Server
+		err        error
 
 		socketPath string
 		tmpDir     string
@@ -35,12 +36,13 @@ var _ = Describe("Preset Handlers", func() {
 
 	BeforeEach(func() {
 		currentDir, _ := os.Getwd()
-		configPath := currentDir + "/../fixtures/config.json"
+		cfg, _ := gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "preset-handlers")
 		socketPath = path.Join(tmpDir, "snickers.sock")
 		logger = lagertest.NewTestLogger("preset-handlers")
-		fakeStorage = new(dbfakes.FakeStorage)
-		snickersServer := server.New(logger, configPath, "unix", socketPath, fakeStorage)
+
+		dbInstance, _ = db.GetDatabase(cfg)
+		snickersServer := server.New(logger, cfg, "unix", socketPath, dbInstance)
 		testServer = httptest.NewServer(snickersServer.Handler())
 
 		client = &http.Client{
@@ -109,46 +111,12 @@ var _ = Describe("Preset Handlers", func() {
 			createPresetResp *http.Response
 		)
 
-		BeforeEach(func() {
-			preset = bytes.NewBufferString(`{"name":"foobar"}`)
-		})
-
-		JustBeforeEach(func() {
-			createPresetResp = createPreset(preset)
-		})
-
 		It("creates a new preset", func() {
-			Expect(fakeStorage.StorePresetCallCount()).To(Equal(1))
+			preset = bytes.NewBufferString(`{"name":"foobar"}`)
+			createPresetResp = createPreset(preset)
 			Expect(createPresetResp.StatusCode).To(Equal(http.StatusCreated))
 		})
 
-		Context("when fails to parse the preset", func() {
-			BeforeEach(func() {
-				preset = bytes.NewBufferString("invalid")
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(createPresetResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(createPresetResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(ContainSubstring("unpacking preset: invalid character"))
-			})
-		})
-
-		Context("when fails to store the preset", func() {
-			BeforeEach(func() {
-				fakeStorage.StorePresetReturns(types.Preset{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(createPresetResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(createPresetResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "storing preset: Boom!"}`))
-			})
-		})
 	})
 
 	Describe("UpdatePreset", func() {
@@ -157,88 +125,22 @@ var _ = Describe("Preset Handlers", func() {
 			updatePresetResp *http.Response
 		)
 
-		BeforeEach(func() {
-			preset = bytes.NewBufferString(`{"name":"foobar"}`)
-		})
-
-		JustBeforeEach(func() {
-			updatePresetResp = updatePreset(preset)
-		})
-
 		It("updates an existing new preset based on its name", func() {
-			presetName := fakeStorage.RetrievePresetArgsForCall(0)
-			Expect(presetName).To(Equal("foobar"))
+			preset = bytes.NewBufferString(`{"name":"foobar"}`)
+			updatePresetResp = updatePreset(preset)
 			Expect(updatePresetResp.StatusCode).To(Equal(http.StatusOK))
 		})
 
-		Context("when fails to parse the preset", func() {
-			BeforeEach(func() {
-				preset = bytes.NewBufferString("invalid")
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(updatePresetResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(updatePresetResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(ContainSubstring("unpacking preset: invalid character"))
-			})
-		})
-
-		Context("when fails to retrieve the preset", func() {
-			BeforeEach(func() {
-				fakeStorage.RetrievePresetReturns(types.Preset{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(updatePresetResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(updatePresetResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "retrieving preset: Boom!"}`))
-			})
-		})
-
-		Context("when fails to update the preset", func() {
-			BeforeEach(func() {
-				fakeStorage.UpdatePresetReturns(types.Preset{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(updatePresetResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(updatePresetResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "updating preset: Boom!"}`))
-			})
-		})
 	})
 
 	Describe("ListPresets", func() {
 		var listPresetsResp *http.Response
 
-		JustBeforeEach(func() {
-			listPresetsResp = listPresets()
-		})
-
 		It("returns a list of presets", func() {
-			Expect(fakeStorage.GetPresetsCallCount()).To(Equal(1))
+			listPresetsResp = listPresets()
 			Expect(listPresetsResp.StatusCode).To(Equal(http.StatusOK))
 		})
 
-		Context("when fails to get the presets", func() {
-			BeforeEach(func() {
-				fakeStorage.GetPresetsReturns(nil, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(listPresetsResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(listPresetsResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(body).To(MatchJSON(`{"error": "getting presets: Boom!"}`))
-			})
-		})
 	})
 
 	Describe("GetPresetDetails", func() {
@@ -247,21 +149,11 @@ var _ = Describe("Preset Handlers", func() {
 			presetDetailsResp *http.Response
 		)
 
-		BeforeEach(func() {
+		It("returns preset details", func() {
 			preset = types.Preset{
 				Name: "foobar",
 			}
-		})
-
-		BeforeEach(func() {
-			fakeStorage.RetrievePresetReturns(preset, nil)
-		})
-
-		JustBeforeEach(func() {
 			presetDetailsResp = presetDetails(preset.Name)
-		})
-
-		It("returns preset details", func() {
 			body, err := ioutil.ReadAll(presetDetailsResp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(presetDetailsResp.StatusCode).To(Equal(http.StatusOK))
@@ -270,37 +162,12 @@ var _ = Describe("Preset Handlers", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(body).To(MatchJSON(jsonPreset))
 		})
-
-		Context("when fails to get the preset", func() {
-			BeforeEach(func() {
-				fakeStorage.RetrievePresetReturns(types.Preset{}, errors.New("Boom!"))
-			})
-
-			It("returns bad request", func() {
-				body, err := ioutil.ReadAll(presetDetailsResp.Body)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(presetDetailsResp.StatusCode).To(Equal(http.StatusBadRequest))
-				Expect(string(body)).To(Equal(`{"error": "retrieving preset: Boom!"}`))
-			})
-		})
 	})
 
 	Describe("DeletePreset", func() {
 		It("deletes the preset", func() {
 			presetDetailsResp := deletePreset("foobar")
 			Expect(presetDetailsResp.StatusCode).To(Equal(http.StatusOK))
-
-			deleteArgs := fakeStorage.DeletePresetArgsForCall(0)
-			Expect(deleteArgs).To(Equal("foobar"))
-		})
-
-		Context("when fails to delete a preset", func() {
-			It("returns bad request", func() {
-				fakeStorage.DeletePresetReturns(types.Preset{}, errors.New("Boom!"))
-				presetDetailsResp := deletePreset("foobar")
-				Expect(presetDetailsResp.StatusCode).To(Equal(http.StatusBadRequest))
-			})
 		})
 	})
 

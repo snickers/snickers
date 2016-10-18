@@ -13,7 +13,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/db/dbfakes"
+
+	"github.com/flavioribeiro/gonfig"
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/server"
 )
 
@@ -21,12 +23,15 @@ var _ = Describe("Snickers Server", func() {
 	var (
 		logger         *lagertest.TestLogger
 		snickersServer *server.SnickersServer
-		fakeStorage    *dbfakes.FakeStorage
+		dbInstance     db.Storage
+		cfg            gonfig.Gonfig
 	)
 
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("snickers-test")
-		fakeStorage = new(dbfakes.FakeStorage)
+		currentDir, _ := os.Getwd()
+		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+		dbInstance, _ = db.GetDatabase(cfg)
 	})
 
 	Context("when passed a socket", func() {
@@ -39,9 +44,7 @@ var _ = Describe("Snickers Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "snickers-server-test")
 			socketPath = path.Join(tmpDir, "snickers.sock")
-			currentDir, _ := os.Getwd()
-			configPath := currentDir + "/config.json"
-			snickersServer = server.New(logger, configPath, "unix", socketPath, fakeStorage)
+			snickersServer = server.New(logger, cfg, "unix", socketPath, dbInstance)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = snickersServer.Start(false)
@@ -93,9 +96,7 @@ var _ = Describe("Snickers Server", func() {
 		JustBeforeEach(func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
-			currentDir, _ := os.Getwd()
-			configPath := currentDir + "/../fixtures/config.json"
-			snickersServer = server.New(logger, configPath, "tcp", port, fakeStorage)
+			snickersServer = server.New(logger, cfg, "tcp", port, dbInstance)
 
 			err = snickersServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())

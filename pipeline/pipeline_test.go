@@ -7,9 +7,10 @@ import (
 
 	"code.cloudfoundry.org/lager/lagertest"
 
+	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/snickers/snickers/db/memory"
+	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/downloaders"
 	"github.com/snickers/snickers/types"
 )
@@ -33,11 +34,17 @@ func cp(dst, src string) error {
 
 var _ = Describe("Pipeline", func() {
 	var (
-		logger *lagertest.TestLogger
+		logger     *lagertest.TestLogger
+		cfg        gonfig.Gonfig
+		dbInstance db.Storage
 	)
 
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("test")
+		currentDir, _ := os.Getwd()
+		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+		dbInstance, _ = db.GetDatabase(cfg)
+		dbInstance.ClearDatabase()
 	})
 
 	Context("Pipeline", func() {
@@ -60,8 +67,6 @@ var _ = Describe("Pipeline", func() {
 
 	Context("when calling Swap Cleaner", func() {
 		It("should remove local source and local destination", func() {
-			dbInstance, _ := memory.GetDatabase()
-			dbInstance.ClearDatabase()
 			currentDir, _ := os.Getwd()
 
 			exampleJob := types.Job{
@@ -92,4 +97,5 @@ var _ = Describe("Pipeline", func() {
 			Expect(exampleJob.LocalDestination).To(Not(BeAnExistingFile()))
 		})
 	})
+
 })
