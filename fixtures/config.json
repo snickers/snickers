@@ -2,5 +2,6 @@
   "SWAP_DIRECTORY": "/tmp/",
   "LOGFILE": "/dev/null",
   "PORT": "8000",
+  "DBDRIVER": "memory",
   "MONGODB_HOST": "localhost"
 }
