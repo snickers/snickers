@@ -33,7 +33,8 @@ func StartJob(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, 
 	}
 
 	log.Info("encoding")
-	if err := encoders.FFMPEGEncode(logger, dbInstance, job.ID); err != nil {
+	encodeFunc := encoders.GetEncodeFunc(job)
+	if err := encodeFunc(logger, dbInstance, job.ID); err != nil {
 		log.Error("encode failed", err)
 		job.Status = types.JobError
 		job.Details = err.Error()

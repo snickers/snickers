@@ -12,9 +12,11 @@ build:
 	go get gopkg.in/mgo.v2
 	go get github.com/onsi/ginkgo/ginkgo
 	go get github.com/onsi/gomega
+	cd $$GOPATH/src/github.com/snickers/hls && make clean && make dep;
+	go build
 
-run:
-	go run main.go
+run: build
+	DYLD_LIBRARY_PATH=$$GOPATH/src/github.com/snickers/hls/build ./snickers
 
 test:
 	@go vet ./...
