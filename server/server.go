@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 
 	"code.cloudfoundry.org/lager"
@@ -13,7 +14,7 @@ import (
 type SnickersServer struct {
 	net.Listener
 	logger        lager.Logger
-	configPath    string
+	config        gonfig.Gonfig
 	listenAddr    string
 	listenNetwork string
 	router        *Router
@@ -21,13 +22,13 @@ type SnickersServer struct {
 	db            db.Storage
 }
 
-func New(log lager.Logger, configPath string, listenNetwork string, listenAddr string, db db.Storage) *SnickersServer {
+func New(log lager.Logger, config gonfig.Gonfig, listenNetwork string, listenAddr string, db db.Storage) *SnickersServer {
 	s := &SnickersServer{
 		logger:        log.Session("snickers-server"),
 		listenAddr:    listenAddr,
 		listenNetwork: listenNetwork,
 		router:        NewRouter(),
-		configPath:    configPath,
+		config:        config,
 		db:            db,
 	}
 

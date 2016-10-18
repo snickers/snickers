@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/db/memory"
 	"github.com/snickers/snickers/types"
 )
 
@@ -20,15 +19,15 @@ var _ = Describe("Downloaders", func() {
 		dbInstance db.Storage
 		downloader DownloadFunc
 		exampleJob types.Job
-		configPath string
+		cfg        gonfig.Gonfig
 	)
 
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("http-download")
-		dbInstance, _ = memory.GetDatabase()
-		dbInstance.ClearDatabase()
 		currentDir, _ := os.Getwd()
-		configPath = currentDir + "/../fixtures/config.json"
+		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
+		dbInstance, _ = db.GetDatabase(cfg)
+		dbInstance.ClearDatabase()
 	})
 
 	Context("GetDownloadFunc", func() {
@@ -57,7 +56,7 @@ var _ = Describe("Downloaders", func() {
 	runDownloadersSuite := func() {
 		It("should return an error if source couldn't be fetched", func() {
 			dbInstance.StoreJob(exampleJob)
-			err := downloader(logger, configPath, dbInstance, exampleJob.ID)
+			err := downloader(logger, cfg, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(
 				ContainSubstring("no such host"),
 				ContainSubstring("No filename could be determined"),
@@ -66,10 +65,8 @@ var _ = Describe("Downloaders", func() {
 
 		It("Should set the local source and local destination on Job", func() {
 			dbInstance.StoreJob(exampleJob)
-			downloader(logger, configPath, dbInstance, exampleJob.ID)
+			downloader(logger, cfg, dbInstance, exampleJob.ID)
 			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			cfg, _ := gonfig.FromJsonFile(configPath)
 			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
 
 			sourceExpected := swapDir + "123/src/source_here.mp4"
