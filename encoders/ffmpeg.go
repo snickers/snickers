@@ -2,6 +2,7 @@ package encoders
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"code.cloudfoundry.org/lager"
@@ -86,39 +87,19 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 		framesCount := float64(0)
 		for frame := range packet.Frames(ist.CodecCtx()) {
-			if ost.IsAudio() {
-				fsTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
-				outTb := gmf.AVR{Num: 1, Den: ist.CodecCtx().SampleRate()}
+			newPacket, newDelta := proccessFrame(ist, ost, packet, frame, lastDelta)
+			fmt.Println("lastDelta")
+			fmt.Println(lastDelta)
+			lastDelta = newDelta
+			fmt.Println("newlastDelta")
+			fmt.Println(lastDelta)
+			fmt.Println("newPacket")
+			fmt.Println(newPacket)
 
-				frame.SetPts(packet.Pts())
-
-				pts := gmf.RescaleDelta(ist.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
-
-				frame.SetNbSamples(ost.CodecCtx().FrameSize())
-				frame.SetFormat(ost.CodecCtx().SampleFmt())
-				frame.SetChannelLayout(ost.CodecCtx().ChannelLayout())
-				frame.SetPts(pts)
-			} else {
-				frame.SetPts(ost.Pts)
+			if err := outputCtx.WritePacket(newPacket); err != nil {
+				return err
 			}
-
-			if p, ready, _ := frame.EncodeNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != gmf.AV_NOPTS_VALUE {
-					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				if p.Dts() != gmf.AV_NOPTS_VALUE {
-					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				p.SetStreamIndex(ost.Index())
-
-				if err := outputCtx.WritePacket(p); err != nil {
-					return err
-				}
-				gmf.Release(p)
-			}
-
+			gmf.Release(newPacket)
 			ost.Pts++
 			framesCount++
 			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
@@ -145,15 +126,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 		for {
 			if p, ready, _ := frame.FlushNewPacket(ost.CodecCtx()); ready {
-				if p.Pts() != gmf.AV_NOPTS_VALUE {
-					p.SetPts(gmf.RescaleQ(p.Pts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				if p.Dts() != gmf.AV_NOPTS_VALUE {
-					p.SetDts(gmf.RescaleQ(p.Dts(), ost.CodecCtx().TimeBase(), ost.TimeBase()))
-				}
-
-				p.SetStreamIndex(ost.Index())
+				p = configurePacket(p, ost, frame)
 
 				if err := outputCtx.WritePacket(p); err != nil {
 					return err
@@ -177,19 +150,62 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	return nil
 }
 
-func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream) (int, int, error) {
+func configureAudioFrame(packet *gmf.Packet, inputStream *gmf.Stream, outputStream *gmf.Stream, frame *gmf.Frame, lastDelta int64) {
+	fsTb := gmf.AVR{Num: 1, Den: inputStream.CodecCtx().SampleRate()}
+	outTb := gmf.AVR{Num: 1, Den: inputStream.CodecCtx().SampleRate()}
+
+	frame.SetPts(packet.Pts())
+
+	pts := gmf.RescaleDelta(inputStream.TimeBase(), frame.Pts(), fsTb.AVRational(), frame.NbSamples(), &lastDelta, outTb.AVRational())
+
+	frame.SetNbSamples(outputStream.CodecCtx().FrameSize())
+	frame.SetFormat(outputStream.CodecCtx().SampleFmt())
+	frame.SetChannelLayout(outputStream.CodecCtx().ChannelLayout())
+	frame.SetPts(pts)
+}
+
+func configurePacket(packet *gmf.Packet, outputStream *gmf.Stream, frame *gmf.Frame) *gmf.Packet {
+	if packet.Pts() != gmf.AV_NOPTS_VALUE {
+		packet.SetPts(gmf.RescaleQ(packet.Pts(), outputStream.CodecCtx().TimeBase(), outputStream.TimeBase()))
+	}
+
+	if packet.Dts() != gmf.AV_NOPTS_VALUE {
+		packet.SetDts(gmf.RescaleQ(packet.Dts(), outputStream.CodecCtx().TimeBase(), outputStream.TimeBase()))
+	}
+
+	packet.SetStreamIndex(outputStream.Index())
+
+	return packet
+}
+
+func proccessFrame(inputStream *gmf.Stream, outputStream *gmf.Stream, packet *gmf.Packet, frame *gmf.Frame, lastDelta int64) (*gmf.Packet, int64) {
+	if outputStream.IsAudio() {
+		configureAudioFrame(packet, inputStream, outputStream, frame, lastDelta)
+	} else {
+		frame.SetPts(outputStream.Pts)
+	}
+
+	if newPacket, ready, _ := frame.EncodeNewPacket(outputStream.CodecCtx()); ready {
+		newPacket = configurePacket(newPacket, outputStream, frame)
+		newPacket.SetStreamIndex(outputStream.Index())
+		return newPacket, lastDelta
+	}
+	return nil, lastDelta
+}
+
+func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, inputStream *gmf.Stream) (int, int, error) {
 	var codecContext *gmf.CodecCtx
-	var ost *gmf.Stream
+	var outputStream *gmf.Stream
 
 	codec, err := gmf.FindEncoder(codecName)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	if ost = oc.NewStream(codec); ost == nil {
+	if outputStream = oc.NewStream(codec); outputStream == nil {
 		return 0, 0, errors.New("unable to create stream in output context")
 	}
-	defer gmf.Release(ost)
+	defer gmf.Release(outputStream)
 
 	if codecContext = gmf.NewCodecCtx(codec); codecContext == nil {
 		return 0, 0, errors.New("unable to create codec context")
@@ -206,14 +222,14 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 	}
 
 	if codecContext.Type() == gmf.AVMEDIA_TYPE_AUDIO {
-		err := setAudioCtxParams(codecContext, ist, job)
+		err := setAudioCtxParams(codecContext, inputStream, job)
 		if err != nil {
 			return 0, 0, err
 		}
 	}
 
 	if codecContext.Type() == gmf.AVMEDIA_TYPE_VIDEO {
-		err := setVideoCtxParams(codecContext, ist, job)
+		err := setVideoCtxParams(codecContext, inputStream, job)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -223,9 +239,9 @@ func addStream(job types.Job, codecName string, oc *gmf.FmtCtx, ist *gmf.Stream)
 		return 0, 0, err
 	}
 
-	ost.SetCodecCtx(codecContext)
+	outputStream.SetCodecCtx(codecContext)
 
-	return ist.Index(), ost.Index(), nil
+	return inputStream.Index(), outputStream.Index(), nil
 }
 
 func getProfile(job types.Job) int {
