@@ -21,7 +21,7 @@ $ make build
 You can store presets and jobs on memory or [MongoDB](https://www.mongodb.com/). On your `config.json` file:
 
 - For MongoDB, set `DATABASE_DRIVER: "mongo"` and `MONGODB_HOST: "your.mongo.host"`
-- For memory, just set `DATABASE_DRIVER "memory"` and you're good to go.
+- For memory, just set `DATABASE_DRIVER: "memory"` and you're good to go.
 
 Please be aware that in case you use `memory`, Snickers will persist the data only while the application is running.
 
