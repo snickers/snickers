@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	snickersServer := server.New(log, config, "tcp", ":8000", db)
+	port, _ := config.GetString("PORT", "8000")
+	snickersServer := server.New(log, config, "tcp", ":"+port, db)
 	snickersServer.Start(true)
 }
