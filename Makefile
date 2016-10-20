@@ -29,4 +29,4 @@ test_coverage:
 lint:
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
-	gometalinter ./... --deadline 300s
+	gometalinter -disable=dupl ./... --deadline 300s
