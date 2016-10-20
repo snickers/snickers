@@ -22,7 +22,7 @@ func GetLocalSourcePath(config gonfig.Gonfig, jobID string) string {
 // of the local destination file
 func GetLocalDestination(config gonfig.Gonfig, dbInstance db.Storage, jobID string) string {
 	destinationDir := getBaseDir(config, jobID) + "/dst/"
-	os.MkdirAll(destinationDir, 0777)
+	os.MkdirAll(destinationDir, 0700)
 	return destinationDir + GetOutputFilename(dbInstance, jobID)
 }
 

@@ -26,7 +26,10 @@ type Storage interface {
 }
 
 func GetDatabase(config gonfig.Gonfig) (Storage, error) {
-	driver, _ := config.GetString("DATABASE_DRIVER", "memory")
+	driver, err := config.GetString("DATABASE_DRIVER", "memory")
+	if err != nil {
+		return nil, err
+	}
 	if driver == "mongo" {
 		return getMongoDatabase(config)
 	}

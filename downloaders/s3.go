@@ -60,9 +60,6 @@ func S3Download(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage
 	objInput := s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
 
 	_, err = downloader.Download(file, &objInput)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
