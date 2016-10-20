@@ -63,17 +63,16 @@ func StartJob(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, 
 // CleanSwap removes LocalSource and LocalDestination
 // files/directories.
 func CleanSwap(dbInstance db.Storage, jobID string) error {
-	job, _ := dbInstance.RetrieveJob(jobID)
+	job, err := dbInstance.RetrieveJob(jobID)
+	if err != nil {
+		return err
+	}
 
-	err := os.RemoveAll(job.LocalSource)
+	err = os.RemoveAll(job.LocalSource)
 	if err != nil {
 		return err
 	}
 
 	err = os.RemoveAll(job.LocalDestination)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
