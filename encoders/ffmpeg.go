@@ -2,7 +2,6 @@ package encoders
 
 import (
 	"errors"
-	// "fmt"
 	"strconv"
 
 	"code.cloudfoundry.org/lager"
@@ -42,7 +41,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	dbInstance.UpdateJob(job.ID, job)
 
 	//get audio and video stream and the streaMap
-	streamMap, srcVideoStream, srcAudioStream, err := getAudioVideoStreams(inputCtx, outputCtx, job)
+	streamMap, srcVideoStream, srcAudioStream, err := getAudioVideoStreamSource(inputCtx, outputCtx, job)
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,11 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 
 func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map[int]int) error {
 	for i := 0; i < outputCtx.StreamsCnt(); i++ {
-		_, ost, err := getOutputAndInputStream(inputCtx, outputCtx, streamMap, 0)
+		inputStream, err := getStream(inputCtx, 0)
+		if err != nil {
+			return err
+		}
+		outputStream, err := getStream(outputCtx, streamMap[inputStream.Index()])
 		if err != nil {
 			return err
 		}
@@ -77,8 +80,8 @@ func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map
 		frame := gmf.NewFrame()
 
 		for {
-			if p, ready, _ := frame.FlushNewPacket(ost.CodecCtx()); ready {
-				configurePacket(p, ost, frame)
+			if p, ready, _ := frame.FlushNewPacket(outputStream.CodecCtx()); ready {
+				configurePacket(p, outputStream, frame)
 				if err := outputCtx.WritePacket(p); err != nil {
 					return err
 				}
@@ -87,7 +90,7 @@ func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map
 				gmf.Release(p)
 				break
 			}
-			ost.Pts++
+			outputStream.Pts++
 		}
 
 		gmf.Release(frame)
@@ -99,18 +102,23 @@ func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map
 func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map[int]int, job types.Job, dbInstance db.Storage, totalFrames float64) error {
 	var lastDelta int64
 	for packet := range inputCtx.GetNewPackets() {
-		ist, ost, err := getOutputAndInputStream(inputCtx, outputCtx, streamMap, packet.StreamIndex())
+		inputStream, err := getStream(inputCtx, packet.StreamIndex())
 		if err != nil {
 			return err
 		}
+		outputStream, err := getStream(outputCtx, streamMap[inputStream.Index()])
+		if err != nil {
+			return err
+		}
+
 		framesCount := float64(0)
-		for frame := range packet.Frames(ist.CodecCtx()) {
-			err := proccessFrame(ist, ost, packet, frame, outputCtx, &lastDelta)
+		for frame := range packet.Frames(inputStream.CodecCtx()) {
+			err := proccessFrame(inputStream, outputStream, packet, frame, outputCtx, &lastDelta)
 			if err != nil {
 				return err
 			}
 
-			ost.Pts++
+			outputStream.Pts++
 			framesCount++
 			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
 			if percentage != job.Details {
@@ -124,20 +132,11 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 	return nil
 }
 
-func getOutputAndInputStream(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map[int]int, inputIndex int) (*gmf.Stream, *gmf.Stream, error) {
-	inputStream, err := inputCtx.GetStream(inputIndex)
-	if err != nil {
-		return nil, nil, err
-	}
-	outputStream, err := outputCtx.GetStream(streamMap[inputStream.Index()])
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return inputStream, outputStream, nil
+func getStream(context *gmf.FmtCtx, streamIndex int) (*gmf.Stream, error) {
+	return context.GetStream(streamIndex)
 }
 
-func getAudioVideoStreams(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, job types.Job) (map[int]int, *gmf.Stream, *gmf.Stream, error) {
+func getAudioVideoStreamSource(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, job types.Job) (map[int]int, *gmf.Stream, *gmf.Stream, error) {
 	streamMap := make(map[int]int, 0)
 
 	// add video stream to streamMap
