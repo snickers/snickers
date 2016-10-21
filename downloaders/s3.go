@@ -29,9 +29,22 @@ func S3Download(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
-	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
+	localSource, err := helpers.GetLocalSourcePath(config, job.ID)
+	if err != nil {
+		return err
+	}
+	job.LocalSource = localSource + path.Base(job.Source)
+
+	job.LocalDestination, err = helpers.GetLocalDestination(config, dbInstance, jobID)
+	if err != nil {
+		return err
+	}
+
+	job.Destination, err = helpers.GetOutputFilename(dbInstance, jobID)
+	if err != nil {
+		return err
+	}
+
 	job.Status = types.JobDownloading
 	job.Details = "0%"
 	dbInstance.UpdateJob(job.ID, job)

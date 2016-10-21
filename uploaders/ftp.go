@@ -26,7 +26,11 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	}
 
 	job.Status = types.JobUploading
-	dbInstance.UpdateJob(job.ID, job)
+	job, err = dbInstance.UpdateJob(job.ID, job)
+	if err != nil {
+		log.Error("updating-job", err)
+		return err
+	}
 
 	u, err := url.Parse(job.Destination)
 	if err != nil {

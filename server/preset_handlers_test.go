@@ -28,7 +28,6 @@ var _ = Describe("Preset Handlers", func() {
 		dbInstance db.Storage
 		logger     *lagertest.TestLogger
 		testServer *httptest.Server
-		err        error
 
 		socketPath string
 		tmpDir     string
@@ -37,7 +36,7 @@ var _ = Describe("Preset Handlers", func() {
 	BeforeEach(func() {
 		currentDir, _ := os.Getwd()
 		cfg, _ := gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
-		tmpDir, err = ioutil.TempDir(os.TempDir(), "preset-handlers")
+		tmpDir, _ = ioutil.TempDir(os.TempDir(), "preset-handlers")
 		socketPath = path.Join(tmpDir, "snickers.sock")
 		logger = lagertest.NewTestLogger("preset-handlers")
 

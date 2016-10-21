@@ -96,9 +96,6 @@ var _ = Describe("Job handler", func() {
 			json.Unmarshal(listRecorder.Body.Bytes(), &jobListBody)
 			Expect(listRecorder.Code).To(BeIdenticalTo(http.StatusOK))
 			Expect(len(jobListBody)).To(Equal(2))
-			Expect(jobListBody[0]["source"]).To(BeIdenticalTo("http://s3.example.com/videos/video1.mov"))
-			Expect(jobListBody[1]["source"]).To(BeIdenticalTo(secondInput.Source))
-
 		})
 	})
 })

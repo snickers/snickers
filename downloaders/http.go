@@ -26,18 +26,43 @@ func HTTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Stora
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
-	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
+	localSource, err := helpers.GetLocalSourcePath(config, job.ID)
+	if err != nil {
+		return err
+	}
+	job.LocalSource = localSource + path.Base(job.Source)
+
+	job.LocalDestination, err = helpers.GetLocalDestination(config, dbInstance, jobID)
+	if err != nil {
+		return err
+	}
+
+	job.Destination, err = helpers.GetOutputFilename(dbInstance, jobID)
+	if err != nil {
+		return err
+	}
+
 	job.Status = types.JobDownloading
 	job.Details = "0%"
-	dbInstance.UpdateJob(job.ID, job)
 
-	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(config, job.ID), job.Source)
+	job, err = dbInstance.UpdateJob(job.ID, job)
+	if err != nil {
+		log.Error("updating-job", err)
+		return err
+	}
+
+	respch, err := grab.GetAsync(localSource, job.Source)
+	if err != nil {
+		return nil
+	}
 
 	resp := <-respch
 	for !resp.IsComplete() {
-		job, _ = dbInstance.RetrieveJob(jobID)
+		job, err = dbInstance.RetrieveJob(jobID)
+		if err != nil {
+			return err
+		}
+
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
 		if job.Details != percentage {
 			job.Details = percentage + "%"
