@@ -2,7 +2,6 @@ package downloaders
 
 import (
 	"os"
-	"path"
 
 	"code.cloudfoundry.org/lager"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/helpers"
-	"github.com/snickers/snickers/types"
 )
 
 // S3Download downloads the file from S3 bucket. Job Source should be
@@ -23,31 +21,11 @@ func S3Download(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
 
-	job, err := dbInstance.RetrieveJob(jobID)
+	job, err := SetupJob(jobID, dbInstance, config)
 	if err != nil {
-		log.Error("retrieving-job", err)
+		log.Error("setting-up-job", err)
 		return err
 	}
-
-	localSource, err := helpers.GetLocalSourcePath(config, job.ID)
-	if err != nil {
-		return err
-	}
-	job.LocalSource = localSource + path.Base(job.Source)
-
-	job.LocalDestination, err = helpers.GetLocalDestination(config, dbInstance, jobID)
-	if err != nil {
-		return err
-	}
-
-	job.Destination, err = helpers.GetOutputFilename(dbInstance, jobID)
-	if err != nil {
-		return err
-	}
-
-	job.Status = types.JobDownloading
-	job.Details = "0%"
-	dbInstance.UpdateJob(job.ID, job)
 
 	file, err := os.Create(job.LocalDestination)
 	if err != nil {

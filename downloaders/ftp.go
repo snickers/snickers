@@ -3,7 +3,6 @@ package downloaders
 import (
 	"net/url"
 	"os"
-	"path"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -11,8 +10,6 @@ import (
 	"github.com/flavioribeiro/gonfig"
 	"github.com/secsy/goftp"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/helpers"
-	"github.com/snickers/snickers/types"
 )
 
 // FTPDownload downloads the file from FTP. Job Source should be
@@ -22,31 +19,11 @@ func FTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storag
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
 
-	job, err := dbInstance.RetrieveJob(jobID)
+	job, err := SetupJob(jobID, dbInstance, config)
 	if err != nil {
-		log.Error("retrieving-job", err)
+		log.Error("setting-up-job", err)
 		return err
 	}
-
-	localSource, err := helpers.GetLocalSourcePath(config, job.ID)
-	if err != nil {
-		return err
-	}
-	job.LocalSource = localSource + path.Base(job.Source)
-
-	job.LocalDestination, err = helpers.GetLocalDestination(config, dbInstance, jobID)
-	if err != nil {
-		return err
-	}
-
-	job.Destination, err = helpers.GetOutputFilename(dbInstance, jobID)
-	if err != nil {
-		return err
-	}
-
-	job.Status = types.JobDownloading
-	job.Details = "0%"
-	dbInstance.UpdateJob(job.ID, job)
 
 	u, err := url.Parse(job.Source)
 	if err != nil {
