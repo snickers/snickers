@@ -25,3 +25,8 @@ test_coverage:
 	@ginkgo -r --slowSpecThreshold=20 --cover --succinct .
 	@gover
 	@mv gover.coverprofile coverage.txt
+
+lint:
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
+	gometalinter -disable=dupl ./... --deadline 300s

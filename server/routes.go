@@ -5,8 +5,7 @@ import "net/http"
 type Route int
 
 const (
-	Ping Route = iota
-	CreateJob
+	CreateJob Route = iota
 	ListJobs
 	GetJobDetails
 	StartJob
@@ -18,8 +17,6 @@ const (
 )
 
 var Routes = map[Route]RouterArguments{
-	Ping: RouterArguments{Path: "/ping", Method: http.MethodGet},
-
 	//Job routes
 	CreateJob:     RouterArguments{Path: "/jobs", Method: http.MethodPost},
 	ListJobs:      RouterArguments{Path: "/jobs", Method: http.MethodGet},

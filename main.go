@@ -11,7 +11,11 @@ import (
 
 func main() {
 	log := lager.NewLogger("snickers")
-	currentDir, _ := os.Getwd()
+	currentDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	config, err := gonfig.FromJsonFile(currentDir + "/config.json")
 	if err != nil {
 		panic(err)
@@ -23,7 +27,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	port, _ := config.GetString("PORT", "8000")
+
+	port, err := config.GetString("PORT", "8000")
+	if err != nil {
+		panic(err)
+	}
+
 	snickersServer := server.New(log, config, "tcp", ":"+port, db)
 	snickersServer.Start(true)
 }

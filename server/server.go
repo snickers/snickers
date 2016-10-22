@@ -35,7 +35,6 @@ func New(log lager.Logger, config gonfig.Gonfig, listenNetwork string, listenAdd
 	s.logger.Debug("setting-up-routes")
 	// Set up routes
 	routes := map[Route]RouterArguments{
-		Ping:             {Path: Routes[Ping].Path, Method: Routes[Ping].Method, Handler: s.pingHandler},
 		CreateJob:        {Path: Routes[CreateJob].Path, Method: Routes[CreateJob].Method, Handler: s.CreateJob},
 		ListJobs:         {Path: Routes[ListJobs].Path, Method: Routes[ListJobs].Method, Handler: s.ListJobs},
 		GetJobDetails:    {Path: Routes[GetJobDetails].Path, Method: Routes[GetJobDetails].Method, Handler: s.GetJobDetails},

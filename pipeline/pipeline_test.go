@@ -5,8 +5,6 @@ import (
 	"os"
 	"reflect"
 
-	"code.cloudfoundry.org/lager/lagertest"
-
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -34,13 +32,11 @@ func cp(dst, src string) error {
 
 var _ = Describe("Pipeline", func() {
 	var (
-		logger     *lagertest.TestLogger
 		cfg        gonfig.Gonfig
 		dbInstance db.Storage
 	)
 
 	BeforeEach(func() {
-		logger = lagertest.NewTestLogger("test")
 		currentDir, _ := os.Getwd()
 		cfg, _ = gonfig.FromJsonFile(currentDir + "/../fixtures/config.json")
 		dbInstance, _ = db.GetDatabase(cfg)

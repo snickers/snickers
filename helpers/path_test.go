@@ -39,7 +39,10 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetLocalSourcePath(cfg, exampleJob.ID)).To(Equal("/tmp/123/src/"))
+			res, err := GetLocalSourcePath(cfg, exampleJob.ID)
+			Expect(err).To(BeNil())
+			Expect(res).To(Equal("/tmp/123/src/"))
+
 		})
 
 		It("GetLocalDestination should return the correct local destination path based on job", func() {
@@ -67,7 +70,9 @@ var _ = Describe("Helpers", func() {
 			}
 			dbInstance.StoreJob(exampleJob)
 
-			Expect(GetOutputFilename(dbInstance, exampleJob.ID)).To(Equal("KailuaBeach_640x360.webm"))
+			res, err := GetOutputFilename(dbInstance, exampleJob.ID)
+			Expect(err).To(BeNil())
+			Expect(res).To(Equal("KailuaBeach_640x360.webm"))
 		})
 	})
 })

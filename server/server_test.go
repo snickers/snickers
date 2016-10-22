@@ -109,15 +109,5 @@ var _ = Describe("Snickers Server", func() {
 				},
 			}
 		})
-
-		It("listens on the address provided", func() {
-			request, err := http.NewRequest(http.MethodGet,
-				fmt.Sprintf("http://server%s", server.Routes[server.Ping].Path), nil)
-
-			Expect(err).NotTo(HaveOccurred())
-			response, err := httpClient.Do(request)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(response.StatusCode).To(Equal(http.StatusOK))
-		})
 	})
 })

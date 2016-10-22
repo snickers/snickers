@@ -120,7 +120,7 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 
 			outputStream.Pts++
 			framesCount++
-			percentage := string(strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%")
+			percentage := strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%"
 			if percentage != job.Details {
 				job.Details = percentage
 				dbInstance.UpdateJob(job.ID, job)

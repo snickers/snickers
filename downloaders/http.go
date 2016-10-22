@@ -1,7 +1,6 @@
 package downloaders
 
 import (
-	"path"
 	"strconv"
 
 	"code.cloudfoundry.org/lager"
@@ -9,8 +8,6 @@ import (
 	"github.com/cavaliercoder/grab"
 	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
-	"github.com/snickers/snickers/helpers"
-	"github.com/snickers/snickers/types"
 )
 
 // HTTPDownload function downloads sources using
@@ -20,24 +17,24 @@ func HTTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Stora
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
 
-	job, err := dbInstance.RetrieveJob(jobID)
+	job, err := SetupJob(jobID, dbInstance, config)
 	if err != nil {
-		log.Error("retrieving-job", err)
+		log.Error("setting-up-job", err)
 		return err
 	}
 
-	job.LocalSource = helpers.GetLocalSourcePath(config, job.ID) + path.Base(job.Source)
-	job.LocalDestination = helpers.GetLocalDestination(config, dbInstance, jobID)
-	job.Destination = helpers.GetOutputFilename(dbInstance, jobID)
-	job.Status = types.JobDownloading
-	job.Details = "0%"
-	dbInstance.UpdateJob(job.ID, job)
-
-	respch, _ := grab.GetAsync(helpers.GetLocalSourcePath(config, job.ID), job.Source)
+	respch, err := grab.GetAsync(job.LocalSource, job.Source)
+	if err != nil {
+		return nil
+	}
 
 	resp := <-respch
 	for !resp.IsComplete() {
-		job, _ = dbInstance.RetrieveJob(jobID)
+		job, err = dbInstance.RetrieveJob(jobID)
+		if err != nil {
+			return err
+		}
+
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
 		if job.Details != percentage {
 			job.Details = percentage + "%"
