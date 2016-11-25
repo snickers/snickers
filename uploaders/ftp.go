@@ -62,7 +62,7 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		return err
 	}
 
-	err = client.Store(u.Path, localFile)
+	err = client.Store("."+u.Path, localFile)
 	if err != nil {
 		log.Error("storing-file-failed", err)
 		return err

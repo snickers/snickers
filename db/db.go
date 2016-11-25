@@ -25,12 +25,13 @@ type Storage interface {
 	ClearDatabase() error
 }
 
+// GetDatabase selects the right driver based on config
 func GetDatabase(config gonfig.Gonfig) (Storage, error) {
 	driver, err := config.GetString("DATABASE_DRIVER", "memory")
 	if err != nil {
 		return nil, err
 	}
-	if driver == "mongo" {
+	if driver == "mongo" || driver == "mongodb" {
 		return getMongoDatabase(config)
 	}
 	return getMemoryDatabase()

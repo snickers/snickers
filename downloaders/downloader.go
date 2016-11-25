@@ -1,6 +1,7 @@
 package downloaders
 
 import (
+	"net/url"
 	"path"
 	"strings"
 
@@ -47,10 +48,16 @@ func SetupJob(jobID string, dbInstance db.Storage, config gonfig.Gonfig) (types.
 		return types.Job{}, err
 	}
 
-	job.Destination, err = helpers.GetOutputFilename(dbInstance, jobID)
+	u, err := url.Parse(job.Destination)
 	if err != nil {
 		return types.Job{}, err
 	}
+	outputFilename, err := helpers.GetOutputFilename(dbInstance, jobID)
+	if err != nil {
+		return types.Job{}, err
+	}
+	u.Path = path.Join(u.Path, outputFilename)
+	job.Destination = u.String()
 
 	job.Status = types.JobDownloading
 	job.Details = "0%"
