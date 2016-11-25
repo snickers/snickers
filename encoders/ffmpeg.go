@@ -2,6 +2,7 @@ package encoders
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"code.cloudfoundry.org/lager"
@@ -101,6 +102,7 @@ func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map
 
 func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map[int]int, job types.Job, dbInstance db.Storage, totalFrames float64) error {
 	var lastDelta int64
+	framesCount := float64(0)
 	for packet := range inputCtx.GetNewPackets() {
 		inputStream, err := getStream(inputCtx, packet.StreamIndex())
 		if err != nil {
@@ -111,7 +113,6 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 			return err
 		}
 
-		framesCount := float64(0)
 		for frame := range packet.Frames(inputStream.CodecCtx()) {
 			err := proccessFrame(inputStream, outputStream, packet, frame, outputCtx, &lastDelta)
 			if err != nil {
@@ -120,7 +121,7 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 
 			outputStream.Pts++
 			framesCount++
-			percentage := strconv.FormatInt(int64(framesCount/totalFrames*100), 10) + "%"
+			percentage := fmt.Sprintf("%.2f", framesCount/totalFrames*100) + "%"
 			if percentage != job.Details {
 				job.Details = percentage
 				dbInstance.UpdateJob(job.ID, job)
