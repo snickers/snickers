@@ -114,7 +114,7 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 		}
 
 		for frame := range packet.Frames(inputStream.CodecCtx()) {
-			err := proccessFrame(inputStream, outputStream, packet, frame, outputCtx, &lastDelta)
+			err := processFrame(inputStream, outputStream, packet, frame, outputCtx, &lastDelta)
 			if err != nil {
 				return err
 			}
@@ -198,7 +198,7 @@ func configurePacket(packet *gmf.Packet, outputStream *gmf.Stream, frame *gmf.Fr
 	return packet
 }
 
-func proccessFrame(inputStream *gmf.Stream, outputStream *gmf.Stream, packet *gmf.Packet, frame *gmf.Frame, outputCtx *gmf.FmtCtx, lastDelta *int64) error {
+func processFrame(inputStream *gmf.Stream, outputStream *gmf.Stream, packet *gmf.Packet, frame *gmf.Frame, outputCtx *gmf.FmtCtx, lastDelta *int64) error {
 	if outputStream.IsAudio() {
 		configureAudioFrame(packet, inputStream, outputStream, frame, lastDelta)
 	} else {
