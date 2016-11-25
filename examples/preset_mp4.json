@@ -2,20 +2,20 @@
   "name": "mp4_240p",
   "description": "HLS 1080 for tests",
   "container": "mp4",
-  "profile": "main",
-  "profileLevel": "3.1",
   "rateControl": "vbr",
   "video": {
-      "height": "240",
-      "width": "426",
-      "codec": "h264",
-      "bitrate": "1000000",
-      "gopSize": "90",
-      "gopMode": "fixed",
-      "interlaceMode": "progressive"
+    "height": "240",
+    "width": "426",
+    "codec": "h264",
+    "bitrate": "1000000",
+    "gopSize": "90",
+    "gopMode": "fixed",
+    "interlaceMode": "progressive",
+    "profile": "main",
+    "profileLevel": "3.1"
   },
   "audio": {
-      "codec": "aac",
-      "bitrate": "64000"
+    "codec": "aac",
+    "bitrate": "64000"
   }
 }

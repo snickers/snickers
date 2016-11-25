@@ -2,20 +2,19 @@
   "name": "webm_720p",
   "description": "WebM @ 720p",
   "container": "webm",
-  "profile": "main",
-  "profileLevel": "3.1",
   "rateControl": "vbr",
   "video": {
-      "height": "240",
-      "width": "426",
-      "codec": "vp8",
-      "bitrate": "1000000",
-      "gopSize": "90",
-      "gopMode": "fixed",
-      "interlaceMode": "progressive"
+    "profile": "main",
+    "height": "240",
+    "width": "426",
+    "codec": "vp8",
+    "bitrate": "1000000",
+    "gopSize": "90",
+    "gopMode": "fixed",
+    "interlaceMode": "progressive"
   },
   "audio": {
-      "codec": "vorbis",
-      "bitrate": "64000"
+    "codec": "vorbis",
+    "bitrate": "64000"
   }
 }
