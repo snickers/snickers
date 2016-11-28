@@ -74,5 +74,21 @@ var _ = Describe("Helpers", func() {
 			Expect(err).To(BeNil())
 			Expect(res).To(Equal("KailuaBeach_640x360.webm"))
 		})
+
+		It("GetOutputFilename should return preset if container is m3u8", func() {
+			exampleJob := types.Job{
+				ID:          "123",
+				Source:      "http://www.flv.io/KailuaBeach.mp4",
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "my_m3u8_preset", Container: "m3u8"},
+				Status:      types.JobCreated,
+				Details:     "",
+			}
+			dbInstance.StoreJob(exampleJob)
+
+			res, err := GetOutputFilename(dbInstance, exampleJob.ID)
+			Expect(err).To(BeNil())
+			Expect(res).To(Equal("my_m3u8_preset"))
+		})
 	})
 })
