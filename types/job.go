@@ -23,7 +23,6 @@ type Job struct {
 	Details          string    `json:"progress"`
 	LocalSource      string    `json:"-"`
 	LocalDestination string    `json:"-"`
-	HLS              bool      `json:"hls"`
 }
 
 // JobInput stores the information passed from the
