@@ -13,7 +13,7 @@ type EncodeFunc func(logger lager.Logger, dbInstance db.Storage, jobID string) e
 // GetEncodeFunc returns the encode function
 // based on the job.
 func GetEncodeFunc(job types.Job) EncodeFunc {
-	if job.ABR {
+	if job.HLS {
 		return HLSEncode
 	}
 	return FFMPEGEncode
