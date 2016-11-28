@@ -1,5 +1,5 @@
 {
-  "source": "http://flv.io/comingsoon.mov",
-  "destination": "ftp://login:pass@flv.io/output/",
-  "preset": "webm_720p"
+  "source": "http://flv.io/video.mp4",
+  "destination": "ftp://snickers:m3d14factory@flavioribeiro.com/",
+  "preset": "my_m3u8_files"
 }

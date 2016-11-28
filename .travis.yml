@@ -5,6 +5,8 @@ before_install:
   - sudo apt-get install -y -qq libfaac-dev libgpac-dev libmp3lame-dev libjpeg-turbo8-dev libtheora-dev libvorbis-dev libx264-dev libvlccore-dev libvlc-dev mediainfo 2>&1 > /dev/null
   - wget https://github.com/snickers/misc/raw/master/libvpx_shared.tar.gz
   - sudo tar -xvzf libvpx_shared.tar.gz --directory=/usr/local/
+  - sudo wget http://github.com/snickers/misc/raw/master/libsegmenter.so -P /usr/local/lib/
+  - sudo chmod a+rwx /usr/local/lib/libsegmenter.so
   - wget https://github.com/snickers/misc/raw/master/ffmpeg_with_libvpx_vp9.tar.gz
   - sudo tar -xvzf ffmpeg_with_libvpx_vp9.tar.gz --directory=/usr/local/
   - sudo sh -c "echo '/usr/local/lib' >> /etc/ld.so.conf"

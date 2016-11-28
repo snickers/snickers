@@ -26,3 +26,5 @@ _testmain.go
 *.coverprofile
 coverage.txt
 .DS_Store
+
+snickers
