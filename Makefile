@@ -8,12 +8,12 @@ help:
 
 
 build:
-	go get
-	go get gopkg.in/mgo.v2
-	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/onsi/gomega
-	cd $$GOPATH/src/github.com/snickers/hls && make clean && make dep;
-	go build
+	@go get
+	@go get gopkg.in/mgo.v2
+	@go get github.com/onsi/ginkgo/ginkgo
+	@go get github.com/onsi/gomega
+	@cd $$GOPATH/src/github.com/snickers/hls && make clean && make dep;
+	@go build
 
 run: build
 	DYLD_LIBRARY_PATH=$$GOPATH/src/github.com/snickers/hls/build ./snickers
