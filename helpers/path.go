@@ -53,6 +53,9 @@ func GetOutputFilename(dbInstance db.Storage, jobID string) (string, error) {
 		return "", err
 	}
 
+	if job.Preset.Container == "m3u8" {
+		return job.Preset.Name, nil
+	}
 	return strings.Split(path.Base(job.Source), ".")[0] + "_" + job.Preset.Name + "." + job.Preset.Container, nil
 }
 

@@ -1,8 +1,10 @@
 package uploaders
 
 import (
+	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -56,17 +58,45 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		return err
 	}
 
-	localFile, err := os.Open(job.LocalDestination)
+	fileInfo, err := os.Stat(job.LocalDestination)
 	if err != nil {
-		log.Error("opening-local-destination-failed", err)
+		log.Error("get-destination-info", err)
 		return err
 	}
 
-	err = client.Store("."+u.Path, localFile)
-	if err != nil {
-		log.Error("storing-file-failed", err)
-		return err
+	if fileInfo.IsDir() {
+		base := path.Base(job.LocalDestination)
+		client.Mkdir(base)
+		files, err := ioutil.ReadDir(job.LocalDestination)
+		if err != nil {
+			log.Error("listing-files", err)
+			return err
+		}
+		for _, file := range files {
+			localFile, err := os.Open(job.LocalDestination + "/" + file.Name())
+			defer localFile.Close()
+			if err != nil {
+				log.Error("opening-local-destination-failed", err)
+				return err
+			}
+			client.Store("."+u.Path+"/"+file.Name(), localFile)
+
+		}
+
+	} else {
+		localFile, err := os.Open(job.LocalDestination)
+		defer localFile.Close()
+		if err != nil {
+			log.Error("opening-local-destination-failed", err)
+			return err
+		}
+
+		err = client.Store("."+u.Path, localFile)
+		if err != nil {
+			log.Error("storing-file-failed", err)
+			return err
+		}
 	}
 
-	return nil
+	return err
 }
