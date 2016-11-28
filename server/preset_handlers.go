@@ -32,6 +32,11 @@ func (sn *SnickersServer) CreatePreset(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	result, err := json.Marshal(preset)
+	if err != nil {
+		log.Error("failed-marshaling-preset", err)
+		HTTPError(w, http.StatusBadRequest, "marshaling preset", err)
+		return
+	}
 	log.Info("preset-created", lager.Data{"preset-name": preset.Name})
 	fmt.Fprintf(w, "%s", result)
 }
@@ -65,6 +70,11 @@ func (sn *SnickersServer) UpdatePreset(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	result, err := json.Marshal(preset)
+	if err != nil {
+		log.Error("failed-marshaling-preset", err)
+		HTTPError(w, http.StatusBadRequest, "marshaling preset", err)
+		return
+	}
 	fmt.Fprintf(w, "%s", result)
 	log.Info("preset-updated", lager.Data{"preset-name": preset.Name})
 }
