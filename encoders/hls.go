@@ -40,11 +40,11 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 }
 
 func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) error {
-	mp4File, err := ioutil.TempFile("", "snckrs_")
-	mp4File.Close()
-	mp4Filename := mp4File.Name() + ".mp4"
-	os.Create(mp4Filename)
-	defer os.Remove(mp4Filename)
+	h264File, err := ioutil.TempFile("", "snckrs_")
+	h264File.Close()
+	h264Filename := h264File.Name() + ".h264"
+	os.Create(h264Filename)
+	defer os.Remove(h264Filename)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	}
 
 	oldLocalDestination := job.LocalDestination
-	job.LocalDestination = mp4Filename
+	job.LocalDestination = h264Filename
 	_, err = dbInstance.UpdateJob(jobID, job)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 	job.LocalDestination = oldLocalDestination
-	job.LocalSource = mp4Filename
+	job.LocalSource = h264Filename
 	_, err = dbInstance.UpdateJob(jobID, job)
 	if err != nil {
 		return err
