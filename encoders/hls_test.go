@@ -2,6 +2,7 @@ package encoders
 
 import (
 	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -59,7 +60,39 @@ var _ = Describe("HLS Encoder", func() {
 		It("should return error if segmenting non-existent source", func() {
 			dbInstance.StoreJob(exampleJob)
 			err := HLSEncode(logger, dbInstance, exampleJob.ID)
-			Expect(err.Error()).To(Equal("Error opening input: No such file or directory"))
+			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
+		})
+	})
+
+	Context("when calling encodeInH264", func() {
+		It("should succeed and change localsource if source is present", func() {
+			projectPath, _ := os.Getwd()
+			exampleJob.LocalSource = projectPath + "/../fixtures/videos/nyt.mp4"
+			exampleJob.Preset = types.Preset{
+				Container:   "m3u8",
+				RateControl: "vbr",
+				Video: types.VideoPreset{
+					Height:        "240",
+					Width:         "426",
+					Codec:         "h264",
+					Bitrate:       "400000",
+					GopSize:       "90",
+					GopMode:       "fixed",
+					Profile:       "main",
+					ProfileLevel:  "3.1",
+					InterlaceMode: "progressive",
+				},
+				Audio: types.AudioPreset{
+					Codec:   "aac",
+					Bitrate: "64000",
+				},
+			}
+
+			dbInstance.StoreJob(exampleJob)
+			err := encodeInH264(logger, dbInstance, exampleJob.ID)
+			Expect(err).NotTo(HaveOccurred())
+			job, _ := dbInstance.RetrieveJob(exampleJob.ID)
+			Expect(strings.HasSuffix(job.LocalSource, "123.mp4")).To(BeTrue())
 		})
 	})
 })
