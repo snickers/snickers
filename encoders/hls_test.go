@@ -59,7 +59,7 @@ var _ = Describe("HLS Encoder", func() {
 		It("should return error if segmenting non-existent source", func() {
 			dbInstance.StoreJob(exampleJob)
 			err := HLSEncode(logger, dbInstance, exampleJob.ID)
-			Expect(err.Error()).To(Equal("Error opening input: No such file or directory"))
+			Expect(err.Error()).To(Equal("Error opening input 'notfound.mp4': No such file or directory"))
 		})
 	})
 })

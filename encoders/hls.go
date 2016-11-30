@@ -1,9 +1,8 @@
 package encoders
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
+	"path"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/snickers/hls/segmenter"
@@ -40,14 +39,9 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 }
 
 func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) error {
-	h264File, err := ioutil.TempFile("", "snckrs_")
-	h264File.Close()
-	h264Filename := h264File.Name() + ".h264"
+	h264Filename := path.Join(os.TempDir(), jobID+".h264")
 	os.Create(h264Filename)
 	defer os.Remove(h264Filename)
-	if err != nil {
-		return err
-	}
 
 	job, err := dbInstance.RetrieveJob(jobID)
 	if err != nil {
@@ -60,10 +54,12 @@ func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	if err != nil {
 		return err
 	}
+
 	err = FFMPEGEncode(logger, dbInstance, jobID)
 	if err != nil {
 		return err
 	}
+
 	job.LocalDestination = oldLocalDestination
 	job.LocalSource = h264Filename
 	_, err = dbInstance.UpdateJob(jobID, job)
