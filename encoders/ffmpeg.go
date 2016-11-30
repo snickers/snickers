@@ -88,7 +88,6 @@ func processNewFrames(inputCtx *gmf.FmtCtx, outputCtx *gmf.FmtCtx, streamMap map
 				}
 				gmf.Release(p)
 			} else {
-				gmf.Release(p)
 				break
 			}
 			outputStream.Pts++
