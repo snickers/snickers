@@ -3,11 +3,11 @@ package downloaders
 import (
 	"os"
 
-	"code.cloudfoundry.org/lager/lagertest"
-
-	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"code.cloudfoundry.org/lager/lagertest"
+	"github.com/flavioribeiro/gonfig"
 	"github.com/snickers/snickers/db"
 	"github.com/snickers/snickers/types"
 )
