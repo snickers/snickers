@@ -39,7 +39,7 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 }
 
 func encodeInH264(logger lager.Logger, dbInstance db.Storage, jobID string) error {
-	h264Filename := path.Join(os.TempDir(), jobID+".h264")
+	h264Filename := path.Join(os.TempDir(), jobID+".mp4")
 	os.Create(h264Filename)
 	defer os.Remove(h264Filename)
 
