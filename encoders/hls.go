@@ -24,9 +24,11 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 
 	hlsConfig := buildHLSConfig(job)
 	err = segmenter.Segment(hlsConfig)
+	if err != nil {
+		return err
+	}
 	job.Details = "100%"
-	job.Status = types.JobFinished
-	return err
+	return nil
 }
 
 func buildHLSConfig(job types.Job) segmenter.HLSConfig {
