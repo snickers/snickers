@@ -369,7 +369,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 				},
 			}
 
-			resultWidth, resultHeight := GetResolution(job, 1280, 720)
+			resultWidth, resultHeight := getResolution(job, 1280, 720)
 			Expect(resultWidth).To(Equal(1000))
 			Expect(resultHeight).To(Equal(360))
 		})
@@ -384,7 +384,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight := GetResolution(job1, 1280, 720)
+			resultWidth, resultHeight := getResolution(job1, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -397,7 +397,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = GetResolution(job2, 1280, 720)
+			resultWidth, resultHeight = getResolution(job2, 1280, 720)
 			Expect(resultWidth).To(Equal(640))
 			Expect(resultHeight).To(Equal(360))
 
@@ -410,7 +410,7 @@ var _ = Describe("FFmpeg Encoder", func() {
 					Audio: types.AudioPreset{},
 				},
 			}
-			resultWidth, resultHeight = GetResolution(job3, 1280, 720)
+			resultWidth, resultHeight = getResolution(job3, 1280, 720)
 			Expect(resultWidth).To(Equal(1280))
 			Expect(resultHeight).To(Equal(720))
 		})
