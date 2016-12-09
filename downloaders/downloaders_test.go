@@ -55,7 +55,6 @@ var _ = Describe("Downloaders", func() {
 
 	runDownloadersSuite := func() {
 		It("should return an error if source couldn't be fetched", func() {
-			Skip("skipping this for now")
 			dbInstance.StoreJob(exampleJob)
 			err := downloader(logger, cfg, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(
@@ -101,12 +100,13 @@ var _ = Describe("Downloaders", func() {
 		BeforeEach(func() {
 			downloader = S3Download
 			exampleJob = types.Job{
-				ID:          "123",
-				Source:      "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4",
-				Destination: "s3://user@pass:/bucket/",
-				Preset:      types.Preset{Name: "240p", Container: "mp4"},
-				Status:      types.JobCreated,
-				Details:     "",
+				ID:               "123",
+				Source:           "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4",
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "240p", Container: "mp4"},
+				Status:           types.JobCreated,
+				Details:          "",
+				LocalDestination: "/tmp/output_here.mp4",
 			}
 		})
 
