@@ -26,7 +26,8 @@ func StartJob(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage, 
 	defer log.Info("finished")
 
 	log.Info("setup")
-	job, err := SetupJob(job.ID, dbInstance, config)
+	newJob, err := SetupJob(job.ID, dbInstance, config)
+	job = *newJob
 	if err != nil {
 		log.Error("setup-job failed", err)
 		return
@@ -91,30 +92,30 @@ func CleanSwap(dbInstance db.Storage, jobID string) error {
 // SetupJob is responsible for set the initial state for a given
 // job before starting. It sets local source and destination
 // paths and the final destination as well.
-func SetupJob(jobID string, dbInstance db.Storage, config gonfig.Gonfig) (types.Job, error) {
+func SetupJob(jobID string, dbInstance db.Storage, config gonfig.Gonfig) (*types.Job, error) {
 	job, err := dbInstance.RetrieveJob(jobID)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 
 	localSource, err := helpers.GetLocalSourcePath(config, job.ID)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 	job.LocalSource = localSource + path.Base(job.Source)
 
 	job.LocalDestination, err = helpers.GetLocalDestination(config, dbInstance, jobID)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 
 	u, err := url.Parse(job.Destination)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 	outputFilename, err := helpers.GetOutputFilename(dbInstance, jobID)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 	u.Path = path.Join(u.Path, outputFilename)
 	job.Destination = u.String()
@@ -123,8 +124,8 @@ func SetupJob(jobID string, dbInstance db.Storage, config gonfig.Gonfig) (types.
 	job.Details = "0%"
 	job, err = dbInstance.UpdateJob(job.ID, job)
 	if err != nil {
-		return types.Job{}, err
+		return nil, err
 	}
 
-	return job, nil
+	return &job, nil
 }
