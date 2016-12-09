@@ -63,8 +63,7 @@ var _ = Describe("Database", func() {
 
 			It("should fail to store a preset if it already exists", func() {
 				dbInstance.StorePreset(preset)
-				res, err := dbInstance.StorePreset(preset)
-				Expect(res).To(Equal(types.Preset{}))
+				_, err := dbInstance.StorePreset(preset)
 				Expect(err).To(Equal(errors.New("Error 409: Preset already exists, please update instead.")))
 
 			})
