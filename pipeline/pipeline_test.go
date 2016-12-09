@@ -43,6 +43,31 @@ var _ = Describe("Pipeline", func() {
 		dbInstance.ClearDatabase()
 	})
 
+	Context("SetupJob function", func() {
+		It("Should set the local source and local destination on Job", func() {
+			exampleJob := types.Job{
+				ID:          "123",
+				Source:      "http://flv.io/source_here.mp4",
+				Destination: "s3://user@pass:/bucket/",
+				Preset:      types.Preset{Name: "240p", Container: "mp4"},
+				Status:      types.JobCreated,
+				Details:     "",
+			}
+
+			dbInstance.StoreJob(exampleJob)
+			SetupJob(exampleJob.ID, dbInstance, cfg)
+			changedJob, _ := dbInstance.RetrieveJob("123")
+
+			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
+
+			sourceExpected := swapDir + "123/src/source_here.mp4"
+			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
+
+			destinationExpected := swapDir + "123/dst/source_here_240p.mp4"
+			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
+		})
+	})
+
 	Context("Pipeline", func() {
 		It("Should get the HTTPDownload function if source is HTTP", func() {
 			jobSource := "http://flv.io/KailuaBeach.mp4"

@@ -62,19 +62,6 @@ var _ = Describe("Downloaders", func() {
 				ContainSubstring("No filename could be determined"),
 				ContainSubstring("The AWS Access Key Id you provided does not exist in our records")))
 		})
-
-		It("Should set the local source and local destination on Job", func() {
-			dbInstance.StoreJob(exampleJob)
-			downloader(logger, cfg, dbInstance, exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-
-			sourceExpected := swapDir + "123/src/source_here.mp4"
-			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
-
-			destinationExpected := swapDir + "123/dst/source_here_240p.mp4"
-			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
-		})
 	}
 
 	Context("HTTP Downloader", func() {
@@ -113,12 +100,13 @@ var _ = Describe("Downloaders", func() {
 		BeforeEach(func() {
 			downloader = S3Download
 			exampleJob = types.Job{
-				ID:          "123",
-				Source:      "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4",
-				Destination: "s3://user@pass:/bucket/",
-				Preset:      types.Preset{Name: "240p", Container: "mp4"},
-				Status:      types.JobCreated,
-				Details:     "",
+				ID:               "123",
+				Source:           "http://AWSKEY:AWSSECRET@BUCKET.s3.amazonaws.com/source_here.mp4",
+				Destination:      "s3://user@pass:/bucket/",
+				Preset:           types.Preset{Name: "240p", Container: "mp4"},
+				Status:           types.JobCreated,
+				Details:          "",
+				LocalDestination: "/tmp/output_here.mp4",
 			}
 		})
 

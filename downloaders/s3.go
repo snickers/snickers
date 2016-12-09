@@ -21,9 +21,8 @@ func S3Download(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Storage
 	log.Info("start", lager.Data{"job": jobID})
 	defer log.Info("finished")
 
-	job, err := SetupJob(jobID, dbInstance, config)
+	job, err := dbInstance.RetrieveJob(jobID)
 	if err != nil {
-		log.Error("setting-up-job", err)
 		return err
 	}
 
