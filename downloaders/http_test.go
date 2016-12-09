@@ -41,28 +41,5 @@ var _ = Describe("HTTP downloader", func() {
 			err := HTTPDownload(logger, cfg, dbInstance, exampleJob.ID)
 			Expect(err.Error()).To(SatisfyAny(ContainSubstring("no such host"), ContainSubstring("No filename could be determined")))
 		})
-
-		It("Should set the local source and local destination on Job", func() {
-			exampleJob := types.Job{
-				ID:          "123",
-				Source:      "http://flv.io/source_here.mp4",
-				Destination: "s3://user@pass:/bucket/",
-				Preset:      types.Preset{Name: "240p", Container: "mp4"},
-				Status:      types.JobCreated,
-				Details:     "",
-			}
-			dbInstance.StoreJob(exampleJob)
-			HTTPDownload(logger, cfg, dbInstance, exampleJob.ID)
-			changedJob, _ := dbInstance.RetrieveJob("123")
-
-			swapDir, _ := cfg.GetString("SWAP_DIRECTORY", "")
-
-			sourceExpected := swapDir + "123/src/source_here.mp4"
-			Expect(changedJob.LocalSource).To(Equal(sourceExpected))
-
-			destinationExpected := swapDir + "123/dst/source_here_240p.mp4"
-			Expect(changedJob.LocalDestination).To(Equal(destinationExpected))
-		})
 	})
-
 })
