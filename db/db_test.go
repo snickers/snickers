@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/flavioribeiro/gonfig"
@@ -58,6 +59,14 @@ var _ = Describe("Database", func() {
 				res, err := dbInstance.StorePreset(preset)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(res).To(Equal(preset))
+			})
+
+			It("should fail to store a preset if it already exists", func() {
+				dbInstance.StorePreset(preset)
+				res, err := dbInstance.StorePreset(preset)
+				Expect(res).To(Equal(types.Preset{}))
+				Expect(err).To(Equal(errors.New("Error 409: Preset already exists, please update instead.")))
+
 			})
 		})
 

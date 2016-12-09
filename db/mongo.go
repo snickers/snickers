@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/flavioribeiro/gonfig"
@@ -47,6 +48,11 @@ func (r *mongoDatabase) ClearDatabase() error {
 // StorePreset stores preset information
 func (r *mongoDatabase) StorePreset(preset types.Preset) (types.Preset, error) {
 	c := r.db.C("presets")
+
+	if _, err := r.RetrievePreset(preset.Name); err == nil {
+		return types.Preset{}, errors.New("Error 409: Preset already exists, please update instead.")
+	}
+
 	err := c.Insert(preset)
 	if err != nil {
 		return types.Preset{}, err

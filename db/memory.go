@@ -43,6 +43,10 @@ func (r *memoryDatabase) StorePreset(preset types.Preset) (types.Preset, error) 
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
+	if _, ok := r.presets[preset.Name]; ok {
+		return types.Preset{}, errors.New("Error 409: Preset already exists, please update instead.")
+	}
+
 	r.presets[preset.Name] = preset
 	return preset, nil
 }
