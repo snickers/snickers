@@ -40,6 +40,12 @@ func (r *memoryDatabase) ClearDatabase() error {
 
 // StorePreset stores preset information
 func (r *memoryDatabase) StorePreset(preset types.Preset) (types.Preset, error) {
+
+	//prevent replacing existing preset
+	if _, err := r.RetrievePreset(preset.Name); err == nil {
+		return types.Preset{}, errors.New("Error 409: Preset already exists, please update instead.")
+	}
+
 	r.mtx.Lock()
 	defer r.mtx.Unlock()
 
