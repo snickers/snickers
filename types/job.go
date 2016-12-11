@@ -20,7 +20,8 @@ type Job struct {
 	Destination      string    `json:"destination"`
 	Preset           Preset    `json:"preset"`
 	Status           JobStatus `json:"status"`
-	Details          string    `json:"progress"`
+	Details          string    `json:"details"`
+	Progress         string    `json:"progress"`
 	LocalSource      string    `json:"-"`
 	LocalDestination string    `json:"-"`
 }

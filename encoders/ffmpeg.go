@@ -38,7 +38,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 	defer outputCtx.CloseOutputAndRelease()
 
 	job.Status = types.JobEncoding
-	job.Details = "0%"
+	job.Progress = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
 	//get audio and video stream and the streaMap
@@ -59,8 +59,8 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	if job.Details != "100%" {
-		job.Details = "100%"
+	if job.Progress != "100%" {
+		job.Progress = "100%"
 		dbInstance.UpdateJob(job.ID, job)
 	}
 
@@ -121,8 +121,8 @@ func processAllFramesAndUpdateJobProgress(inputCtx *gmf.FmtCtx, outputCtx *gmf.F
 			outputStream.Pts++
 			framesCount++
 			percentage := fmt.Sprintf("%.2f", framesCount/totalFrames*100) + "%"
-			if percentage != job.Details {
-				job.Details = percentage
+			if percentage != job.Progress {
+				job.Progress = percentage
 				dbInstance.UpdateJob(job.ID, job)
 			}
 		}

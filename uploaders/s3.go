@@ -46,7 +46,7 @@ func S3Upload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	}
 
 	job.Status = types.JobUploading
-	job.Details = "0%"
+	job.Progress = "0%"
 	dbInstance.UpdateJob(job.ID, job)
 
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
@@ -59,7 +59,7 @@ func S3Upload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		return err
 	}
 
-	job.Details = "100%"
+	job.Progress = "100%"
 	dbInstance.UpdateJob(job.ID, job)
 
 	return nil
