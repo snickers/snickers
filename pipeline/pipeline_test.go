@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/flavioribeiro/gonfig"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -119,4 +120,20 @@ var _ = Describe("Pipeline", func() {
 		})
 	})
 
+	Context("StartJob function", func() {
+		It("should set error message to Details if errors occur", func() {
+			exampleJob := types.Job{
+				ID:      "123",
+				Source:  "http://source.here.mp4",
+				Details: "",
+			}
+
+			dbInstance.StoreJob(exampleJob)
+			logger := lagertest.NewTestLogger("StartJob")
+			StartJob(logger, cfg, dbInstance, exampleJob)
+
+			changedJob, _ := dbInstance.RetrieveJob("123")
+			Expect(changedJob.Details).To(ContainSubstring("no such host"))
+		})
+	})
 })

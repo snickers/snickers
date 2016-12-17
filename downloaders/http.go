@@ -35,8 +35,8 @@ func HTTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Stora
 		}
 
 		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
-		if job.Details != percentage {
-			job.Details = percentage + "%"
+		if job.Progress != percentage {
+			job.Progress = percentage + "%"
 			dbInstance.UpdateJob(job.ID, job)
 		}
 	}

@@ -121,7 +121,7 @@ func SetupJob(jobID string, dbInstance db.Storage, config gonfig.Gonfig) (*types
 	job.Destination = u.String()
 
 	job.Status = types.JobDownloading
-	job.Details = "0%"
+	job.Progress = "0%"
 	job, err = dbInstance.UpdateJob(job.ID, job)
 	if err != nil {
 		return nil, err

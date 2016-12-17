@@ -21,7 +21,7 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		return err
 	}
 
-	job.Details = "0%"
+	job.Progress = "0%"
 	job.Status = types.JobEncoding
 	dbInstance.UpdateJob(job.ID, job)
 
@@ -34,7 +34,7 @@ func HLSEncode(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	if err != nil {
 		return err
 	}
-	job.Details = "100%"
+	job.Progress = "100%"
 	return nil
 }
 
