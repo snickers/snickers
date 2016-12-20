@@ -38,6 +38,7 @@ func New(log lager.Logger, config gonfig.Gonfig, listenNetwork string, listenAdd
 		CreateJob:        {Path: Routes[CreateJob].Path, Method: Routes[CreateJob].Method, Handler: s.CreateJob},
 		ListJobs:         {Path: Routes[ListJobs].Path, Method: Routes[ListJobs].Method, Handler: s.ListJobs},
 		GetJobDetails:    {Path: Routes[GetJobDetails].Path, Method: Routes[GetJobDetails].Method, Handler: s.GetJobDetails},
+		DeleteJob:        {Path: Routes[DeleteJob].Path, Method: Routes[DeleteJob].Method, Handler: s.DeleteJob},
 		StartJob:         {Path: Routes[StartJob].Path, Method: Routes[StartJob].Method, Handler: s.StartJob},
 		CreatePreset:     {Path: Routes[CreatePreset].Path, Method: Routes[CreatePreset].Method, Handler: s.CreatePreset},
 		UpdatePreset:     {Path: Routes[UpdatePreset].Path, Method: Routes[UpdatePreset].Method, Handler: s.UpdatePreset},

@@ -97,6 +97,17 @@ func (r *memoryDatabase) DeletePreset(presetName string) (types.Preset, error) {
 	return types.Preset{}, errors.New("preset not found")
 }
 
+func (r *memoryDatabase) DeleteJob(jobID string) (types.Job, error) {
+	r.mtx.RLock()
+	defer r.mtx.RUnlock()
+
+	if val, ok := r.jobs[jobID]; ok {
+		delete(r.jobs, jobID)
+		return val, nil
+	}
+	return types.Job{}, errors.New("job not found")
+}
+
 // StoreJob stores job information
 func (r *memoryDatabase) StoreJob(job types.Job) (types.Job, error) {
 	r.mtx.Lock()

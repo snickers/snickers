@@ -103,6 +103,21 @@ func (r *mongoDatabase) DeletePreset(presetName string) (types.Preset, error) {
 	return result, nil
 }
 
+// DeleteJob deletes a job from the database
+func (r *mongoDatabase) DeleteJob(jobID string) (types.Job, error) {
+	result, err := r.RetrieveJob(jobID)
+	if err != nil {
+		return types.Job{}, err
+	}
+
+	c := r.db.C("jobs")
+	err = c.Remove(bson.M{"ID": jobID})
+	if err != nil {
+		return types.Job{}, err
+	}
+	return result, nil
+}
+
 // StoreJob stores job information
 func (r *mongoDatabase) StoreJob(job types.Job) (types.Job, error) {
 	c := r.db.C("jobs")
