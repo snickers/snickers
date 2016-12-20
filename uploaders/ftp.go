@@ -55,21 +55,38 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	client, err := goftp.DialConfig(config, u.Host+":21")
 	if err != nil {
 		log.Error("dial-config-failed", err)
+		client.Close()
 		return err
 	}
 
 	fileInfo, err := os.Stat(job.LocalDestination)
 	if err != nil {
 		log.Error("get-destination-info", err)
+		client.Close()
 		return err
+	}
+
+	remotePath := "." + path.Dir(u.Path)
+	log.Info("check-remote-path", lager.Data{"path": remotePath})
+
+	_, err = client.Stat(remotePath)
+	if err != nil {
+		err = nil
+		_, errMk := client.Mkdir(remotePath)
+		if errMk != nil {
+			log.Error("no-create-path", errMk)
+			client.Close()
+			return errMk
+		}
 	}
 
 	if fileInfo.IsDir() {
 		base := path.Base(job.LocalDestination)
-		client.Mkdir(base)
+		client.Mkdir(remotePath + "/" + base)
 		files, err := ioutil.ReadDir(job.LocalDestination)
 		if err != nil {
 			log.Error("listing-files", err)
+			client.Close()
 			return err
 		}
 		for _, file := range files {
@@ -77,6 +94,7 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 			defer localFile.Close()
 			if err != nil {
 				log.Error("opening-local-destination-failed", err)
+				client.Close()
 				return err
 			}
 			client.Store("."+u.Path+"/"+file.Name(), localFile)
@@ -88,15 +106,17 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 		defer localFile.Close()
 		if err != nil {
 			log.Error("opening-local-destination-failed", err)
+			client.Close()
 			return err
 		}
 
 		err = client.Store("."+u.Path, localFile)
 		if err != nil {
 			log.Error("storing-file-failed", err)
+			client.Close()
 			return err
 		}
 	}
-
+	client.Close()
 	return err
 }
