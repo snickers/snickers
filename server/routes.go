@@ -6,6 +6,7 @@ type Route int
 
 const (
 	CreateJob Route = iota
+	DeleteJob
 	ListJobs
 	GetJobDetails
 	StartJob
@@ -21,6 +22,7 @@ var Routes = map[Route]RouterArguments{
 	CreateJob:     RouterArguments{Path: "/jobs", Method: http.MethodPost},
 	ListJobs:      RouterArguments{Path: "/jobs", Method: http.MethodGet},
 	GetJobDetails: RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodGet},
+	DeleteJob:     RouterArguments{Path: "/jobs/{jobID}", Method: http.MethodDelete},
 	StartJob:      RouterArguments{Path: "/jobs/{jobID}/start", Method: http.MethodPost},
 
 	//Preset routes

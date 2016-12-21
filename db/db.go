@@ -17,6 +17,7 @@ type Storage interface {
 	DeletePreset(string) (types.Preset, error)
 
 	// Job methods
+	DeleteJob(string) (types.Job, error)
 	StoreJob(types.Job) (types.Job, error)
 	RetrieveJob(string) (types.Job, error)
 	UpdateJob(string, types.Job) (types.Job, error)

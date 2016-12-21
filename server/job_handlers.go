@@ -12,6 +12,24 @@ import (
 	"github.com/snickers/snickers/types"
 )
 
+// DeleteJob deletes a job
+func (sn *SnickersServer) DeleteJob(w http.ResponseWriter, r *http.Request) {
+	log := sn.logger.Session("delete-job")
+	log.Debug("started")
+	defer log.Debug("finished")
+
+	vars := mux.Vars(r)
+	jobID := vars["jobID"]
+	_, err := sn.db.DeleteJob(jobID)
+	if err != nil {
+		log.Error("failed-deleting-job", err)
+		HTTPError(w, http.StatusBadRequest, "deleting job", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 // CreateJob creates a job
 func (sn *SnickersServer) CreateJob(w http.ResponseWriter, r *http.Request) {
 	log := sn.logger.Session("create-job")
