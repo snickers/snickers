@@ -7,7 +7,7 @@ import (
 
 // HTTPError is a helper to return errors on handlers
 func HTTPError(w http.ResponseWriter, httpErr int, msg string, err error) {
-	msg := fmt.Sprintf(`{"error": "%s: %s"}`, msg, err.Error())
+	msg = fmt.Sprintf(`{"error": "%s: %s"}`, msg, err.Error())
 	http.Error(w, msg, httpErr)
 	return
 }
