@@ -54,7 +54,7 @@ func FFMPEGEncode(logger lager.Logger, dbInstance db.Storage, jobID string) erro
 		return err
 	}
 
-	processNewFrames(inputCtx, outputCtx, streamMap)
+	err = processNewFrames(inputCtx, outputCtx, streamMap)
 	if err != nil {
 		return err
 	}
