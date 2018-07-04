@@ -22,27 +22,31 @@ func HTTPDownload(logger lager.Logger, config gonfig.Gonfig, dbInstance db.Stora
 		return err
 	}
 
-	respch, err := grab.GetAsync(job.LocalSource, job.Source)
+	client := grab.NewClient()
+	req, err := grab.NewRequest(job.LocalSource, job.Source)
 	if err != nil {
 		return nil
 	}
+	resp := client.Do(req)
+	if err := resp.Err(); err != nil {
+		return nil
+	}
 
-	resp := <-respch
 	for !resp.IsComplete() {
 		job, err = dbInstance.RetrieveJob(jobID)
 		if err != nil {
 			return err
 		}
 
-		percentage := strconv.FormatInt(int64(resp.BytesTransferred()*100/resp.Size), 10)
+		percentage := strconv.FormatInt(int64(resp.BytesComplete()*100/resp.Size), 10)
 		if job.Progress != percentage {
 			job.Progress = percentage + "%"
 			dbInstance.UpdateJob(job.ID, job)
 		}
 	}
 
-	if resp.Error != nil {
-		return resp.Error
+	if resp.Err() != nil {
+		return resp.Err()
 	}
 
 	return nil
