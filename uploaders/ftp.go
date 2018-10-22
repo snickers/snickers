@@ -1,6 +1,7 @@
 package uploaders
 
 import (
+	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -104,18 +105,30 @@ func FTPUpload(logger lager.Logger, dbInstance db.Storage, jobID string) error {
 	} else {
 		localFile, err := os.Open(job.LocalDestination)
 		defer localFile.Close()
+
+		fi, err := localFile.Stat()
+		if err != nil {
+			return err
+		}
+
+		var tracker = NewProgressTracker64(fi.Size(), &job, dbInstance)
+		reader := io.TeeReader(localFile, tracker)
+		tracker.Start()
+
 		if err != nil {
 			log.Error("opening-local-destination-failed", err)
 			client.Close()
 			return err
 		}
 
-		err = client.Store("."+u.Path, localFile)
+		err = client.Store("."+u.Path, reader)
 		if err != nil {
 			log.Error("storing-file-failed", err)
+			tracker.Finish()
 			client.Close()
 			return err
 		}
+		tracker.Finish()
 	}
 	client.Close()
 	return err
