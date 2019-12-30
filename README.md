@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/snickers/snickers/branch/master/graph/badge.svg)](https://codecov.io/gh/snickers/snickers)
 [![Go Report Card](https://goreportcard.com/badge/github.com/snickers/snickers)](https://goreportcard.com/report/github.com/snickers/snickers)
 <br><br>
-Snickers is an open source alternative to the existent cloud encoding services. It is a HTTP API that encode videos.
+Snickers cost much money :rage:
 
 ## Setting Up
 
